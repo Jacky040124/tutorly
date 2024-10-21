@@ -1,9 +1,9 @@
-import '../src/app/globals.css';
-import {links} from '../lib/data.js';
+import '@/app/globals.css';
+import {links} from '../../lib/data.js';
 import Link from "next/link";
 import clsx from 'clsx'
 
-export default function NavBar() {
+export default function Header() {
     return (
         <nav className='flex justify-center'>
             {links.map(link => (
