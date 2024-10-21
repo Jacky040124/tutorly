@@ -25,3 +25,12 @@ body {
     text-wrap: balance;
   }
 }
+
+.standard-text {
+    @apply text-black font-medium;
+}
+
+.standard-btn {
+    @apply text-black rounded;
+  }
+  
