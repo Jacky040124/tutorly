@@ -11,7 +11,7 @@ export default function Home() {
         <div>
             <Header />
             <p> Learn Faster with the best tutor ever</p>
-            <a className="standard-btn bg-green" href="/Login">LogIn</a>
+            <a className="standard-btn bg-green" href="/SignUp">SignUp</a>
             <Teachers />
             <Tutorial />
             <Disclaimer />
