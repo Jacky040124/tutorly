@@ -1,7 +1,9 @@
-// next.config.mjs
-export default {
-    output: 'export',
-    // Add any other configurations you have
-    trailingSlash: true
-  };
-  
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'export',
+  images: {
+    unoptimized: true,
+  },
+}
+
+module.exports = nextConfig
