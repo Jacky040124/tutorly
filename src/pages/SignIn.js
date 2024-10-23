@@ -2,6 +2,8 @@ import { useState } from "react";
 import {auth} from "@/app/firebase";
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
+
 
 export default function SignIn() {
     const [isSignIn, setIsSignedIn] = useState(false); 
@@ -31,8 +33,8 @@ export default function SignIn() {
             {!isSignIn ? (
                 <>
                     <h1>Sign In</h1>
-                    <a href="/TeacherSignIn">Teacher Sign In</a>
-                    <a href="/">Return Home</a>
+                    <Link href="/TeacherSignIn">Teacher Sign In</Link>
+                    <Link href="/">Return Home</Link>
     
                     <form>
                         <fieldset>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { createUserWithEmailAndPassword} from "firebase/auth";
 import { db, auth, doc, setDoc } from "@/app/firebase";
+import Link from 'next/link';
 
 export default function SignUp() {
     const [email, setEmail] = useState("");
@@ -36,8 +37,8 @@ export default function SignUp() {
     return (
         <div>
             <h1>Sign Up</h1>
-            <a href="/TeacherSignIn">Teacher Sign In</a>
-            <a href="/">Return Home</a>
+            <Link href="/TeacherSignIn">Teacher Sign In</Link>
+            <Link href="/">Return Home</Link>
 
             <form>
                 <fieldset>
@@ -50,7 +51,7 @@ export default function SignUp() {
             </form>
 
             <button onClick={handleSignup}>Sign Up</button>
-            {text && <div> <p className="error-text">{text}</p> <a href="/SignIn"> Sign In </a> </div>}
+            {text && <div> <p className="error-text">{text}</p> <Link href="/SignIn"> Sign In </Link> </div>}
         </div>
     );
 }
