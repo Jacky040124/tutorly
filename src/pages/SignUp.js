@@ -37,9 +37,6 @@ export default function SignUp() {
     return (
         <div>
             <h1>Sign Up</h1>
-            <Link href="/TeacherSignIn">Teacher Sign In</Link>
-            <Link href="/">Return Home</Link>
-
             <form>
                 <fieldset>
                     <label htmlFor="email">Email:</label>
@@ -50,8 +47,15 @@ export default function SignUp() {
                 </fieldset>
             </form>
 
-            <button onClick={handleSignup}>Sign Up</button>
-            {text && <div> <p className="error-text">{text}</p> <Link href="/SignIn"> Sign In </Link> </div>}
+            <div class="flex justify-start pt-10 space-x-10">
+                <button class="inline-block" onClick={handleSignup}>Sign Up</button>
+                <Link class="inline-block" href="/TeacherSignIn">Teacher Sign In</Link>
+                <Link class="inline-block" href="/">Return Home</Link>
+            </div>
+
+
+
+            {text && <div> <p class="error-text">{text}</p> <Link href="/SignIn"> Sign In </Link> </div>}
         </div>
     );
 }

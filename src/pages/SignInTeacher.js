@@ -6,7 +6,7 @@ export default function Login() {
     return(
         <div>
             <h1> This is Teacher Sign In </h1>
-            <Link className="standard-btn bg-green" href="/">Return Home</Link>
+            <Link class="standard-btn bg-green" href="/">Return Home</Link>
             
         </div>
     )

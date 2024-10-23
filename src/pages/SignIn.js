@@ -47,7 +47,7 @@ export default function SignIn() {
                     </form>
     
                     <button onClick={handleSignIn}>Sign In</button>
-                    {errorText && <div> <p className="error-text">{errorText}</p> </div>}
+                    {errorText && <div> <p class="error-text">{errorText}</p> </div>}
                 </>
             ) : (
                 <>
