@@ -6,7 +6,8 @@
   "dev": "next dev",
   "build": "next build",
   "start": "next start"
-},
+  },
+
   "dependencies": {
     "clsx": "^2.1.1",
     "firebase-admin": "^12.6.0",
@@ -16,6 +17,7 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.27.0"
   },
+  
   "devDependencies": {
     "eslint": "^8",
     "eslint-config-next": "14.2.15",

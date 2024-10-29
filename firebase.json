@@ -4,37 +4,26 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
-    "public": "out",
+    "source": ".",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-    ]
+    ],
+    "frameworksBackend": {
+      "region": "us-central1"
+    }
   },
-
   "rewrites": [
     {
       "source": "**",
       "destination": "/index.html"
     }
   ],
-
   "functions": [
     {
       "source": "functions",
       "codebase": "default",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "*.local"
-      ]
-    },
-    
-    {
-      "source": "tutor-site",
-      "codebase": "tutor-site",
       "ignore": [
         "node_modules",
         ".git",

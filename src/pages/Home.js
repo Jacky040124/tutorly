@@ -70,7 +70,8 @@ export default function Home() {
                     <div class="bg-green-500 w-40 h-60 mx-2"></div>
                 </div>
 
-                <blockquote class="italic font-medium">"I love the bulk class!!! It is really great."</blockquote>
+                <blockquote class="italic font-medium"><blockquote class="italic font-medium">&quot;I love the bulk class!!! It is really great.&quot;</blockquote>
+                &quot;</blockquote>
                 <cite class="block mt-2">Jacky, Learner on MeetYourTutor</cite>
                 <h2 class="text-3xl font-bold mt-10 mb-5">How does it work?</h2>
 
@@ -83,7 +84,7 @@ export default function Home() {
             {/* BecomeATutor */}
             <div class="max-w-5xl mx-auto p-5">
                 <div class="bg-green-500 py-20 mb-20 text-center">
-                    <h1 class="text-5xl font-bold text-white">Lessons you'll love. Guaranteed.</h1>
+                    <h1 class="text-5xl font-bold text-white">Lessons you love. Guaranteed.</h1>
                     <p class="text-white mt-4 text-lg">Try out our bulk class for free</p>
                 </div>
         
