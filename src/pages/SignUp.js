@@ -18,6 +18,7 @@ export default function SignUp() {
                 email: user.email,
                 uid: user.uid,
                 createdAt: new Date().toISOString(),
+                tyep: "student",
             });
             setText("Sign Up Successful, Sign in here");
 
@@ -49,7 +50,7 @@ export default function SignUp() {
 
             <div class="flex justify-start pt-10 space-x-10">
                 <button class="inline-block" onClick={handleSignup}>Sign Up</button>
-                <Link class="inline-block" href="/TeacherSignIn">Teacher Sign In</Link>
+                <Link class="inline-block" href="/SignInTeacher">Teacher Sign In</Link>
                 <Link class="inline-block" href="/">Return Home</Link>
             </div>
 
