@@ -18,7 +18,7 @@ export default function SignUp() {
                 email: user.email,
                 uid: user.uid,
                 createdAt: new Date().toISOString(),
-                tyep: "student",
+                type: "student",
             });
             setText("Sign Up Successful, Sign in here");
 
@@ -48,15 +48,15 @@ export default function SignUp() {
                 </fieldset>
             </form>
 
-            <div class="flex justify-start pt-10 space-x-10">
-                <button class="inline-block" onClick={handleSignup}>Sign Up</button>
-                <Link class="inline-block" href="/SignInTeacher">Teacher Sign In</Link>
-                <Link class="inline-block" href="/">Return Home</Link>
+            <div className="flex justify-start pt-10 space-x-10">
+                <button className="inline-block" onClick={handleSignup}>Sign Up</button>
+                <Link className="inline-block" href="/SignInTeacher">Teacher Sign In</Link>
+                <Link className="inline-block" href="/">Return Home</Link>
             </div>
 
 
 
-            {text && <div> <p class="error-text">{text}</p> <Link href="/SignIn"> Sign In </Link> </div>}
+            {text && <div> <p className="error-text">{text}</p> <Link href="/SignIn"> Sign In </Link> </div>}
         </div>
     );
 }

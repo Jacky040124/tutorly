@@ -1,5 +1,7 @@
-import { useState } from "react";
+"use client"
+import {useState, useEffect} from 'react';
 import {auth} from "@/app/firebase";
+import {useUser} from "@/components/UserContext"
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -10,20 +12,38 @@ export default function SignIn() {
     const [password, setPassword] = useState("");
     const [errorText, setErrorText] = useState("");
     const router = useRouter();
+    // const {user, setUser} = useUser();
+    const handleEmailChange = (event) => setEmail(event.target.value);
+    const handlePasswordChange = (event) => setPassword(event.target.value);
+
+    const test = useUser();
+
+    useEffect(() => {
+        // console.log(useUser);
+        // console.log(test);
+    })
 
     const handleSignIn = () => {
         signInWithEmailAndPassword(auth, email, password)
           .then((userCredential) => {
-            console.log('User signed in:', userCredential.user);
+
+            const userInfo = {
+                email: userCredential.user.email,
+                uid: userCredential.user.uid,
+                type: userCredential.user.type,
+            };
+
+            console.log('Setting user:', userInfo);
+            setUser(userInfo);
             router.push("/user/StudentAccount");
           })
           .catch((error) => {
-            setErrorText("something went wrong")
+            console.error('Sign-in error:', error);
+            setErrorText("something went wrong");
           });
       };
 
-    const handleEmailChange = (event) => setEmail(event.target.value);
-    const handlePasswordChange = (event) => setPassword(event.target.value);
+
 
     return (
         <div>
@@ -42,7 +62,7 @@ export default function SignIn() {
             </form>
 
             <button onClick={handleSignIn}>Sign In</button>
-            {errorText && <div> <p class="error-text">{errorText}</p> </div>}
+            {errorText && <div> <p className="error-text">{errorText}</p> </div>}
         </div>
     );
 }
