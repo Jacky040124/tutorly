@@ -1,3 +1,4 @@
+"use client";
 import { useState, useEffect } from "react";
 import { createUserWithEmailAndPassword} from "firebase/auth";
 import { db, auth, doc, setDoc } from "@/app/firebase";
@@ -18,7 +19,9 @@ export default function SignUp() {
                 email: user.email,
                 uid: user.uid,
                 createdAt: new Date().toISOString(),
-                type: "student",
+                type: "teacher",
+                description: "",
+                availability: [],
             });
             setText("Sign Up Successful, Sign in here");
 
@@ -50,13 +53,12 @@ export default function SignUp() {
 
             <div className="flex justify-start pt-10 space-x-10">
                 <button className="inline-block" onClick={handleSignup}>Sign Up</button>
-                <Link className="inline-block" href="/SignInTeacher">Teacher Sign In</Link>
                 <Link className="inline-block" href="/">Return Home</Link>
             </div>
 
 
 
-            {text && <div> <p className="error-text">{text}</p> <Link href="/SignIn"> Sign In </Link> </div>}
+            {text && <div> <p className="error-text">{text}</p> <Link href="/signin"> Sign In </Link> </div>}
         </div>
     );
 }

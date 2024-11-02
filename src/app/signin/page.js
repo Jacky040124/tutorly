@@ -1,9 +1,9 @@
 "use client"
 import {useState, useEffect} from 'react';
-import {auth} from "@/app/firebase";
+import {auth, db, doc, getDoc} from "@/app/firebase";
 import {useUser} from "@/components/UserContext"
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 
@@ -12,43 +12,52 @@ export default function SignIn() {
     const [password, setPassword] = useState("");
     const [errorText, setErrorText] = useState("");
     const router = useRouter();
-    // const {user, setUser} = useUser();
+    const { setUser } = useUser();
     const handleEmailChange = (event) => setEmail(event.target.value);
     const handlePasswordChange = (event) => setPassword(event.target.value);
 
-    const test = useUser();
+    async function getData(id) {
 
-    useEffect(() => {
-        // console.log(useUser);
-        // console.log(test);
-    })
+        const docRef = doc(db, "users", id);
+        const docSnap = await getDoc(docRef);
 
-    const handleSignIn = () => {
-        signInWithEmailAndPassword(auth, email, password)
-          .then((userCredential) => {
+        if (docSnap.exists()) {
+            return docSnap.data()
+        } else {
+            console.log("No such document!");
+        }
+    }
 
+    const handleSignIn = async () => {
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const userInfo = {
                 email: userCredential.user.email,
                 uid: userCredential.user.uid,
                 type: userCredential.user.type,
             };
+            
+            const curUser = await getData(userInfo.uid);
+            console.log("curUser data is:", curUser);
 
-            console.log('Setting user:', userInfo);
             setUser(userInfo);
-            router.push("/user/StudentAccount");
-          })
-          .catch((error) => {
+
+            if (curUser.type == "student") {
+                router.push("/user/student");
+            } else if (curUser.type == "teacher"){
+                router.push("/user/teacher");
+            }
+        } catch (error) {
             console.error('Sign-in error:', error);
             setErrorText("something went wrong");
-          });
-      };
+        }
+    };
 
 
 
     return (
         <div>
             <h1>Sign In</h1>
-            <Link href="/SignInTeacher">Teacher Sign In</Link>
             <Link href="/">Return Home</Link>
 
             <form>
