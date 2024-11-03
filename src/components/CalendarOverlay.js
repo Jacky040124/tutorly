@@ -1,13 +1,31 @@
 import {useState, useEffect} from 'react';
 import { useUser } from './UserContext';
-import { app, db, auth, doc, setDoc, getDoc } from '@/app/firebase';
+import { db, doc, setDoc, getDoc } from '@/app/firebase';
 
-export default function CalendarOverlay({ showOverlay, setShowOverlay }) {
+// Move utility functions outside component
+const dayToNumber = {
+    "Monday": 1,
+    "Tuesday": 2,
+    "Wednesday": 3,
+    "Thursday": 4,
+    "Friday": 5,
+    "Saturday": 6,
+    "Sunday": 7
+};
+
+const timeToDecimal = (time) => {
+    if (!time) return null;
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours + (minutes / 60);
+};
+
+export default function CalendarOverlay({ showOverlay, setShowOverlay, onEventAdded }) {
     const [day, setDay] = useState("");
     const [start, setStart] = useState("");
     const [end, setEnd] = useState("");
     const [availability, setAvailability] = useState([]);
     const {user} = useUser();
+
     useEffect(() => {
         const fetchAvailability = async () => {
             if (user?.uid) {
@@ -21,39 +39,6 @@ export default function CalendarOverlay({ showOverlay, setShowOverlay }) {
         fetchAvailability();
     }, [user]);
 
-    const dayToNumber = {
-        "Monday": 1,
-        "Tuesday": 2,
-        "Wednesday": 3,
-        "Thursday": 4,
-        "Friday": 5,
-        "Saturday": 6,
-        "Sunday": 7
-    };
-
-    const timeToDecimal = (time) => {
-        const [hours, minutes] = time.split(':').map(Number);
-        return hours + (minutes / 60);
-    };
-
-    const handleSave = async (e) => {
-        e.preventDefault();
-        
-        const newEvent = {
-            day: dayToNumber[day],
-            startTime: timeToDecimal(start),
-            endTime: timeToDecimal(end)
-        };
-
-        if (user?.uid) {
-            const docRef = doc(db, "users", user.uid);
-            const updatedAvailability = [...availability, newEvent];
-            await setDoc(docRef, { availability: updatedAvailability }, { merge: true });
-            setAvailability(updatedAvailability);
-            setShowOverlay(false);
-        }
-    };
-
     const handleCancel = () => {setShowOverlay(false)}
     const handleDay = (e) => {setDay(e.target.value)}
     const handleStart = (e) => {setStart(e.target.value)}
@@ -64,6 +49,7 @@ export default function CalendarOverlay({ showOverlay, setShowOverlay }) {
             <div>
                 <label htmlFor="time" className="block text-sm font-medium leading-6 text-gray-900"> {name} </label>
                 <select onChange={onChange} value={value} id="time" name="time" className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                    <option>Select Time</option>
                     <option>00:00</option>
                     <option>00:30</option>
                     <option>01:00</option>
@@ -122,6 +108,7 @@ export default function CalendarOverlay({ showOverlay, setShowOverlay }) {
             <div>
                 <label htmlFor="day" className="block text-sm font-medium leading-6 text-gray-900"> Day </label>
                 <select onChange={onChange} value={value} id="day" name="day" className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                    <option>Select Day</option>
                     <option>Monday</option>
                     <option>Tuesday</option>
                     <option>Wednesday</option>
@@ -133,6 +120,54 @@ export default function CalendarOverlay({ showOverlay, setShowOverlay }) {
             </div>
         )
     }
+    
+
+    const handleSave = async (e) => {
+        e.preventDefault();
+
+        const startDecimal = timeToDecimal(start);
+        const endDecimal = timeToDecimal(end);
+
+        if (!day || !start || !end) {
+            console.error('Missing required fields:', { day, start, end });
+            alert('Please fill in all fields');
+            return;
+        } else if (startDecimal >= endDecimal) {
+            alert('endTime Must be later than startTime');
+            return;  
+        }
+
+        const newEvent = {
+            day: dayToNumber[day],
+            startTime: startDecimal,
+            endTime: endDecimal
+        };
+        
+        // Check for overlapping events
+        for (let i = 0; i < availability.length; i++) {
+            const curEvent = availability[i];
+
+            if (curEvent.day === newEvent.day) {
+                if (
+                    (newEvent.startTime >= curEvent.startTime && newEvent.startTime < curEvent.endTime) ||
+                    (newEvent.endTime > curEvent.startTime && newEvent.endTime <= curEvent.endTime) ||
+                    (newEvent.startTime <= curEvent.startTime && newEvent.endTime >= curEvent.endTime)
+                ) {
+                    alert('This time slot overlaps with an existing event');
+                    return;
+                }
+            }
+        }
+
+        if (user?.uid) {
+            const docRef = doc(db, "users", user.uid);
+            const updatedAvailability = [...availability, newEvent];
+            await setDoc(docRef, { availability: updatedAvailability }, { merge: true });
+            setAvailability(updatedAvailability);
+            onEventAdded && onEventAdded(); // Trigger refresh in parent
+            setShowOverlay(false);
+        }
+    };
 
     return (
         <div>

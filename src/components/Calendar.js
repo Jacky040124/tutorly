@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 export default function Calendar() {
     const { user } = useUser();
     const [availability, setAvailability] = useState(null);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
 
     useEffect(() => {
         const fetchAvailability = async () => {
@@ -23,7 +24,7 @@ export default function Calendar() {
         };
         fetchAvailability();
 
-    }, [user]);
+    }, [user, refreshTrigger]);
 
     const currentDate = new Date();
     const year = currentDate.getFullYear();
