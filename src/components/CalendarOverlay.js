@@ -20,7 +20,7 @@ const timeToDecimal = (time) => {
     return hours + (minutes / 60);
 };
 
-export default function CalendarOverlay({ showOverlay, setShowOverlay, onEventAdded }) {
+export default function CalendarOverlay({ setShowOverlay, onEventAdded}) {
     const [date, setDate] = useState(null);
     const [start, setStart] = useState("");
     const [end, setEnd] = useState("");
@@ -41,7 +41,8 @@ export default function CalendarOverlay({ showOverlay, setShowOverlay, onEventAd
     }, [user]);
 
     const handleCancel = () => {setShowOverlay(false)}
-    const handleDate = (selectedDate) => {setDate(selectedDate);
+    const handleDate = (selectedDate) => {
+setDate(selectedDate);
     }
     const handleStart = (e) => {setStart(e.target.value)}
     const handleEnd = (e) => {setEnd(e.target.value)}
@@ -119,14 +120,14 @@ export default function CalendarOverlay({ showOverlay, setShowOverlay, onEventAd
             alert('endTime Must be later than startTime');
             return;  
         }
-        
-        const currentDate = new Date();
-        const year = currentDate.getFullYear();
-        const month = currentDate.toLocaleString('default', { month: 'long' });
-        const today = currentDate.getDate();
 
+        // Create date object using the values from the date object directly
         const newEvent = {
-            date: date,
+            date: {
+                year: date.year,
+                month: date.month,
+                day: date.day
+            },
             startTime: startDecimal,
             endTime: endDecimal
         };
@@ -134,8 +135,11 @@ export default function CalendarOverlay({ showOverlay, setShowOverlay, onEventAd
         // Check for overlapping events
         for (let i = 0; i < availability.length; i++) {
             const curEvent = availability[i];
-
-            if (currentDate === newEvent.date) {
+            
+            // Compare year, month, and day separately
+            if (curEvent.date.year === newEvent.date.year && 
+                curEvent.date.month === newEvent.date.month && 
+                curEvent.date.day === newEvent.date.day) {
                 if (
                     (newEvent.startTime >= curEvent.startTime && newEvent.startTime < curEvent.endTime) ||
                     (newEvent.endTime > curEvent.startTime && newEvent.endTime <= curEvent.endTime) ||
@@ -147,15 +151,20 @@ export default function CalendarOverlay({ showOverlay, setShowOverlay, onEventAd
             } 
         }
 
-
-
         if (user?.uid) {
-            const docRef = doc(db, "users", user.uid);
-            const updatedAvailability = [...availability, newEvent];
-            await setDoc(docRef, { availability: updatedAvailability }, { merge: true });
-            setAvailability(updatedAvailability);
-            onEventAdded && onEventAdded(); // Trigger refresh in parent
-            setShowOverlay(false);
+            try {
+                const docRef = doc(db, "users", user.uid);
+                const updatedAvailability = [...availability, newEvent];
+                await setDoc(docRef, { availability: updatedAvailability }, { merge: true });
+                setAvailability(updatedAvailability);
+                
+                // Call onEventAdded before closing overlay
+                if (onEventAdded) onEventAdded();
+                setShowOverlay(false);
+            } catch (error) {
+                console.error('Error saving event:', error);
+                alert('Error saving event. Please try again.');
+            }
         }
     };
 

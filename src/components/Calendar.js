@@ -1,4 +1,5 @@
 import '../../lib/styles.css';
+import {CalendarOverlay} from '@/components/CalendarOverlay'
 import { app, db, auth, doc, setDoc, getDoc } from '@/app/firebase';
 import { useUser } from './UserContext';
 import { useState, useEffect } from 'react';
@@ -6,7 +7,9 @@ import { useState, useEffect } from 'react';
 export default function Calendar() {
     const { user } = useUser();
     const [availability, setAvailability] = useState(null);
-    const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const [weekOffset, setWeekOffset] = useState(0);
+    const handleLastWeek = () => {setWeekOffset(prev => prev - 1);};
+    const handleNextWeek = () => {setWeekOffset(prev => prev + 1);};
 
     useEffect(() => {
         const fetchAvailability = async () => {
@@ -24,11 +27,9 @@ export default function Calendar() {
         };
         fetchAvailability();
 
-    }, [user, refreshTrigger]);
+    }, [user, weekOffset]);
 
     const currentDate = new Date();
-    const year = currentDate.getFullYear();
-    const month = currentDate.toLocaleString('default', { month: 'long' });
     const today = currentDate.getDate();
 
     const Events = () => {
@@ -37,30 +38,50 @@ export default function Calendar() {
         // Get current week's Monday and Sunday
         const getWeekBounds = () => {
             const curr = new Date();
+            // Add offset weeks to current date
+            curr.setDate(curr.getDate() + (weekOffset * 7));
+
+
             const monday = new Date(curr);
-            monday.setDate(curr.getDate() - curr.getDay() + (curr.getDay() === 0 ? -6 : 1));
+            const dayOfWeek = monday.getDay();
+            const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+            monday.setDate(monday.getDate() + diff);
+            
             const sunday = new Date(monday);
             sunday.setDate(monday.getDate() + 6);
+
+            console.log('Week bounds:', {
+                monday: monday.toDateString(),
+                sunday: sunday.toDateString(),
+                weekOffset
+            });
+
             return { monday, sunday };
         };
 
         const { monday, sunday } = getWeekBounds();
         
         const eventList = availability.map((event, index) => {
-            console.log(`Event ${index} before render:`, {
-                date: event.date,
-                startTime: event.startTime,
-                endTime: event.endTime,
-            });
+            // Check if event and event.date exist and have the required properties
+            if (!event?.date?.year || !event?.date?.month || !event?.date?.day) {
+                console.error('Invalid event date format:', event);
+                return null;
+            }
             
-            // Convert event.date (timestamp) to Date object
-            const eventDate = new Date(event.date);
+            // Convert event.date (object with day, month, year) to Date object
+            const eventDate = new Date(event.date.year, event.date.month - 1, event.date.day);
+            // Set time to midnight
+            eventDate.setHours(0, 0, 0, 0);
             
-            // Check if event is within current week
-            if (eventDate >= monday && eventDate <= sunday) {
-                // Get day of week (1-7, where 1 is Monday)
+            // Create copies of bounds with time set to midnight
+            const mondayBound = new Date(monday);
+            mondayBound.setHours(0, 0, 0, 0);
+            const sundayBound = new Date(sunday);
+            sundayBound.setHours(0, 0, 0, 0);
+            
+            if (eventDate >= mondayBound && eventDate <= sundayBound) {
                 const weekday = eventDate.getDay();
-                const adjustedWeekday = weekday === 0 ? 7 : weekday; // Convert Sunday (0) to 7
+                const adjustedWeekday = weekday === 0 ? 7 : weekday;
                 
                 return (
                     <EventDisplay 
@@ -72,7 +93,7 @@ export default function Calendar() {
                 );
             }
             return null;
-        }).filter(Boolean); // Remove null entries
+        }).filter(Boolean);
 
         return (
             <ol className="col-start-1 col-end-2 row-start-1 grid grid-cols-1 sm:grid-cols-7 sm:pr-8" 
@@ -128,11 +149,14 @@ export default function Calendar() {
     
 
     const WeekdayHeader = () => {
-        // Get current week's Monday
+        // Get current week's Monday with offset
         const getMonday = (d) => {
-            const day = d.getDay();
-            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
-            return new Date(d.setDate(diff));
+            const date = new Date(d);
+            // Add offset weeks to current date
+            date.setDate(date.getDate() + (weekOffset * 7));
+            const day = date.getDay();
+            const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            return new Date(date.setDate(diff));
         };
         
         const monday = getMonday(new Date());
@@ -184,6 +208,20 @@ export default function Calendar() {
 
             <div className="isolate flex flex-auto flex-col overflow-auto bg-white">
                 <div className="flex max-w-full flex-none flex-col sm:max-w-none md:max-w-full" style={{ width: "165%" }}>
+                    <div className="flex justify-between items-center">
+                        <button 
+                            onClick={handleLastWeek}
+                            className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                            Previous Week
+                        </button>
+                        <button 
+                            onClick={handleNextWeek}
+                            className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                            Next Week
+                        </button>
+                    </div>
                     <WeekdayHeader />
 
                     <div className="flex flex-auto">
@@ -245,7 +283,6 @@ export default function Calendar() {
                             <VerticalGrid />
 
                             <Events/>
-
                         </div>
                     </div>
                 </div>
