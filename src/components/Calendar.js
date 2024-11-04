@@ -34,22 +34,45 @@ export default function Calendar() {
     const Events = () => {
         if (!availability) return null;
         
+        // Get current week's Monday and Sunday
+        const getWeekBounds = () => {
+            const curr = new Date();
+            const monday = new Date(curr);
+            monday.setDate(curr.getDate() - curr.getDay() + (curr.getDay() === 0 ? -6 : 1));
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+            return { monday, sunday };
+        };
+
+        const { monday, sunday } = getWeekBounds();
+        
         const eventList = availability.map((event, index) => {
             console.log(`Event ${index} before render:`, {
-                day: event.day,
+                date: event.date,
                 startTime: event.startTime,
                 endTime: event.endTime,
             });
             
-            return (
-                <EventDisplay 
-                    key={index}
-                    day={event.day}
-                    endTime={event.endTime}
-                    startTime={event.startTime}
-                />
-            );
-        });
+            // Convert event.date (timestamp) to Date object
+            const eventDate = new Date(event.date);
+            
+            // Check if event is within current week
+            if (eventDate >= monday && eventDate <= sunday) {
+                // Get day of week (1-7, where 1 is Monday)
+                const weekday = eventDate.getDay();
+                const adjustedWeekday = weekday === 0 ? 7 : weekday; // Convert Sunday (0) to 7
+                
+                return (
+                    <EventDisplay 
+                        key={index}
+                        day={adjustedWeekday}
+                        endTime={event.endTime}
+                        startTime={event.startTime}
+                    />
+                );
+            }
+            return null;
+        }).filter(Boolean); // Remove null entries
 
         return (
             <ol className="col-start-1 col-end-2 row-start-1 grid grid-cols-1 sm:grid-cols-7 sm:pr-8" 
@@ -105,44 +128,53 @@ export default function Calendar() {
     
 
     const WeekdayHeader = () => {
+        // Get current week's Monday
+        const getMonday = (d) => {
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+            return new Date(d.setDate(diff));
+        };
+        
+        const monday = getMonday(new Date());
+        
+        // Generate dates for the week
+        const weekDates = [...Array(7)].map((_, i) => {
+            const date = new Date(monday);
+            date.setDate(monday.getDate() + i);
+            return date.getDate();
+        });
+
         return (
-
             <div className="sticky top-0 z-30 flex-none bg-white shadow ring-1 ring-black ring-opacity-5 sm:pr-8">
-            <div className="grid grid-cols-7 text-sm leading-6 text-gray-500 sm:hidden">
-                <button type="button" className="flex flex-col items-center pb-3 pt-2">M <span className="mt-1 flex h-8 w-8 items-center justify-center font-semibold text-gray-900">10</span></button>
-                <button type="button" className="flex flex-col items-center pb-3 pt-2">T <span className="mt-1 flex h-8 w-8 items-center justify-center font-semibold text-gray-900">11</span></button>
-                <button type="button" className="flex flex-col items-center pb-3 pt-2">W <span className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 font-semibold text-white">12</span></button>
-                <button type="button" className="flex flex-col items-center pb-3 pt-2">T <span className="mt-1 flex h-8 w-8 items-center justify-center font-semibold text-gray-900">13</span></button>
-                <button type="button" className="flex flex-col items-center pb-3 pt-2">F <span className="mt-1 flex h-8 w-8 items-center justify-center font-semibold text-gray-900">14</span></button>
-                <button type="button" className="flex flex-col items-center pb-3 pt-2">S <span className="mt-1 flex h-8 w-8 items-center justify-center font-semibold text-gray-900">15</span></button>
-                <button type="button" className="flex flex-col items-center pb-3 pt-2">S <span className="mt-1 flex h-8 w-8 items-center justify-center font-semibold text-gray-900">16</span></button>
-            </div>
+                <div className="grid grid-cols-7 text-sm leading-6 text-gray-500 sm:hidden">
+                    {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
+                        <button key={i} type="button" className="flex flex-col items-center pb-3 pt-2">
+                            {day} 
+                            <span className={`mt-1 flex h-8 w-8 items-center justify-center font-semibold ${
+                                weekDates[i] === today ? 'rounded-full bg-indigo-600 text-white' : 'text-gray-900'
+                            }`}>
+                                {weekDates[i]}
+                            </span>
+                        </button>
+                    ))}
+                </div>
 
-            <div className="-mr-px hidden grid-cols-7 divide-x divide-gray-100 border-r border-gray-100 text-sm leading-6 text-gray-500 sm:grid">
-                <div className="col-end-1 w-14"></div>
-                <div className="flex items-center justify-center py-3">
-                    <span>Mon <span className="items-center justify-center font-semibold text-gray-900">{today}</span></span>
-                </div>
-                <div className="flex items-center justify-center py-3">
-                    <span>Tue <span className="items-center justify-center font-semibold text-gray-900">{today+1}</span></span>
-                </div>
-                <div className="flex items-center justify-center py-3">
-                    <span className="flex items-baseline">Wed <span className="ml-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 font-semibold text-white">{today+2}</span></span>
-                </div>
-                <div className="flex items-center justify-center py-3">
-                    <span>Thu <span className="items-center justify-center font-semibold text-gray-900">{today+3}</span></span>
-                </div>
-                <div className="flex items-center justify-center py-3">
-                    <span>Fri <span className="items-center justify-center font-semibold text-gray-900">{today+4}</span></span>
-                </div>
-                <div className="flex items-center justify-center py-3">
-                    <span>Sat <span className="items-center justify-center font-semibold text-gray-900">{today+5}</span></span>
-                </div>
-                <div className="flex items-center justify-center py-3">
-                    <span>Sun <span className="items-center justify-center font-semibold text-gray-900">{today+6}</span></span>
+                <div className="-mr-px hidden grid-cols-7 divide-x divide-gray-100 border-r border-gray-100 text-sm leading-6 text-gray-500 sm:grid">
+                    <div className="col-end-1 w-14"></div>
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => (
+                        <div key={i} className="flex items-center justify-center py-3">
+                            <span className="flex items-baseline">
+                                {day} 
+                                <span className={`ml-1.5 ${
+                                    weekDates[i] === today ? 'flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 font-semibold text-white' : 'items-center justify-center font-semibold text-gray-900'
+                                }`}>
+                                    {weekDates[i]}
+                                </span>
+                            </span>
+                        </div>
+                    ))}
                 </div>
             </div>
-        </div>
         );
     };
 

@@ -1,6 +1,7 @@
 import {useState, useEffect} from 'react';
 import { useUser } from './UserContext';
 import { db, doc, setDoc, getDoc } from '@/app/firebase';
+import DayField from '@/components/DayField';
 
 // Move utility functions outside component
 const dayToNumber = {
@@ -20,7 +21,7 @@ const timeToDecimal = (time) => {
 };
 
 export default function CalendarOverlay({ showOverlay, setShowOverlay, onEventAdded }) {
-    const [day, setDay] = useState("");
+    const [date, setDate] = useState(null);
     const [start, setStart] = useState("");
     const [end, setEnd] = useState("");
     const [availability, setAvailability] = useState([]);
@@ -40,7 +41,8 @@ export default function CalendarOverlay({ showOverlay, setShowOverlay, onEventAd
     }, [user]);
 
     const handleCancel = () => {setShowOverlay(false)}
-    const handleDay = (e) => {setDay(e.target.value)}
+    const handleDate = (selectedDate) => {setDate(selectedDate);
+    }
     const handleStart = (e) => {setStart(e.target.value)}
     const handleEnd = (e) => {setEnd(e.target.value)}
 
@@ -103,51 +105,37 @@ export default function CalendarOverlay({ showOverlay, setShowOverlay, onEventAd
         )
     }
 
-    const DayField = ({onChange, value}) => {
-        return (
-            <div>
-                <label htmlFor="day" className="block text-sm font-medium leading-6 text-gray-900"> Day </label>
-                <select onChange={onChange} value={value} id="day" name="day" className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                    <option>Select Day</option>
-                    <option>Monday</option>
-                    <option>Tuesday</option>
-                    <option>Wednesday</option>
-                    <option>Thursday</option>
-                    <option>Friday</option>
-                    <option>Saturday</option>
-                    <option>Sunday</option>
-                </select>
-            </div>
-        )
-    }
-    
-
     const handleSave = async (e) => {
         e.preventDefault();
 
         const startDecimal = timeToDecimal(start);
         const endDecimal = timeToDecimal(end);
 
-        if (!day || !start || !end) {
-            console.error('Missing required fields:', { day, start, end });
+        if (!date || !start || !end) {
+            console.error('Missing required fields:', { date, start, end });
             alert('Please fill in all fields');
             return;
         } else if (startDecimal >= endDecimal) {
             alert('endTime Must be later than startTime');
             return;  
         }
+        
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = currentDate.toLocaleString('default', { month: 'long' });
+        const today = currentDate.getDate();
 
         const newEvent = {
-            day: dayToNumber[day],
+            date: date,
             startTime: startDecimal,
             endTime: endDecimal
         };
-        
+
         // Check for overlapping events
         for (let i = 0; i < availability.length; i++) {
             const curEvent = availability[i];
 
-            if (curEvent.day === newEvent.day) {
+            if (currentDate === newEvent.date) {
                 if (
                     (newEvent.startTime >= curEvent.startTime && newEvent.startTime < curEvent.endTime) ||
                     (newEvent.endTime > curEvent.startTime && newEvent.endTime <= curEvent.endTime) ||
@@ -155,9 +143,11 @@ export default function CalendarOverlay({ showOverlay, setShowOverlay, onEventAd
                 ) {
                     alert('This time slot overlaps with an existing event');
                     return;
-                }
-            }
+                } 
+            } 
         }
+
+
 
         if (user?.uid) {
             const docRef = doc(db, "users", user.uid);
@@ -197,7 +187,7 @@ export default function CalendarOverlay({ showOverlay, setShowOverlay, onEventAd
                                         <div className="flex flex-1 flex-col justify-between">
                                             <div className="divide-y divide-gray-200 px-4 sm:px-6">
                                                 <div className="space-y-6 pb-5 pt-6">
-                                                    <DayField onChange={handleDay} value={day}/>
+                                                    <DayField onChange={handleDate} value={date}/>
                                                     <InputField onChange={handleStart} name="Start Time" value={start}/>
                                                     <InputField onChange={handleEnd} name="End Time" value={end}/>
                                                 </div>
