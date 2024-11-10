@@ -1,10 +1,10 @@
 "use client"
 
 import { useContext, useRef, useEffect } from 'react'
-import { UserContext } from '@/components/UserContext';
+import { useUser } from '@/components/UserContext';
 
 export default function StudentAccount() {
-    const { user } = useContext(UserContext);
+    const { user } = useUser();
 
     return (
         <div>

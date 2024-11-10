@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import mountainImage from "../../../lib/Mountain image.jpeg"
+import mountainImage from "@/lib/Mountain image.jpeg"
 import Image from 'next/image';
 
 
@@ -9,13 +9,17 @@ export default function Home() {
         <div>
             
             {/* Home */}
+
             <div className="w-full h-[35vh] bg-green-600 p-5">
+                <Link href="/signin"> <button className="bg-green-950 text-white text-xs rounded hover:bg-green-800 w-24 h-8"> Sign in </button> </Link>
+
                 <nav className='flex justify-center pb-10'>
                     <Link className='pr-5' href="#home"> Home </Link>
                     <Link className='pr-5' href="#Teacher"> Teacher </Link>
                     <Link className='pr-5' href="#Tutorial"> Tutorial </Link>
                     <Link className='pr-5' href="#Disclaimer"> Disclaimer </Link>
                 </nav>
+
                 
                 <div className="flex justify-center items-center flex-row scale-120 p-5">
                     <div className="flex flex-col">

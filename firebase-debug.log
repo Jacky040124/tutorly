@@ -1,0 +1,150 @@
+[debug] [2024-11-04T23:21:07.589Z] ----------------------------------------------------------------------
+[debug] [2024-11-04T23:21:07.594Z] Command:       /Users/Jacky/.nvm/versions/node/v22.9.0/bin/node /Users/Jacky/.nvm/versions/node/v22.9.0/bin/firebase deploy
+[debug] [2024-11-04T23:21:07.595Z] CLI Version:   13.23.0
+[debug] [2024-11-04T23:21:07.595Z] Platform:      darwin
+[debug] [2024-11-04T23:21:07.595Z] Node Version:  v22.9.0
+[debug] [2024-11-04T23:21:07.595Z] Time:          Mon Nov 04 2024 15:21:07 GMT-0800 (Pacific Standard Time)
+[debug] [2024-11-04T23:21:07.595Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-11-04T23:21:07.597Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2024-11-04T23:21:07.648Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"rewrites"}
+[debug] [2024-11-04T23:21:07.651Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-11-04T23:21:07.651Z] > authorizing via signed-in user (zhongzhenyu190@gmail.com)
+[debug] [2024-11-04T23:21:07.651Z] [iam] checking project tutor-website-5528f for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2024-11-04T23:21:07.652Z] Checked if tokens are valid: false, expires at: 1730674946884
+[debug] [2024-11-04T23:21:07.652Z] Checked if tokens are valid: false, expires at: 1730674946884
+[debug] [2024-11-04T23:21:07.652Z] > refreshing access token with scopes: []
+[debug] [2024-11-04T23:21:07.652Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2024-11-04T23:21:07.652Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2024-11-04T23:21:07.744Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2024-11-04T23:21:07.744Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2024-11-04T23:21:07.759Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/tutor-website-5528f:testIamPermissions [none]
+[debug] [2024-11-04T23:21:07.759Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/tutor-website-5528f:testIamPermissions x-goog-quota-user=projects/tutor-website-5528f
+[debug] [2024-11-04T23:21:07.759Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/tutor-website-5528f:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2024-11-04T23:21:07.808Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2024-11-04T23:21:07.808Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[debug] [2024-11-04T23:21:07.926Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/tutor-website-5528f:testIamPermissions 200
+[debug] [2024-11-04T23:21:07.927Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/tutor-website-5528f:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2024-11-04T23:21:07.927Z] Checked if tokens are valid: true, expires at: 1730766066744
+[debug] [2024-11-04T23:21:07.927Z] Checked if tokens are valid: true, expires at: 1730766066744
+[debug] [2024-11-04T23:21:07.927Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/tutor-website-5528f/serviceAccounts/tutor-website-5528f@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2024-11-04T23:21:07.928Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/tutor-website-5528f/serviceAccounts/tutor-website-5528f@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2024-11-04T23:21:08.163Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/tutor-website-5528f/serviceAccounts/tutor-website-5528f@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2024-11-04T23:21:08.163Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/tutor-website-5528f/serviceAccounts/tutor-website-5528f@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2024-11-04T23:21:08.164Z] Checked if tokens are valid: true, expires at: 1730766066744
+[debug] [2024-11-04T23:21:08.164Z] Checked if tokens are valid: true, expires at: 1730766066744
+[debug] [2024-11-04T23:21:08.165Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/tutor-website-5528f [none]
+[debug] [2024-11-04T23:21:08.344Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/tutor-website-5528f 200
+[debug] [2024-11-04T23:21:08.344Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/tutor-website-5528f {"projectId":"tutor-website-5528f","projectNumber":"320690040214","displayName":"Tutor Website","name":"projects/tutor-website-5528f","resources":{"hostingSite":"tutor-website-5528f"},"state":"ACTIVE","etag":"1_7312f853-e377-4985-95d1-dba47e4b7447"}
+[debug] [2024-11-04T23:21:09.091Z] defaultcredentials: writing to file /Users/Jacky/.config/firebase/zhongzhenyu190_gmail_com_application_default_credentials.json
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+   The integration is known to work with Next.js version 12 - 14.0. You may encounter errors.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2024-11-04T23:21:10.531Z] Checked if tokens are valid: true, expires at: 1730766066744
+[debug] [2024-11-04T23:21:10.531Z] Checked if tokens are valid: true, expires at: 1730766066744
+[debug] [2024-11-04T23:21:10.531Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/tutor-website-5528f/sites/tutor-website-5528f [none]
+[debug] [2024-11-04T23:21:11.016Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/tutor-website-5528f/sites/tutor-website-5528f 200
+[debug] [2024-11-04T23:21:11.016Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/tutor-website-5528f/sites/tutor-website-5528f {"name":"projects/tutor-website-5528f/sites/tutor-website-5528f","defaultUrl":"https://tutor-website-5528f.web.app","appId":"1:320690040214:web:fde29b5326692c27e981b7","type":"DEFAULT_SITE"}
+[info]   ▲ Next.js 14.2.15
+
+[info] 
+
+[info]    Creating an optimized production build ...
+
+[info]  ⚠ For production Image Optimization with Next.js, the optional 'sharp' package is strongly recommended. Run 'npm i sharp', and Next.js will use it automatically for Image Optimization.
+Read more: https://nextjs.org/docs/messages/sharp-missing-in-production
+
+[info]  ⚠ For production Image Optimization with Next.js, the optional 'sharp' package is strongly recommended. Run 'npm i sharp', and Next.js will use it automatically for Image Optimization.
+Read more: https://nextjs.org/docs/messages/sharp-missing-in-production
+
+[info]  ✓ Compiled successfully
+
+[info]    Linting and checking validity of types ...
+
+[info] 
+Failed to compile.
+
+./src/app/signin/page.js
+91:32  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+
+[debug] [2024-11-04T23:21:18.308Z] Error: ENOENT: no such file or directory, open '/Users/Jacky/Desktop/tutoring-app/.next/export-marker.json'
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2024-11-04T23:22:23.604Z] ----------------------------------------------------------------------
+[debug] [2024-11-04T23:22:23.608Z] Command:       /Users/Jacky/.nvm/versions/node/v22.9.0/bin/node /Users/Jacky/.nvm/versions/node/v22.9.0/bin/firebase deploy
+[debug] [2024-11-04T23:22:23.608Z] CLI Version:   13.23.0
+[debug] [2024-11-04T23:22:23.609Z] Platform:      darwin
+[debug] [2024-11-04T23:22:23.609Z] Node Version:  v22.9.0
+[debug] [2024-11-04T23:22:23.609Z] Time:          Mon Nov 04 2024 15:22:23 GMT-0800 (Pacific Standard Time)
+[debug] [2024-11-04T23:22:23.609Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-11-04T23:22:23.636Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"rewrites"}
+[debug] [2024-11-04T23:22:23.639Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-11-04T23:22:23.639Z] > authorizing via signed-in user (zhongzhenyu190@gmail.com)
+[debug] [2024-11-04T23:22:23.639Z] [iam] checking project tutor-website-5528f for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2024-11-04T23:22:23.639Z] Checked if tokens are valid: true, expires at: 1730766066744
+[debug] [2024-11-04T23:22:23.640Z] Checked if tokens are valid: true, expires at: 1730766066744
+[debug] [2024-11-04T23:22:23.640Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/tutor-website-5528f:testIamPermissions [none]
+[debug] [2024-11-04T23:22:23.640Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/tutor-website-5528f:testIamPermissions x-goog-quota-user=projects/tutor-website-5528f
+[debug] [2024-11-04T23:22:23.640Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/tutor-website-5528f:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2024-11-04T23:22:23.895Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/tutor-website-5528f:testIamPermissions 200
+[debug] [2024-11-04T23:22:23.895Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/tutor-website-5528f:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2024-11-04T23:22:23.896Z] Checked if tokens are valid: true, expires at: 1730766066744
+[debug] [2024-11-04T23:22:23.896Z] Checked if tokens are valid: true, expires at: 1730766066744
+[debug] [2024-11-04T23:22:23.896Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/tutor-website-5528f/serviceAccounts/tutor-website-5528f@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2024-11-04T23:22:23.896Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/tutor-website-5528f/serviceAccounts/tutor-website-5528f@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2024-11-04T23:22:24.025Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/tutor-website-5528f/serviceAccounts/tutor-website-5528f@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2024-11-04T23:22:24.025Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/tutor-website-5528f/serviceAccounts/tutor-website-5528f@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2024-11-04T23:22:24.026Z] Checked if tokens are valid: true, expires at: 1730766066744
+[debug] [2024-11-04T23:22:24.026Z] Checked if tokens are valid: true, expires at: 1730766066744
+[debug] [2024-11-04T23:22:24.026Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/tutor-website-5528f [none]
+[debug] [2024-11-04T23:22:24.178Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/tutor-website-5528f 200
+[debug] [2024-11-04T23:22:24.178Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/tutor-website-5528f {"projectId":"tutor-website-5528f","projectNumber":"320690040214","displayName":"Tutor Website","name":"projects/tutor-website-5528f","resources":{"hostingSite":"tutor-website-5528f"},"state":"ACTIVE","etag":"1_7312f853-e377-4985-95d1-dba47e4b7447"}
+[debug] [2024-11-04T23:22:24.885Z] defaultcredentials: writing to file /Users/Jacky/.config/firebase/zhongzhenyu190_gmail_com_application_default_credentials.json
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+   The integration is known to work with Next.js version 12 - 14.0. You may encounter errors.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2024-11-04T23:22:26.227Z] Checked if tokens are valid: true, expires at: 1730766066744
+[debug] [2024-11-04T23:22:26.227Z] Checked if tokens are valid: true, expires at: 1730766066744
+[debug] [2024-11-04T23:22:26.227Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/tutor-website-5528f/sites/tutor-website-5528f [none]
+[debug] [2024-11-04T23:22:26.674Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/tutor-website-5528f/sites/tutor-website-5528f 200
+[debug] [2024-11-04T23:22:26.674Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/tutor-website-5528f/sites/tutor-website-5528f {"name":"projects/tutor-website-5528f/sites/tutor-website-5528f","defaultUrl":"https://tutor-website-5528f.web.app","appId":"1:320690040214:web:fde29b5326692c27e981b7","type":"DEFAULT_SITE"}
+[info]   ▲ Next.js 14.2.15
+
+[info] 
+
+[info]    Creating an optimized production build ...
+
+[info]  ✓ Compiled successfully
+
+[info]    Linting and checking validity of types ...
+
+[info] 
+Failed to compile.
+
+./src/app/signin/page.js
+108:32  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+
+[debug] [2024-11-04T23:22:31.159Z] Error: ENOENT: no such file or directory, open '/Users/Jacky/Desktop/tutoring-app/.next/export-marker.json'
+[error] 
+[error] Error: An unexpected error has occurred.

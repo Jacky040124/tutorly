@@ -41,9 +41,7 @@ export default function CalendarOverlay({ setShowOverlay, onEventAdded}) {
     }, [user]);
 
     const handleCancel = () => {setShowOverlay(false)}
-    const handleDate = (selectedDate) => {
-setDate(selectedDate);
-    }
+    const handleDate = (selectedDate) => {setDate(selectedDate);}
     const handleStart = (e) => {setStart(e.target.value)}
     const handleEnd = (e) => {setEnd(e.target.value)}
 
