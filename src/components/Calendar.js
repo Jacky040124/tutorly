@@ -2,32 +2,13 @@ import '@/app/globals.css';
 import {CalendarOverlay} from '@/components/CalendarOverlay'
 import { app, db, auth, doc, setDoc, getDoc } from '@/app/firebase';
 import { useUser } from './UserContext';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function Calendar() {
-    const { user } = useUser();
-    const [availability, setAvailability] = useState(null);
+    const { user, availability } = useUser();
     const [weekOffset, setWeekOffset] = useState(0);
     const handleLastWeek = () => {setWeekOffset(prev => prev - 1);};
     const handleNextWeek = () => {setWeekOffset(prev => prev + 1);};
-
-    useEffect(() => {
-        const fetchAvailability = async () => {
-            if (!user) return;
-            
-            try {
-                const curUser = await getDoc(doc(db, 'users', user.uid));
-                if (curUser?.data()?.availability) {
-                    console.log('Fetched availability:', curUser.data().availability);
-                    setAvailability(curUser.data().availability);
-                }
-            } catch (error) {
-                console.error('Error fetching availability:', error);
-            }
-        };
-        fetchAvailability();
-
-    }, [user, weekOffset]);
 
     const currentDate = new Date();
     const today = currentDate.getDate();

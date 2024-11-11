@@ -1,6 +1,5 @@
-import {useState, useEffect} from 'react';
+import {useState} from 'react';
 import { useUser } from './UserContext';
-import { db, doc, setDoc, getDoc } from '@/app/firebase';
 import DayField from '@/components/DayField';
 
 // Move utility functions outside component
@@ -24,21 +23,7 @@ export default function CalendarOverlay({ setShowOverlay, onEventAdded}) {
     const [date, setDate] = useState(null);
     const [start, setStart] = useState("");
     const [end, setEnd] = useState("");
-    const [availability, setAvailability] = useState([]);
-    const {user} = useUser();
-
-    useEffect(() => {
-        const fetchAvailability = async () => {
-            if (user?.uid) {
-                const docRef = doc(db, "users", user.uid);
-                const docSnap = await getDoc(docRef);
-                const availabilityData = docSnap.data()?.availability || [];
-                setAvailability(availabilityData);
-            }
-        };
-        
-        fetchAvailability();
-    }, [user]);
+    const { user, availability, updateAvailability } = useUser();
 
     const handleCancel = () => {setShowOverlay(false)}
     const handleDate = (selectedDate) => {setDate(selectedDate);}
@@ -151,10 +136,8 @@ export default function CalendarOverlay({ setShowOverlay, onEventAdded}) {
 
         if (user?.uid) {
             try {
-                const docRef = doc(db, "users", user.uid);
                 const updatedAvailability = [...availability, newEvent];
-                await setDoc(docRef, { availability: updatedAvailability }, { merge: true });
-                setAvailability(updatedAvailability);
+                await updateAvailability(updatedAvailability);
                 
                 // Call onEventAdded before closing overlay
                 if (onEventAdded) onEventAdded();

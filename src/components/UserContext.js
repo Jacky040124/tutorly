@@ -9,18 +9,13 @@ const UserContext = createContext();
 export function UserProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [availability, setAvailability] = useState([]);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-            if (firebaseUser) {
-                // Get additional user data from Firestore if needed
-                setUser({
-                    email: firebaseUser.email,
-                    uid: firebaseUser.uid,
-                    // You might want to fetch type from Firestore here
-                });
-            } else {
+            if (!firebaseUser) {
                 setUser(null);
+                setAvailability([]);
             }
             setLoading(false);
         });
@@ -28,7 +23,25 @@ export function UserProvider({ children }) {
         return () => unsubscribe();
     }, []);
 
-    const value = {user, setUser, loading};
+    const updateAvailability = async (newAvailability) => {
+        if (!user?.uid) return;
+        try {
+            const docRef = doc(db, "users", user.uid);
+            await setDoc(docRef, { availability: newAvailability }, { merge: true });
+            setAvailability(newAvailability);
+        } catch (error) {
+            console.error("Error updating availability:", error);
+            throw error;
+        }
+    };
+
+    const value = {
+        user,
+        setUser,
+        loading,
+        availability,
+        updateAvailability
+    };
 
     return (
         <UserContext.Provider value={value}>
@@ -42,9 +55,5 @@ export function useUser() {
     if (context === undefined) {
         throw new Error('useUser must be used within a UserProvider');
     }
-
-    // Get user data from Firestore
-    // const docRef = doc(db, "users", userCredential.user.uid);
-    // const docSnap = await getDoc(docRef);
     return context;
 }
