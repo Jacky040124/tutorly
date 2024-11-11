@@ -31,7 +31,6 @@ export default function Login() {
 
     const handleSignIn = async (e) => {
         e.preventDefault(); // Prevent form submission
-        console.log('Starting sign-in process...');
         
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);

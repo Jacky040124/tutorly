@@ -1,56 +1,50 @@
 "use client";
 import { app, db, auth, doc, setDoc, getDoc } from '@/app/firebase'
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useUser } from '@/components/UserContext';
 import Calendar from '@/components/Calendar';
 import CalendarOverlay from '@/components/CalendarOverlay';
 
 export default function TeacherAccount() {
-    const { user } = useUser();
-    const router = useRouter();
+    const { user, loading: userLoading } = useUser();
     const [showOverlay, setShowOverlay] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [availability, setAvailability] = useState([]);
 
     useEffect(() => {
         const fetchAvailability = async () => {
-            if (user?.uid) {
+            if (!user?.uid) return;
+            
+            try {
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
                 const availabilityData = docSnap.data()?.availability || [];
                 setAvailability(availabilityData);
+            } catch (error) {
+                console.error('Error fetching availability:', error);
+            } finally {
+                setIsLoading(false);
             }
         };
         
-        fetchAvailability();
-    }, [user]);
-
+        if (!userLoading) {
+            fetchAvailability();
+        }
+    }, [user, userLoading]);
 
     function handleRemoveEvent() {
-
+        // Your remove event logic here
     }
     
-    useEffect(() => {
-        console.log('TeacherAccount mounted, user:', user);
-        
-        const timer = setTimeout(() => {
-            if (!user) {
-                console.log('No user found, redirecting to signin');
-                router.replace('/signin');
-            } else if (user.type !== 'teacher') {
-                console.log('User is not a teacher, redirecting');
-                router.replace(user.type === 'student' ? '/user/student' : '/signin');
-            }
-            setIsLoading(false);
-        }, 500);
-
-        return () => clearTimeout(timer);
-    }, [user, router]);
-
-    if (isLoading || !user || user.type !== 'teacher') {
+    if (userLoading || isLoading) {
         return <div className="flex items-center justify-center min-h-screen">
             <div className="text-lg">Loading...</div>
+        </div>;
+    }
+    
+    if (!user) {
+        return <div className="flex items-center justify-center min-h-screen">
+            <div className="text-lg">Please sign in to access this page</div>
         </div>;
     }
     

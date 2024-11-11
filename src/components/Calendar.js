@@ -1,4 +1,4 @@
-import '@/lib/styles.css';
+import '@/app/globals.css';
 import {CalendarOverlay} from '@/components/CalendarOverlay'
 import { app, db, auth, doc, setDoc, getDoc } from '@/app/firebase';
 import { useUser } from './UserContext';
