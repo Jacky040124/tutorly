@@ -1,8 +1,8 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from 'react';
-import { auth } from '@/app/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { app, db, auth, doc, setDoc, getDoc } from '@/app/firebase'
 
 const UserContext = createContext();
 
@@ -28,11 +28,7 @@ export function UserProvider({ children }) {
         return () => unsubscribe();
     }, []);
 
-    const value = {
-        user,
-        setUser,
-        loading
-    };
+    const value = {user, setUser, loading};
 
     return (
         <UserContext.Provider value={value}>
@@ -46,5 +42,9 @@ export function useUser() {
     if (context === undefined) {
         throw new Error('useUser must be used within a UserProvider');
     }
+
+    // Get user data from Firestore
+    // const docRef = doc(db, "users", userCredential.user.uid);
+    // const docSnap = await getDoc(docRef);
     return context;
 }
