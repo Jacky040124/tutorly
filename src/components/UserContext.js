@@ -1,8 +1,8 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
-import { app, db, auth, doc, setDoc, getDoc } from '@/app/firebase'
+import { onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth';
+import { app, db, auth, doc, setDoc, getDoc, collection, getDocs } from '@/app/firebase'
 
 const UserContext = createContext();
 
@@ -10,6 +10,7 @@ export function UserProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [availability, setAvailability] = useState([]);
+    const [teacherList, setTeacherList] = useState({});
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -23,6 +24,27 @@ export function UserProvider({ children }) {
         return () => unsubscribe();
     }, []);
 
+    const signIn = async (email, password) => {
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const docRef = doc(db, "users", userCredential.user.uid);
+            const docSnap = await getDoc(docRef);
+            const userData = docSnap.data();
+            
+            setUser({
+                email: userCredential.user.email,
+                uid: userCredential.user.uid,
+                type: userData?.type
+            });
+            
+            setAvailability(userData?.availability || []);
+            return { success: true, userData };
+        } catch (error) {
+            console.error("Error signing in:", error);
+            return { success: false, error };
+        }
+    };
+
     const updateAvailability = async (newAvailability) => {
         if (!user?.uid) return;
         try {
@@ -35,12 +57,25 @@ export function UserProvider({ children }) {
         }
     };
 
+    const fetchTeachers = async () => {
+        const teachers = {};
+        const querySnapshot = await getDocs(collection(db, "users"));
+        querySnapshot.forEach((doc) => {
+            teachers[doc.data().email] = doc.data();
+        });
+        setTeacherList(teachers);
+        return teachers;
+    };
+
     const value = {
         user,
         setUser,
         loading,
         availability,
-        updateAvailability
+        updateAvailability,
+        signIn,
+        teacherList,
+        fetchTeachers
     };
 
     return (

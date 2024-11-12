@@ -6,10 +6,11 @@ import Calendar from '@/components/Calendar';
 import CalendarOverlay from '@/components/CalendarOverlay';
 
 export default function TeacherAccount() {
-    const { user, loading: userLoading } = useUser();
+    const { user, availability, updateAvailability } = useUser();
     const [showOverlay, setShowOverlay] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [availability, setAvailability] = useState([]);
+    const { loading: userLoading } = useUser();
+
 
     const Header = () => {
         return(
@@ -40,7 +41,7 @@ export default function TeacherAccount() {
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
                 const availabilityData = docSnap.data()?.availability || [];
-                setAvailability(availabilityData);
+                updateAvailability(availabilityData);
             } catch (error) {
                 console.error('Error fetching availability:', error);
             } finally {
@@ -75,7 +76,7 @@ export default function TeacherAccount() {
             <h1>Who&apos;s ready to maximise shareholder value?</h1>
             <div className="flex h-full flex-col">
                 <Header/>
-                <Calendar setShowOverlay={setShowOverlay}/>
+                <Calendar availability={availability} updateAvailability={updateAvailability} setShowOverlay={setShowOverlay}/>
                 {showOverlay && <CalendarOverlay setShowOverlay={setShowOverlay}/>}
             </div>
         </div>

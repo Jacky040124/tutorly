@@ -2,24 +2,13 @@ import {useState} from 'react';
 import { useUser } from './UserContext';
 import DayField from '@/components/DayField';
 
-// Move utility functions outside component
-const dayToNumber = {
-    "Monday": 1,
-    "Tuesday": 2,
-    "Wednesday": 3,
-    "Thursday": 4,
-    "Friday": 5,
-    "Saturday": 6,
-    "Sunday": 7
-};
-
 const timeToDecimal = (time) => {
     if (!time) return null;
     const [hours, minutes] = time.split(':').map(Number);
     return hours + (minutes / 60);
 };
 
-export default function CalendarOverlay({ setShowOverlay, onEventAdded}) {
+export default function CalendarOverlay({ setShowOverlay, onEventAdded }) {
     const [date, setDate] = useState(null);
     const [start, setStart] = useState("");
     const [end, setEnd] = useState("");

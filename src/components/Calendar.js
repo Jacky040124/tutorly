@@ -4,18 +4,18 @@ import { app, db, auth, doc, setDoc, getDoc } from '@/app/firebase';
 import { useUser } from './UserContext';
 import { useState } from 'react';
 
-export default function Calendar() {
-    const { user, availability } = useUser();
+export default function Calendar({availability,updateAvailability}) {
     const [weekOffset, setWeekOffset] = useState(0);
     const handleLastWeek = () => {setWeekOffset(prev => prev - 1);};
     const handleNextWeek = () => {setWeekOffset(prev => prev + 1);};
+    console.log("calendar availability:" + availability);
 
     const currentDate = new Date();
     const today = currentDate.getDate();
 
     const Events = () => {
         if (!availability) return null;
-        
+        console.log("calendar availability:" + availability);
         // Get current week's Monday and Sunday
         const getWeekBounds = () => {
             const curr = new Date();
@@ -30,12 +30,6 @@ export default function Calendar() {
             
             const sunday = new Date(monday);
             sunday.setDate(monday.getDate() + 6);
-
-            console.log('Week bounds:', {
-                monday: monday.toDateString(),
-                sunday: sunday.toDateString(),
-                weekOffset
-            });
 
             return { monday, sunday };
         };
