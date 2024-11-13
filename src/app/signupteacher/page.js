@@ -92,7 +92,7 @@ export default function SignUp() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [text, setText] = useState("");
-    const [nickName, setNickname] = useState("");
+    const [nickname, setNickname] = useState("");
     const [description, setDescription] = useState("");
 
     const handleSignup = async (e) => {
@@ -108,7 +108,7 @@ export default function SignUp() {
                 uid: user.uid,
                 createdAt: new Date().toISOString(),
                 type: "teacher",
-                nickName: nickName,
+                nickname: nickname,
                 description: description,
                 availability: [],
                 pricing: 0,

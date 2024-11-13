@@ -4,13 +4,45 @@ import { useEffect, useState } from 'react';
 import { useUser } from '@/components/UserContext';
 import Calendar from '@/components/Calendar';
 import CalendarOverlay from '@/components/CalendarOverlay';
+import TeacherProfileOverlay from "@/components/TeacherProfileOverlay"
 
 export default function TeacherAccount() {
     const { user, availability, updateAvailability } = useUser();
-    const [showOverlay, setShowOverlay] = useState(false);
+    const [showCalendarOverlay, setShowCalendarOverlay] = useState(false);
+    const [showTeacherProfileOverlay, setShowTeacherProfileOverlay] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const { loading: userLoading } = useUser();
 
+    const handleClickEvent = async (day, startTime, endTime) => {
+        const confirmDelete = window.confirm("Do you want to remove this time slot?");
+        
+        if (confirmDelete) {
+            try {
+                // Filter out the selected event from availability
+                const updatedAvailability = availability.filter(event => {
+                    // Convert the event's day to the same format (1-7) as the calendar
+                    const eventDate = new Date(event.date.year, event.date.month - 1, event.date.day);
+                    const eventDay = eventDate.getDay();
+                    const adjustedEventDay = eventDay === 0 ? 7 : eventDay;
+
+                    return !(adjustedEventDay === day && 
+                            event.startTime === startTime && 
+                            event.endTime === endTime);
+                });
+
+                console.log("Original availability:", availability);
+                console.log("Updated availability:", updatedAvailability);
+
+                // Update Firebase and context
+                await updateAvailability(updatedAvailability);
+                console.log("Event removed successfully");
+
+            } catch (error) {
+                console.error("Error removing event:", error);
+                alert("Failed to remove event. Please try again.");
+            }
+        }
+    }
 
     const Header = () => {
         return(
@@ -21,11 +53,11 @@ export default function TeacherAccount() {
             </h1>
 
             <div>
-                <button onClick={handleRemoveEvent} type="button" className="ml-6 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
-                    Remove event
+                <button onClick={() => setShowTeacherProfileOverlay(true)} type="button" className="standard-button">
+                    Profile
                 </button>
 
-                <button onClick={() => setShowOverlay(true)} type="button" className="ml-6 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+                <button onClick={() => setShowCalendarOverlay(true)} type="button" className="standard-button">
                     Add event
                 </button>
             </div>
@@ -53,10 +85,6 @@ export default function TeacherAccount() {
             fetchAvailability();
         }
     }, [user, userLoading]);
-
-    function handleRemoveEvent() {
-        // Your remove event logic here
-    }
     
     if (userLoading || isLoading) {
         return <div className="flex items-center justify-center min-h-screen">
@@ -76,8 +104,13 @@ export default function TeacherAccount() {
             <h1>Who&apos;s ready to maximise shareholder value?</h1>
             <div className="flex h-full flex-col">
                 <Header/>
-                <Calendar availability={availability} updateAvailability={updateAvailability} setShowOverlay={setShowOverlay}/>
-                {showOverlay && <CalendarOverlay setShowOverlay={setShowOverlay}/>}
+                <Calendar 
+                    availability={availability} 
+                    handleClickEvent={handleClickEvent}
+                />
+                {showCalendarOverlay && <CalendarOverlay setShowOverlay={setShowCalendarOverlay}/>}
+                {showTeacherProfileOverlay && <TeacherProfileOverlay setShowOverlay={setShowTeacherProfileOverlay}/>}
+                
             </div>
         </div>
     );

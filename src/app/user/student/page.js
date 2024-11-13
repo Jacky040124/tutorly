@@ -5,11 +5,17 @@ import { useUser } from '@/components/UserContext';
 import Calendar from '@/components/Calendar';
 
 export default function TeacherAccount() {
-    const { user, loading: userLoading, teacherList, availability, updateAvailability, fetchTeachers} = useUser();
+    const { user, loading: userLoading, teacherList, fetchTeachers} = useUser();
     const [showOverlay, setShowOverlay] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedTeacher, setSelectedTeacher] = useState('');
     const [teacherAvailability, setTeacherAvailability] = useState(null);
+    const [selectedEvents, setSelectedEvents] = useState([]);
+    const [teacherName, setTeacherName] = useState('');
+    const [teacherPrice, setTeacherPrice] = useState(0);
+    
+    const handleClickEvent = () => {
+    }
 
     async function handleSelectTeacher(e) {
         const selectedValue = e.target.value;
@@ -17,11 +23,15 @@ export default function TeacherAccount() {
         if (selectedValue) {
             console.log('Selected teacher ID:', selectedValue);
             const teacherData = teacherList[selectedValue];
+            setTeacherPrice(teacherData.price);
+            setTeacherName(teacherData.nickname);
             console.log('Teacher data:', teacherData);
             setTeacherAvailability(teacherData.availability);
             console.log('teacher Availability:', teacherData.availability);
         } else {
             setTeacherAvailability(null);
+            setTeacherName('');
+            setTeacherPrice(0);
         }
     }
 
@@ -41,7 +51,7 @@ export default function TeacherAccount() {
                         <option value="">Select a Teacher</option>
                         {teacherList && Object.entries(teacherList).map(([id, teacher]) => (
                             <option key={id} value={id}>
-                                {teacher.name || teacher.email}
+                                {teacher.nickname}
                             </option>
                         ))}
                     </select>
@@ -95,10 +105,16 @@ export default function TeacherAccount() {
     return (
         <div>
             <h2>Hi, {user.nickname}</h2>
+            <h1> {teacherName ? `${teacherName}'s rate is ${teacherPrice} dollars per hour` : 'Select a teacher'}</h1>
             <h1>Your balance is {user.balance} dollars</h1>
             <Header/>
             <div className="flex h-full flex-col">
-                <Calendar setShowOverlay={setShowOverlay} availability={teacherAvailability}/>
+                <Calendar 
+                    setShowOverlay={setShowOverlay} 
+                    availability={teacherAvailability} 
+                    handleClickEvent={handleClickEvent}
+                    selectedEvents={selectedEvents}
+                />
 
                 <div className="text-sm text-gray-500 mt-2">
                     Debug - Selected Teacher: {selectedTeacher}

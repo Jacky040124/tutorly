@@ -42,7 +42,7 @@ export default function Login() {
                     email: userCredential.user.email,
                     uid: userCredential.user.uid,
                     type: userData.type,
-                    nickname: userData.nickName,
+                    nickname: userData.nickname,
                     description: userData.description,
                     availability: userData.availability,
                     pricing: userData.pricing

@@ -10,7 +10,7 @@ import { TextField } from '@/components/Fields'
 export default function SignUp() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [nickName, setnickName] = useState("");
+    const [nickname, setnickname] = useState("");
     const [text, setText] = useState("");
 
     const handleSignup = async (e) => {
@@ -25,7 +25,7 @@ export default function SignUp() {
                 email: user.email,
                 uid: user.uid,
                 type: "student",
-                nickname: nickName,
+                nickname: nickname,
                 balance: 0,
                 bookingHistory: [],
             });
@@ -43,7 +43,7 @@ export default function SignUp() {
 
     const handleEmailChange = (event) => setEmail(event.target.value);
     const handlePasswordChange = (event) => setPassword(event.target.value);
-    const handleNicknameChange = (event) => setnickName(event.target.value);
+    const handleNicknameChange = (event) => setnickname(event.target.value);
 
     return (
         <div className="flex min-h-screen">

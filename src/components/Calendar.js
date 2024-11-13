@@ -4,7 +4,7 @@ import { app, db, auth, doc, setDoc, getDoc } from '@/app/firebase';
 import { useUser } from './UserContext';
 import { useState } from 'react';
 
-export default function Calendar({availability,updateAvailability}) {
+export default function Calendar({availability, handleClickEvent}) {
     const [weekOffset, setWeekOffset] = useState(0);
     const handleLastWeek = () => {setWeekOffset(prev => prev - 1);};
     const handleNextWeek = () => {setWeekOffset(prev => prev + 1);};
@@ -94,11 +94,11 @@ export default function Calendar({availability,updateAvailability}) {
         const EndRows = (endTime-startTime) * 12;
 
         console.log("day:" + day, "startTime:" + startTime,"endTime:" + endTime)
-    
+
         return (
             <li className={`relative mt-px hidden ${numberToColStart[day]} sm:flex`} 
                 style={{ gridRow: `${startRow} / span ${EndRows}` }}>
-                <a className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-green-100 p-2 text-xs leading-5 hover:bg-green-200">
+                <a onClick={() => handleClickEvent(day, startTime, endTime)} className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-green-100 p-2 text-xs leading-5 hover:bg-green-200">
                     <p className="text-gray-500 group-hover:text-gray-700">
                         <time dateTime={`2022-01-15T${startTime}:00`}>{startTime}:00</time>
                     </p>

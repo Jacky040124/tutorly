@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import { onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth';
-import { app, db, auth, doc, setDoc, getDoc, collection, getDocs } from '@/app/firebase'
+import { db, auth, doc, setDoc, getDoc, collection, getDocs } from '@/app/firebase'
 
 const UserContext = createContext();
 
@@ -21,12 +21,26 @@ export function UserProvider({ children }) {
                 try {
                     const docRef = doc(db, "users", firebaseUser.uid);
                     const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        const userData = docSnap.data();
+                    const userData = docSnap.data();
+
+                    if (userData.type === "teacher") {
                         setUser({
-                            uid: firebaseUser.uid,
                             email: firebaseUser.email,
-                            type: userData.type
+                            uid: firebaseUser.uid,
+                            type: userData.type,
+                            nickname: userData.nickname,
+                            description: userData.description,
+                            availability: userData.availability,
+                            pricing: userData.pricing
+                        });
+                    } else if (userData.type === "student") {
+                        setUser({
+                            email: firebaseUser.email,
+                            uid: firebaseUser.uid,
+                            type: userData.type,
+                            nickname: userData.nickname,
+                            balance: userData.balance,
+                            bookingHistory: userData.bookingHistory
                         });
                     }
                 } catch (error) {
@@ -74,11 +88,59 @@ export function UserProvider({ children }) {
         }
     };
 
+    const updatePrice = async (newPrice) => {
+        if (!user?.uid) return;
+        try {
+            const docRef = doc(db, "users", user.uid);
+            await setDoc(docRef, { pricing: newPrice }, { merge: true });
+            setUser(prevUser => ({
+                ...prevUser,
+                pricing: newPrice
+            }));
+        } catch (error) {
+            console.error("Error updating price:", error);
+            throw error;
+        }
+    };
+
+    const updateNickname = async (newNickname) => {
+        if (!user?.uid) return;
+        try {
+            const docRef = doc(db, "users", user.uid);
+            await setDoc(docRef, { nickname: newNickname }, { merge: true });
+            setUser(prevUser => ({
+                ...prevUser,
+                nickname: newNickname
+            }));
+        } catch (error) {
+            console.error("Error updating nickname:", error);
+            throw error;
+        }
+    };
+
+    const updateDescription = async (newDescription) => {
+        if (!user?.uid) return;
+        try {
+            const docRef = doc(db, "users", user.uid);
+            await setDoc(docRef, { description: newDescription }, { merge: true });
+            setUser(prevUser => ({
+                ...prevUser,
+                description: newDescription
+            }));
+        } catch (error) {
+            console.error("Error updating description:", error);
+            throw error;
+        }
+    };
+
     const fetchTeachers = async () => {
         const teachers = {};
         const querySnapshot = await getDocs(collection(db, "users"));
         querySnapshot.forEach((doc) => {
-            teachers[doc.data().email] = doc.data();
+            const userData = doc.data();
+            if (userData.type === "teacher") {
+                teachers[userData.email] = userData;
+            }
         });
         setTeacherList(teachers);
         return teachers;
@@ -92,7 +154,10 @@ export function UserProvider({ children }) {
         updateAvailability,
         signIn,
         teacherList,
-        fetchTeachers
+        fetchTeachers,
+        updatePrice,
+        updateNickname,
+        updateDescription,
     };
 
     return (
