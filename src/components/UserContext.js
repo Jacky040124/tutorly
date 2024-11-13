@@ -13,10 +13,27 @@ export function UserProvider({ children }) {
     const [teacherList, setTeacherList] = useState({});
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-            if (!firebaseUser) {
+        console.log("UserContext mount");
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+            console.log("Auth state changed:", firebaseUser?.uid);
+            
+            if (firebaseUser) {
+                try {
+                    const docRef = doc(db, "users", firebaseUser.uid);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const userData = docSnap.data();
+                        setUser({
+                            uid: firebaseUser.uid,
+                            email: firebaseUser.email,
+                            type: userData.type
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error fetching user data:", error);
+                }
+            } else {
                 setUser(null);
-                setAvailability([]);
             }
             setLoading(false);
         });

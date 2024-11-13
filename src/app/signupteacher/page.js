@@ -21,9 +21,25 @@ const Header = () => (
     </div>
 );
 
-const SignupForm = ({ handleSignup, handleEmailChange, handlePasswordChange, text }) => (
+const SignupForm = ({ handleSignup, handleEmailChange,handleNicknameChange, handlePasswordChange, handleDescriptionChange, text }) => (
     <div className="mt-8">
         <form className="space-y-6" action="#" method="POST">
+            <TextField
+                label="Nickname"
+                name="nickname"
+                type="nickname"
+                autoComplete="nickname"
+                onChange={handleNicknameChange}
+                required
+            />
+            <TextField
+                label="Description"
+                name="description"
+                type="description"
+                autoComplete="description"
+                onChange={handleDescriptionChange}
+                required
+            />
             <TextField
                 label="Email address"
                 name="email"
@@ -76,6 +92,8 @@ export default function SignUp() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [text, setText] = useState("");
+    const [nickName, setNickname] = useState("");
+    const [description, setDescription] = useState("");
 
     const handleSignup = async (e) => {
         e.preventDefault(); // Prevent form submission
@@ -90,8 +108,10 @@ export default function SignUp() {
                 uid: user.uid,
                 createdAt: new Date().toISOString(),
                 type: "teacher",
-                description: "",
+                nickName: nickName,
+                description: description,
                 availability: [],
+                pricing: 0,
             });
             setText("Sign Up Successful, Sign in here");
 
@@ -107,6 +127,8 @@ export default function SignUp() {
 
     const handleEmailChange = (event) => setEmail(event.target.value);
     const handlePasswordChange = (event) => setPassword(event.target.value);
+    const handleNicknameChange = (event) => setNickname(event.target.value);
+    const handleDescriptionChange = (event) => setDescription(event.target.value);
 
     return (
         <div className="flex min-h-screen">
@@ -118,8 +140,10 @@ export default function SignUp() {
 
                     <SignupForm
                         handleSignup={handleSignup}
+                        handleNicknameChange={handleNicknameChange}
                         handleEmailChange={handleEmailChange}
                         handlePasswordChange={handlePasswordChange}
+                        handleDescriptionChange={handleDescriptionChange}
                         text={text}
                     />
                 </div>

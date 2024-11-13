@@ -16,18 +16,6 @@ export default function Login() {
     const router = useRouter();
     const { user, setUser } = useUser();
 
-    // Handle auth state changes
-    useEffect(() => {
-        console.log("Current user in effect:", user);
-        if (user) {
-            console.log("User type:", user.type);
-            if (user.type === "teacher") {
-                router.replace("/user/teacher");
-            } else if (user.type === "student") {
-                router.replace("/user/student");
-            }
-        }
-    }, [user, router]);
 
     const handleSignIn = async (e) => {
         e.preventDefault(); // Prevent form submission
@@ -48,12 +36,34 @@ export default function Login() {
             const userData = docSnap.data();
             console.log('User data from Firestore:', userData);
             
-            // Update user context
-            setUser({
-                email: userCredential.user.email,
-                uid: userCredential.user.uid,
-                type: userData.type
-            });
+            // Update user context based on user type
+            if (userData.type === "teacher") {
+                setUser({
+                    email: userCredential.user.email,
+                    uid: userCredential.user.uid,
+                    type: userData.type,
+                    nickname: userData.nickName,
+                    description: userData.description,
+                    availability: userData.availability,
+                    pricing: userData.pricing
+                });
+            } else if (userData.type === "student") {
+                setUser({
+                    email: userCredential.user.email,
+                    uid: userCredential.user.uid,
+                    type: userData.type,
+                    nickname: userData.nickname,
+                    balance: userData.balance,
+                    bookingHistory: userData.bookingHistory
+                });
+            }
+
+            // Handle navigation after successful sign-in
+            if (userData.type === "teacher") {
+                router.replace("/user/teacher");
+            } else if (userData.type === "student") {
+                router.replace("/user/student");
+            }
             
         } catch (error) {
             console.error('Sign-in error:', error);

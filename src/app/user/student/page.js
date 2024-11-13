@@ -5,7 +5,7 @@ import { useUser } from '@/components/UserContext';
 import Calendar from '@/components/Calendar';
 
 export default function TeacherAccount() {
-    const { user, loading: userLoading, teacherList, availability, updateAvailability, fetchTeachers } = useUser();
+    const { user, loading: userLoading, teacherList, availability, updateAvailability, fetchTeachers} = useUser();
     const [showOverlay, setShowOverlay] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedTeacher, setSelectedTeacher] = useState('');
@@ -51,13 +51,27 @@ export default function TeacherAccount() {
     }
 
     useEffect(() => {
-        const fetchAvailability = async () => {
-            if (!user?.uid) return;
-            setIsLoading(false)
-        };
+        console.log("Student page mount - userLoading:", userLoading, "user:", user, "isLoading:", isLoading);
         
+        const fetchData = async () => {
+            try {
+                if (!user?.uid) {
+                    console.log("No user ID yet, setting isLoading false");
+                    setIsLoading(false);
+                    return;
+                }
+                console.log("Fetching data for user:", user.uid);
+                
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            } finally {
+                console.log("Setting isLoading to false");
+                setIsLoading(false);
+            }
+        };
+
         if (!userLoading) {
-            fetchAvailability();
+            fetchData();
         }
     }, [user, userLoading]);
 
@@ -66,6 +80,7 @@ export default function TeacherAccount() {
     }, []);
     
     if (userLoading || isLoading) {
+        console.log("Rendering loading state - userLoading:", userLoading, "isLoading:", isLoading);
         return <div className="flex items-center justify-center min-h-screen">
             <div className="text-lg">Loading...</div>
         </div>;
@@ -79,19 +94,18 @@ export default function TeacherAccount() {
     
     return (
         <div>
-            <h2>Hi, {user?.uid}</h2>
-            <h1>Who&apos;s ready to maximise shareholder value?</h1>
+            <h2>Hi, {user.nickname}</h2>
+            <h1>Your balance is {user.balance} dollars</h1>
             <Header/>
             <div className="flex h-full flex-col">
-                <Calendar 
-                    setShowOverlay={setShowOverlay} 
-                    availability={teacherAvailability}
-                />
+                <Calendar setShowOverlay={setShowOverlay} availability={teacherAvailability}/>
+
                 <div className="text-sm text-gray-500 mt-2">
                     Debug - Selected Teacher: {selectedTeacher}
                     <br />
                     Debug - Availability: {JSON.stringify(teacherAvailability)}
                 </div>
+
             </div>
         </div>
     );

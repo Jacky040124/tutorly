@@ -10,23 +10,24 @@ import { TextField } from '@/components/Fields'
 export default function SignUp() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [nickName, setnickName] = useState("");
     const [text, setText] = useState("");
 
     const handleSignup = async (e) => {
         e.preventDefault(); // Prevent form submission
-        console.log('Starting teacher signup process with email:', email);
         
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
             await setDoc(doc(db, "users", user.uid), {
+                createdAt: new Date().toISOString(),
                 email: user.email,
                 uid: user.uid,
-                createdAt: new Date().toISOString(),
-                type: "teacher",
-                description: "",
-                availability: [],
+                type: "student",
+                nickname: nickName,
+                balance: 0,
+                bookingHistory: [],
             });
             setText("Sign Up Successful, Sign in here");
 
@@ -42,6 +43,7 @@ export default function SignUp() {
 
     const handleEmailChange = (event) => setEmail(event.target.value);
     const handlePasswordChange = (event) => setPassword(event.target.value);
+    const handleNicknameChange = (event) => setnickName(event.target.value);
 
     return (
         <div className="flex min-h-screen">
@@ -56,7 +58,7 @@ export default function SignUp() {
 
                 <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
                     <div>
-                        <h2 className="text-3xl font-bold">Create your teacher account</h2>
+                        <h2 className="text-3xl font-bold">Create your account</h2>
                         <p className="mt-2 text-sm text-gray-600">
                             Already have an account?{' '}
                             <Link href="/signin" className="font-medium text-green-600 hover:text-green-500">
@@ -67,6 +69,14 @@ export default function SignUp() {
 
                     <div className="mt-8">
                         <form className="space-y-6" action="#" method="POST">
+                        <TextField
+                                label="Nickname"
+                                name="nickname"
+                                type="nickname"
+                                autoComplete="nickname"
+                                onChange={handleNicknameChange}
+                                required
+                            />
                             <TextField
                                 label="Email address"
                                 name="email"
@@ -83,6 +93,7 @@ export default function SignUp() {
                                 onChange={handlePasswordChange}
                                 required
                             />
+
                             
                             {text && (
                                 <div className="text-sm">
@@ -105,10 +116,10 @@ export default function SignUp() {
                                     Sign up as teacher →
                                 </Button>
                                 <Link 
-                                    href="/signup" 
+                                    href="/signupteacher" 
                                     className="block text-center text-sm text-gray-600 hover:text-gray-900"
                                 >
-                                    Sign up as a student instead
+                                    Sign up as a teacher instead
                                 </Link>
                             </div>
                         </form>
@@ -118,9 +129,9 @@ export default function SignUp() {
 
             <div className="hidden lg:block w-1/2 bg-green-600 relative">
                 <div className="absolute inset-0 flex flex-col justify-center items-center text-white p-12">
-                    <h1 className="text-4xl font-bold mb-6">Start Teaching Today</h1>
+                    <h1 className="text-4xl font-bold mb-6">Start Learning Today</h1>
                     <p className="text-xl text-center max-w-md">
-                        Join our community of expert tutors and help students achieve their educational goals.
+                        Join our community and learn from the best.
                     </p>
                 </div>
             </div>

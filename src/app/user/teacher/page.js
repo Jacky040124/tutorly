@@ -72,7 +72,7 @@ export default function TeacherAccount() {
     
     return (
         <div>
-            <h2>Hi, {user?.uid}</h2>
+            <h2>Hi, {user.nickname}</h2>
             <h1>Who&apos;s ready to maximise shareholder value?</h1>
             <div className="flex h-full flex-col">
                 <Header/>
