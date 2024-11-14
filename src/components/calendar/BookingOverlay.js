@@ -1,6 +1,6 @@
 "use client";
 import { useState } from 'react';
-import { useUser } from '@/components/UserContext';
+import { useUser } from '@/components/providers/UserContext';
 
 export default function BookingOverlay({ selectedSlot, teacherData, onConfirm, onClose }) {
     const { user } = useUser();

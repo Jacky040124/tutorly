@@ -1,7 +1,4 @@
 import Link from 'next/link';
-import mountainImage from "@/lib/Mountain image.jpeg"
-import Image from 'next/image';
-
 
 
 export default function Home() {
@@ -11,7 +8,7 @@ export default function Home() {
             {/* Home */}
 
             <div className="w-full h-[35vh] bg-green-600 p-5">
-                <Link href="/signin"> <button className="bg-green-950 text-white text-xs rounded hover:bg-green-800 w-24 h-8"> Sign in </button> </Link>
+                <Link href="/auth/signin"> <button className="bg-green-950 text-white text-xs rounded hover:bg-green-800 w-24 h-8"> Sign in </button> </Link>
 
                 <nav className='flex justify-center pb-10'>
                     <Link className='pr-5' href="#home"> Home </Link>
@@ -24,9 +21,9 @@ export default function Home() {
                 <div className="flex justify-center items-center flex-row scale-120 p-5">
                     <div className="flex flex-col">
                         <h1 className="text-4xl font-bold max-w-56 pb-5"> Learn faster with the best tutor</h1>
-                        <Link href="/signup"> <button className="bg-gray-950 text-white text-xs rounded hover:bg-gray-800 w-48 h-8"> Get Started </button> </Link>
+                        <Link href="/auth/signup"> <button className="bg-gray-950 text-white text-xs rounded hover:bg-gray-800 w-48 h-8"> Get Started </button> </Link>
                     </div>
-                    <div> <Image src={mountainImage} alt="Mountain"/> </div>
+                    <div className="w-40 h-40 bg-green-500"></div>
                 </div>
             </div>
 

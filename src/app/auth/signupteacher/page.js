@@ -2,66 +2,64 @@
 
 import { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { db, auth, doc, setDoc } from "@/app/firebase";
+import { doc, setDoc } from "firebase/firestore";
+import { db, auth } from "@/lib/firebase";
 import Link from 'next/link';
-import { Button } from '@/components/Button'
-import { TextField } from '@/components/Fields'
+import { Button } from '@/components/common/Button'
+import { TextField } from '@/components/common/Fields'
+import AuthBackground from '@/components/auth/AuthBackground'
+import BackToHomeButton from '@/components/auth/BackToHomeButton';
+import ErrorMessage from '@/components/common/ErrorMessage';
 
 export default function SignUp() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [nickname, setnickname] = useState("");
-    const [text, setText] = useState("");
+    const [error, setError] = useState("");
+    const [nickname, setNickname] = useState("");
+    const [description, setDescription] = useState("");
+    
 
     const handleSignup = async (e) => {
         e.preventDefault(); // Prevent form submission
+        console.log('Starting teacher signup process with email:', email);
         
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
             await setDoc(doc(db, "users", user.uid), {
-                createdAt: new Date().toISOString(),
                 email: user.email,
                 uid: user.uid,
-                type: "student",
+                createdAt: new Date().toISOString(),
+                type: "teacher",
                 nickname: nickname,
-                balance: 0,
-                bookingHistory: [],
+                description: description,
+                availability: [],
+                pricing: 0,
             });
-            setText("Sign Up Successful, Sign in here");
+            setError("Sign Up Successful, Sign in here");
 
         } catch (signUpError) {
             if (signUpError.code === "auth/email-already-in-use") {
-                setText("You already have an Account, Sign in here");
+                setError("You already have an Account, Sign in here");
             } else {
-                setText(signUpError.message);
+                setError(signUpError.message);
             }
             console.error("Error during sign-up:", signUpError.message);
         }
     };
 
-    const handleEmailChange = (event) => setEmail(event.target.value);
-    const handlePasswordChange = (event) => setPassword(event.target.value);
-    const handleNicknameChange = (event) => setnickname(event.target.value);
-
     return (
         <div className="flex min-h-screen">
             <div className="w-1/2 flex flex-col px-8 lg:px-12 xl:px-16">
-                <div className="absolute top-4 left-4">
-                    <Link href="/" aria-label="Home">
-                        <Button variant="outline" color="slate">
-                            ← Back to home
-                        </Button>
-                    </Link>
-                </div>
+                <BackToHomeButton/>
 
                 <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
                     <div>
-                        <h2 className="text-3xl font-bold">Create your account</h2>
+                        <h2 className="text-3xl font-bold">Create your teacher account</h2>
                         <p className="mt-2 text-sm text-gray-600">
                             Already have an account?{' '}
-                            <Link href="/signin" className="font-medium text-green-600 hover:text-green-500">
+                            <Link href="/auth/signin" className="font-medium text-green-600 hover:text-green-500">
                                 Sign in
                             </Link>
                         </p>
@@ -69,12 +67,20 @@ export default function SignUp() {
 
                     <div className="mt-8">
                         <form className="space-y-6" action="#" method="POST">
-                        <TextField
+                            <TextField
                                 label="Nickname"
                                 name="nickname"
                                 type="nickname"
                                 autoComplete="nickname"
-                                onChange={handleNicknameChange}
+                                onChange={(e) => setNickname(e.target.value)}
+                                required
+                            />
+                            <TextField
+                                label="Description"
+                                name="description"
+                                type="description"
+                                autoComplete="description"
+                                onChange={(e) => setDescription(e.target.value)}
                                 required
                             />
                             <TextField
@@ -82,7 +88,7 @@ export default function SignUp() {
                                 name="email"
                                 type="email"
                                 autoComplete="email"
-                                onChange={handleEmailChange}
+                                onChange={(e) => setEmail(e.target.value)}
                                 required
                             />
                             <TextField
@@ -90,21 +96,11 @@ export default function SignUp() {
                                 name="password"
                                 type="password"
                                 autoComplete="new-password"
-                                onChange={handlePasswordChange}
+                                onChange={(e) => setPassword(e.target.value)}
                                 required
                             />
-
                             
-                            {text && (
-                                <div className="text-sm">
-                                    <p className="text-red-500">{text}</p>
-                                    {(text.includes("Sign Up Successful") || text.includes("already have an Account")) && (
-                                        <Link href="/signin" className="text-green-600 hover:text-green-500 font-medium">
-                                            Sign In
-                                        </Link>
-                                    )}
-                                </div>
-                            )}
+                            {error && <ErrorMessage message={error} />}
 
                             <div className="space-y-4">
                                 <Button
@@ -116,10 +112,10 @@ export default function SignUp() {
                                     Sign up as teacher →
                                 </Button>
                                 <Link 
-                                    href="/signupteacher" 
+                                    href="/auth/signup" 
                                     className="block text-center text-sm text-gray-600 hover:text-gray-900"
                                 >
-                                    Sign up as a teacher instead
+                                    Sign up as a student instead
                                 </Link>
                             </div>
                         </form>
@@ -127,14 +123,10 @@ export default function SignUp() {
                 </div>
             </div>
 
-            <div className="hidden lg:block w-1/2 bg-green-600 relative">
-                <div className="absolute inset-0 flex flex-col justify-center items-center text-white p-12">
-                    <h1 className="text-4xl font-bold mb-6">Start Learning Today</h1>
-                    <p className="text-xl text-center max-w-md">
-                        Join our community and learn from the best.
-                    </p>
-                </div>
-            </div>
+            <AuthBackground 
+                text1="Start Teaching Today" 
+                text2="Join our community of expert tutors and help students achieve their educational goals."
+            />
         </div>
     );
 }

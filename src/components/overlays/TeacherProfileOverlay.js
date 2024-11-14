@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { useUser } from './UserContext';
+import { useUser } from '../providers/UserContext';
+import ErrorMessage from '../common/ErrorMessage';
 
 export default function TeacherProfileOverlay({ setShowOverlay }) {
     const { user, updatePrice, updateNickname, updateDescription } = useUser();
     const [nickname, setNickname] = useState(user.nickname);
     const [description, setDescription] = useState(user.description);
     const [pricing, setPricing] = useState(user.pricing);
+    const [error, setError] = useState('');
 
     const handleCancel = () => {
         setShowOverlay(false);
@@ -14,7 +16,6 @@ export default function TeacherProfileOverlay({ setShowOverlay }) {
     const handleSave = async (e) => {
         e.preventDefault();
         try {
-            // Update each field separately
             await Promise.all([
                 updateNickname(nickname),
                 updateDescription(description),
@@ -25,13 +26,14 @@ export default function TeacherProfileOverlay({ setShowOverlay }) {
             setShowOverlay(false);
         } catch (error) {
             console.error("Error updating profile:", error);
-            alert("Failed to update profile. Please try again.");
+            setError(`Failed to update profile: ${error.message}`);
         }
     };
 
     return (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity">
             <div className="fixed inset-0 z-10 overflow-y-auto">
+                {error && <ErrorMessage message={error} />}
                 <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
                     <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
                         <div className="space-y-4">

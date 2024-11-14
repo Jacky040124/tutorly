@@ -1,21 +1,20 @@
 "use client";
-import { db, collection, getDocs, doc, getDoc } from '@/app/firebase'
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore'
+import { db } from "@/lib/firebase";
 import { useEffect, useState } from 'react';
-import { useUser } from '@/components/UserContext';
-import Calendar from '@/components/Calendar';
+import { useUser } from '@/components/providers/UserContext';
+import Calendar from '@/components/calendar/Calendar';
+import ErrorMessage from '@/components/common/ErrorMessage';
 
-export default function TeacherAccount() {
+
+export default function StudentAccount() {
     const { user, loading: userLoading, teacherList, fetchTeachers} = useUser();
-    const [showOverlay, setShowOverlay] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedTeacher, setSelectedTeacher] = useState('');
     const [teacherAvailability, setTeacherAvailability] = useState(null);
-    const [selectedEvents, setSelectedEvents] = useState([]);
     const [teacherName, setTeacherName] = useState('');
     const [teacherPrice, setTeacherPrice] = useState(0);
-    
-    const handleClickEvent = () => {
-    }
+    const [error, setError] = useState('')
 
     async function handleSelectTeacher(e) {
         const selectedValue = e.target.value;
@@ -73,9 +72,8 @@ export default function TeacherAccount() {
                 console.log("Fetching data for user:", user.uid);
                 
             } catch (error) {
-                console.error("Error fetching data:", error);
+                setError(`Error fetching data: ${error.message}`);
             } finally {
-                console.log("Setting isLoading to false");
                 setIsLoading(false);
             }
         };
@@ -104,6 +102,7 @@ export default function TeacherAccount() {
     
     return (
         <div>
+            {error && <ErrorMessage message={error} />}
             <h2>Hi, {user.nickname}</h2>
             <h1> {teacherName ? `${teacherName}'s rate is ${teacherPrice} dollars per hour` : 'Select a teacher'}</h1>
             <h1>Your balance is {user.balance} dollars</h1>

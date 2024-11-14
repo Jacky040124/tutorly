@@ -1,10 +1,13 @@
 "use client";
-import { app, db, auth, doc, setDoc, getDoc } from '@/app/firebase'
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { db, auth } from "@/lib/firebase";
 import { useEffect, useState } from 'react';
-import { useUser } from '@/components/UserContext';
-import Calendar from '@/components/Calendar';
-import CalendarOverlay from '@/components/CalendarOverlay';
-import TeacherProfileOverlay from "@/components/TeacherProfileOverlay"
+import { useUser } from '@/components/providers/UserContext';
+import Calendar from '@/components/calendar/Calendar';
+import CalendarOverlay from '@/components/calendar/CalendarOverlay';
+import TeacherProfileOverlay from '@/components/overlays/TeacherProfileOverlay';
+import ErrorMessage from '@/components/common/ErrorMessage';
+
 
 export default function TeacherAccount() {
     const { user, availability, updateAvailability } = useUser();
@@ -12,6 +15,7 @@ export default function TeacherAccount() {
     const [showTeacherProfileOverlay, setShowTeacherProfileOverlay] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const { loading: userLoading } = useUser();
+    const [error, setError] = useState();
 
     const handleClickEvent = async (day, startTime, endTime) => {
         const confirmDelete = window.confirm("Do you want to remove this time slot?");
@@ -39,7 +43,7 @@ export default function TeacherAccount() {
 
             } catch (error) {
                 console.error("Error removing event:", error);
-                alert("Failed to remove event. Please try again.");
+                setError(`Failed to remove event: ${error.message}`);
             }
         }
     }
@@ -100,6 +104,7 @@ export default function TeacherAccount() {
     
     return (
         <div>
+            {error && <ErrorMessage message={error} />}
             <h2>Hi, {user.nickname}</h2>
             <h1>Who&apos;s ready to maximise shareholder value?</h1>
             <div className="flex h-full flex-col">

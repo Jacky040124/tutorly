@@ -1,6 +1,7 @@
 import {useState} from 'react';
-import { useUser } from './UserContext';
-import DayField from '@/components/DayField';
+import { useUser } from '../providers/UserContext';
+import DayField from '@/components/calendar/DayField';
+import ErrorMessage from '@/components/common/ErrorMessage';
 
 const timeToDecimal = (time) => {
     if (!time) return null;
@@ -13,6 +14,7 @@ export default function CalendarOverlay({ setShowOverlay, onEventAdded }) {
     const [start, setStart] = useState("");
     const [end, setEnd] = useState("");
     const { user, availability, updateAvailability } = useUser();
+    const [error, setError] = useState('');
 
     const handleCancel = () => {setShowOverlay(false)}
     const handleDate = (selectedDate) => {setDate(selectedDate);}
@@ -85,11 +87,10 @@ export default function CalendarOverlay({ setShowOverlay, onEventAdded }) {
         const endDecimal = timeToDecimal(end);
 
         if (!date || !start || !end) {
-            console.error('Missing required fields:', { date, start, end });
-            alert('Please fill in all fields');
+            setError('Please fill in all fields');
             return;
         } else if (startDecimal >= endDecimal) {
-            alert('endTime Must be later than startTime');
+            setError('End time must be later than start time');
             return;  
         }
 
@@ -117,7 +118,7 @@ export default function CalendarOverlay({ setShowOverlay, onEventAdded }) {
                     (newEvent.endTime > curEvent.startTime && newEvent.endTime <= curEvent.endTime) ||
                     (newEvent.startTime <= curEvent.startTime && newEvent.endTime >= curEvent.endTime)
                 ) {
-                    alert('This time slot overlaps with an existing event');
+                    setError('This time slot overlaps with an existing event');
                     return;
                 } 
             } 
@@ -132,53 +133,56 @@ export default function CalendarOverlay({ setShowOverlay, onEventAdded }) {
                 setShowOverlay(false);
             } catch (error) {
                 console.error('Error saving event:', error);
-                alert('Error saving event. Please try again.');
+                setError(`Error saving event: ${error.message}`);
             }
         }
     };
 
     return (
-        <div>
-            <div className="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
-                <div className="fixed inset-0"></div>
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity">
+            {error && <ErrorMessage message={error} />}
+            <div>
+                <div className="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+                    <div className="fixed inset-0"></div>
 
-                <div className="fixed inset-0 overflow-hidden">
-                    <div className="absolute inset-0 overflow-hidden">
-                        <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+                    <div className="fixed inset-0 overflow-hidden">
+                        <div className="absolute inset-0 overflow-hidden">
+                            <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
 
-                            <div className="pointer-events-auto w-screen max-w-md">
+                                <div className="pointer-events-auto w-screen max-w-md">
 
-                                <form className="flex h-full flex-col divide-y divide-gray-200 bg-white shadow-xl">
-                                    <div className="h-0 flex-1 overflow-y-auto">
-                                        <div className="bg-indigo-700 px-4 py-6 sm:px-6 flex items-center justify-between">
-                                                <h2 className="text-base font-semibold leading-6 text-white" id="slide-over-title">New Event</h2>
-                                                <div className="ml-3 flex h-7 items-center">
-                                                    <button onClick={handleCancel} type="button" className="rounded-md bg-indigo-700 text-indigo-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-white">
-                                                        <span className="sr-only">Close panel</span>
-                                                        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                        </div>
-                                        
-                                        <div className="flex flex-1 flex-col justify-between">
-                                            <div className="divide-y divide-gray-200 px-4 sm:px-6">
-                                                <div className="space-y-6 pb-5 pt-6">
-                                                    <DayField onChange={handleDate} value={date}/>
-                                                    <InputField onChange={handleStart} name="Start Time" value={start}/>
-                                                    <InputField onChange={handleEnd} name="End Time" value={end}/>
+                                    <form className="flex h-full flex-col divide-y divide-gray-200 bg-white shadow-xl">
+                                        <div className="h-0 flex-1 overflow-y-auto">
+                                            <div className="bg-indigo-700 px-4 py-6 sm:px-6 flex items-center justify-between">
+                                                    <h2 className="text-base font-semibold leading-6 text-white" id="slide-over-title">New Event</h2>
+                                                    <div className="ml-3 flex h-7 items-center">
+                                                        <button onClick={handleCancel} type="button" className="rounded-md bg-indigo-700 text-indigo-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-white">
+                                                            <span className="sr-only">Close panel</span>
+                                                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                            </div>
+                                            
+                                            <div className="flex flex-1 flex-col justify-between">
+                                                <div className="divide-y divide-gray-200 px-4 sm:px-6">
+                                                    <div className="space-y-6 pb-5 pt-6">
+                                                        <DayField onChange={handleDate} value={date}/>
+                                                        <InputField onChange={handleStart} name="Start Time" value={start}/>
+                                                        <InputField onChange={handleEnd} name="End Time" value={end}/>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div className="flex flex-shrink-0 justify-end px-4 py-4">
-                                        <button onClick={handleCancel} type="button" className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">Cancel</button>
-                                        <button onClick={handleSave} type="submit" className="ml-4 inline-flex justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Save</button>
-                                    </div>
-                                </form>
+                                        <div className="flex flex-shrink-0 justify-end px-4 py-4">
+                                            <button onClick={handleCancel} type="button" className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">Cancel</button>
+                                            <button onClick={handleSave} type="submit" className="ml-4 inline-flex justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Save</button>
+                                        </div>
+                                    </form>
 
+                                </div>
                             </div>
                         </div>
                     </div>

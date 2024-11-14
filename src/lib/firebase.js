@@ -1,7 +1,8 @@
-// Import Firebase modules
+import { doc, setDoc, getDoc, collection, getDocs } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from "firebase/firestore";
-import { getAuth } from "firebase/auth"
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+
 
 // = Firebase configuration
 const firebaseConfig = {
@@ -13,10 +14,9 @@ const firebaseConfig = {
     appId: "1:320690040214:web:fde29b5326692c27e981b7",
     measurementId: "G-J0MZ8W9SSG"
 };
-
 // Initialize Firebase app and Firestore
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
-
 export { app, db, auth, doc, setDoc, getDoc, collection, getDocs };
+

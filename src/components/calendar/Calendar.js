@@ -1,9 +1,9 @@
-import '@/app/globals.css';
-import {CalendarOverlay} from '@/components/CalendarOverlay'
-import { app, db, auth, doc, setDoc, getDoc, arrayUnion, increment } from '@/app/firebase';
-import { useUser } from './UserContext';
+import { CalendarOverlay } from '@/components/calendar/CalendarOverlay';
+import { useUser } from '@/components/providers/UserContext';
+import BookingOverlay from '@/components/calendar/BookingOverlay';
 import { useState } from 'react';
-import BookingOverlay from './BookingOverlay';
+
+
 
 export default function Calendar({availability, handleClickEvent, teacherData, userType}) {
     const [weekOffset, setWeekOffset] = useState(0);

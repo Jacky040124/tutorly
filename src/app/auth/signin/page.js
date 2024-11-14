@@ -1,18 +1,20 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import { auth, db, doc, getDoc } from "@/app/firebase";
-import { useUser } from "@/components/UserContext"
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
+import { useUser } from '@/components/providers/UserContext';
 import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link'
-import { Button } from '@/components/Button'
-import { TextField } from '@/components/Fields'
+import Link from 'next/link';
+import { Button } from '@/components/common/Button';
+import { TextField } from '@/components/common/Fields';
+import ErrorMessage from '@/components/common/ErrorMessage';
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [errorText, setErrorText] = useState("");
+    const [error, setError] = useState("");
     const router = useRouter();
     const { user, setUser } = useUser();
 
@@ -29,7 +31,7 @@ export default function Login() {
             const docSnap = await getDoc(docRef);
             
             if (!docSnap.exists()) {
-                setErrorText("User data not found");
+                setError("User data not found");
                 return;
             }
             
@@ -60,14 +62,14 @@ export default function Login() {
 
             // Handle navigation after successful sign-in
             if (userData.type === "teacher") {
-                router.replace("/user/teacher");
+                router.replace("/dashboard/user/teacher");
             } else if (userData.type === "student") {
-                router.replace("/user/student");
+                router.replace("/dashboard/user/student");
             }
             
         } catch (error) {
             console.error('Sign-in error:', error);
-            setErrorText(error.message || "Sign in failed");
+            setError(error.message || "Sign in failed");
         }
     };
 
@@ -87,7 +89,7 @@ export default function Login() {
                         <h2 className="text-3xl font-bold">Sign in to your account</h2>
                         <p className="mt-2 text-sm text-gray-600">
                             Don&apos;t have an account?{' '}
-                            <Link href="/signup" className="font-medium text-green-600 hover:text-green-500">
+                            <Link href="/auth/signup" className="font-medium text-green-600 hover:text-green-500">
                                 Sign up
                             </Link>{' '}
                             for a free trial.
@@ -113,11 +115,7 @@ export default function Login() {
                                 required
                             />
                             
-                            {errorText && (
-                                <div className="text-red-500 text-sm">
-                                    {errorText}
-                                </div>
-                            )}
+                            {error && <ErrorMessage message={error} />}
 
                             <div>
                                 <Button

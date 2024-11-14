@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { Button } from '@/components/Button'
+import { Button } from '@/components/common/Button'
 
-export function BackToHomeButton() {
+export default function BackToHomeButton() {
     return(
         <div className="absolute top-4 left-4">
             <Link href="/" aria-label="Home">
