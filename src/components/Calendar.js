@@ -1,11 +1,16 @@
 import '@/app/globals.css';
 import {CalendarOverlay} from '@/components/CalendarOverlay'
-import { app, db, auth, doc, setDoc, getDoc } from '@/app/firebase';
+import { app, db, auth, doc, setDoc, getDoc, arrayUnion, increment } from '@/app/firebase';
 import { useUser } from './UserContext';
 import { useState } from 'react';
+import BookingOverlay from './BookingOverlay';
 
-export default function Calendar({availability, handleClickEvent}) {
+export default function Calendar({availability, handleClickEvent, teacherData, userType}) {
     const [weekOffset, setWeekOffset] = useState(0);
+    const [showBookingOverlay, setShowBookingOverlay] = useState(false);
+    const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
+    const { user, updateAvailability } = useUser();
+    
     const handleLastWeek = () => {setWeekOffset(prev => prev - 1);};
     const handleNextWeek = () => {setWeekOffset(prev => prev + 1);};
     console.log("calendar availability:" + availability);
@@ -13,27 +18,90 @@ export default function Calendar({availability, handleClickEvent}) {
     const currentDate = new Date();
     const today = currentDate.getDate();
 
+    const getWeekBounds = () => {
+        const curr = new Date();
+        // Add offset weeks to current date
+        curr.setDate(curr.getDate() + (weekOffset * 7));
+
+        const monday = new Date(curr);
+        const dayOfWeek = monday.getDay();
+        const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        monday.setDate(monday.getDate() + diff);
+        
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+
+        return { monday, sunday };
+    };
+
+    const handleTimeSlotClick = (day, startTime, endTime) => {
+        if (userType === 'student') {
+            if (endTime - startTime >= 1) {
+                const { monday } = getWeekBounds();
+                const selectedDate = new Date(monday);
+                selectedDate.setDate(monday.getDate() + (day - 1));
+                
+                setSelectedTimeSlot({
+                    date: {
+                        year: selectedDate.getFullYear(),
+                        month: selectedDate.getMonth() + 1,
+                        day: selectedDate.getDate()
+                    },
+                    startTime: startTime,
+                    endTime: Math.min(startTime + 1, endTime)
+                });
+                setShowBookingOverlay(true);
+            } else {
+                alert("This time slot is too short for a lesson");
+            }
+        } else if (handleClickEvent) {
+            handleClickEvent(day, startTime, endTime);
+        }
+    };
+
+    const handleBookingConfirmed = async (booking) => {
+        try {
+            // Create the booking document
+            const bookingRef = doc(db, "bookings", `${booking.studentId}_${booking.teacherId}_${Date.now()}`);
+            await setDoc(bookingRef, {
+                ...booking,
+                status: "confirmed",
+                createdAt: new Date().toISOString()
+            });
+
+            // Update teacher's availability by removing the booked slot
+            const updatedAvailability = availability.filter(slot => {
+                const slotDate = new Date(slot.date.year, slot.date.month - 1, slot.date.day);
+                const bookingDate = new Date(booking.date.year, booking.date.month - 1, booking.date.day);
+                
+                return !(slotDate.getTime() === bookingDate.getTime() && 
+                        slot.startTime === booking.startTime && 
+                        slot.endTime === booking.endTime);
+            });
+
+            // Update teacher's availability in Firebase
+            const teacherRef = doc(db, "users", booking.teacherId);
+            await setDoc(teacherRef, { availability: updatedAvailability }, { merge: true });
+
+            // Update student's booking history and balance
+            const studentRef = doc(db, "users", booking.studentId);
+            await setDoc(studentRef, {
+                bookingHistory: arrayUnion(bookingRef.id),
+                balance: increment(-booking.price)
+            }, { merge: true });
+
+            setShowBookingOverlay(false);
+            alert("Booking confirmed successfully!");
+            
+        } catch (error) {
+            console.error("Error confirming booking:", error);
+            alert("Failed to confirm booking. Please try again.");
+        }
+    };
+
     const Events = () => {
         if (!availability) return null;
         console.log("calendar availability:" + availability);
-        // Get current week's Monday and Sunday
-        const getWeekBounds = () => {
-            const curr = new Date();
-            // Add offset weeks to current date
-            curr.setDate(curr.getDate() + (weekOffset * 7));
-
-
-            const monday = new Date(curr);
-            const dayOfWeek = monday.getDay();
-            const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-            monday.setDate(monday.getDate() + diff);
-            
-            const sunday = new Date(monday);
-            sunday.setDate(monday.getDate() + 6);
-
-            return { monday, sunday };
-        };
-
         const { monday, sunday } = getWeekBounds();
         
         const eventList = availability.map((event, index) => {
@@ -98,7 +166,10 @@ export default function Calendar({availability, handleClickEvent}) {
         return (
             <li className={`relative mt-px hidden ${numberToColStart[day]} sm:flex`} 
                 style={{ gridRow: `${startRow} / span ${EndRows}` }}>
-                <a onClick={() => handleClickEvent(day, startTime, endTime)} className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-green-100 p-2 text-xs leading-5 hover:bg-green-200">
+                <a onClick={() => handleTimeSlotClick(day, startTime, endTime)} 
+                   className={`group absolute inset-1 flex flex-col overflow-y-auto rounded-lg 
+                              ${endTime - startTime >= 1 ? 'bg-green-100 hover:bg-green-200' : 'bg-gray-100'} 
+                              p-2 text-xs leading-5`}>
                     <p className="text-gray-500 group-hover:text-gray-700">
                         <time dateTime={`2022-01-15T${startTime}:00`}>{startTime}:00</time>
                     </p>
@@ -179,89 +250,99 @@ export default function Calendar({availability, handleClickEvent}) {
 
 
     return (
-        <div className="flex h-full flex-col">
+        <>
+            <div className="flex h-full flex-col">
 
-            <div className="isolate flex flex-auto flex-col overflow-auto bg-white">
-                <div className="flex max-w-full flex-none flex-col sm:max-w-none md:max-w-full" style={{ width: "165%" }}>
-                    <div className="flex justify-between items-center">
-                        <button 
-                            onClick={handleLastWeek}
-                            className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                        >
-                            Previous Week
-                        </button>
-                        <button 
-                            onClick={handleNextWeek}
-                            className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                        >
-                            Next Week
-                        </button>
-                    </div>
-                    <WeekdayHeader />
+                <div className="isolate flex flex-auto flex-col overflow-auto bg-white">
+                    <div className="flex max-w-full flex-none flex-col sm:max-w-none md:max-w-full" style={{ width: "165%" }}>
+                        <div className="flex justify-between items-center">
+                            <button 
+                                onClick={handleLastWeek}
+                                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            >
+                                Previous Week
+                            </button>
+                            <button 
+                                onClick={handleNextWeek}
+                                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            >
+                                Next Week
+                            </button>
+                        </div>
+                        <WeekdayHeader />
 
-                    <div className="flex flex-auto">
-                        <div className="sticky left-0 z-10 w-14 flex-none bg-white ring-1 ring-gray-100"></div>
-                        <div className="grid flex-auto grid-cols-1 grid-rows-1">
+                        <div className="flex flex-auto">
+                            <div className="sticky left-0 z-10 w-14 flex-none bg-white ring-1 ring-gray-100"></div>
+                            <div className="grid flex-auto grid-cols-1 grid-rows-1">
 
-                            <div className="col-start-1 col-end-2 row-start-1 grid divide-y divide-gray-100" style={{ gridTemplateRows: "repeat(48, minmax(3.5rem, 1fr))" }}>
-                                <div className="row-end-1 h-7"></div>
-                                <div> <div className="calendarText">12AM</div> </div>
-                                <div> </div>
-                                <div> <div className="calendarText">1AM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">2AM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">3AM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">4AM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">5AM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">6AM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">7AM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">8AM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">9AM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">10AM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">11AM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">12PM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">1PM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">2PM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">3PM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">4PM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">5PM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">6PM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">7PM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">8PM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">9PM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">10PM</div> </div>
-                                <div></div>
-                                <div> <div className="calendarText">11PM</div> </div>
-                                <div></div>
+                                <div className="col-start-1 col-end-2 row-start-1 grid divide-y divide-gray-100" style={{ gridTemplateRows: "repeat(48, minmax(3.5rem, 1fr))" }}>
+                                    <div className="row-end-1 h-7"></div>
+                                    <div> <div className="calendarText">12AM</div> </div>
+                                    <div> </div>
+                                    <div> <div className="calendarText">1AM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">2AM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">3AM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">4AM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">5AM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">6AM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">7AM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">8AM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">9AM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">10AM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">11AM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">12PM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">1PM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">2PM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">3PM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">4PM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">5PM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">6PM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">7PM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">8PM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">9PM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">10PM</div> </div>
+                                    <div></div>
+                                    <div> <div className="calendarText">11PM</div> </div>
+                                    <div></div>
+                                </div>
+
+                                <VerticalGrid />
+
+                                <Events/>
                             </div>
-
-                            <VerticalGrid />
-
-                            <Events/>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+            {showBookingOverlay && (
+                <BookingOverlay
+                    selectedSlot={selectedTimeSlot}
+                    teacherData={teacherData}
+                    onConfirm={handleBookingConfirmed}
+                    onClose={() => setShowBookingOverlay(false)}
+                />
+            )}
+        </>
     );
 }

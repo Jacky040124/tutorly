@@ -128,7 +128,6 @@ export default function CalendarOverlay({ setShowOverlay, onEventAdded }) {
                 const updatedAvailability = [...availability, newEvent];
                 await updateAvailability(updatedAvailability);
                 
-                // Call onEventAdded before closing overlay
                 if (onEventAdded) onEventAdded();
                 setShowOverlay(false);
             } catch (error) {

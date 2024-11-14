@@ -110,10 +110,13 @@ export default function TeacherAccount() {
             <Header/>
             <div className="flex h-full flex-col">
                 <Calendar 
-                    setShowOverlay={setShowOverlay} 
-                    availability={teacherAvailability} 
-                    handleClickEvent={handleClickEvent}
-                    selectedEvents={selectedEvents}
+                    availability={teacherAvailability}
+                    teacherData={{
+                        uid: selectedTeacher,
+                        nickname: teacherName,
+                        pricing: teacherPrice
+                    }}
+                    userType="student"
                 />
 
                 <div className="text-sm text-gray-500 mt-2">
