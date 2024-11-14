@@ -1,141 +1,54 @@
-import { CalendarOverlay } from '@/components/calendar/CalendarOverlay';
-import { useUser } from '@/components/providers/UserContext';
 import BookingOverlay from '@/components/calendar/BookingOverlay';
 import { useState } from 'react';
+import { normalizeToMidnight,getAdjustedWeekday,getWeekBounds,generateWeekDates} from '@/lib/utils/timeUtils';
+import { handleBookingConfirmed } from '@/components/booking/confirmbook'
+import ErrorMessage from '@/components/common/ErrorMessage';
 
-
-
-export default function Calendar({availability, handleClickEvent, teacherData, userType}) {
+export default function Calendar({availability, teacherData}) {
     const [weekOffset, setWeekOffset] = useState(0);
     const [showBookingOverlay, setShowBookingOverlay] = useState(false);
     const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
-    const { user, updateAvailability } = useUser();
+    const [error, setError] = useState('')
     
     const handleLastWeek = () => {setWeekOffset(prev => prev - 1);};
     const handleNextWeek = () => {setWeekOffset(prev => prev + 1);};
-    console.log("calendar availability:" + availability);
-
-    const currentDate = new Date();
-    const today = currentDate.getDate();
-
-    const getWeekBounds = () => {
-        const curr = new Date();
-        // Add offset weeks to current date
-        curr.setDate(curr.getDate() + (weekOffset * 7));
-
-        const monday = new Date(curr);
-        const dayOfWeek = monday.getDay();
-        const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-        monday.setDate(monday.getDate() + diff);
-        
-        const sunday = new Date(monday);
-        sunday.setDate(monday.getDate() + 6);
-
-        return { monday, sunday };
-    };
-
-    const handleTimeSlotClick = (day, startTime, endTime) => {
-        if (userType === 'student') {
-            if (endTime - startTime >= 1) {
-                const { monday } = getWeekBounds();
-                const selectedDate = new Date(monday);
-                selectedDate.setDate(monday.getDate() + (day - 1));
-                
-                setSelectedTimeSlot({
-                    date: {
-                        year: selectedDate.getFullYear(),
-                        month: selectedDate.getMonth() + 1,
-                        day: selectedDate.getDate()
-                    },
-                    startTime: startTime,
-                    endTime: Math.min(startTime + 1, endTime)
-                });
-                setShowBookingOverlay(true);
-            } else {
-                alert("This time slot is too short for a lesson");
-            }
-        } else if (handleClickEvent) {
-            handleClickEvent(day, startTime, endTime);
-        }
-    };
-
-    const handleBookingConfirmed = async (booking) => {
-        try {
-            // Create the booking document
-            const bookingRef = doc(db, "bookings", `${booking.studentId}_${booking.teacherId}_${Date.now()}`);
-            await setDoc(bookingRef, {
-                ...booking,
-                status: "confirmed",
-                createdAt: new Date().toISOString()
-            });
-
-            // Update teacher's availability by removing the booked slot
-            const updatedAvailability = availability.filter(slot => {
-                const slotDate = new Date(slot.date.year, slot.date.month - 1, slot.date.day);
-                const bookingDate = new Date(booking.date.year, booking.date.month - 1, booking.date.day);
-                
-                return !(slotDate.getTime() === bookingDate.getTime() && 
-                        slot.startTime === booking.startTime && 
-                        slot.endTime === booking.endTime);
-            });
-
-            // Update teacher's availability in Firebase
-            const teacherRef = doc(db, "users", booking.teacherId);
-            await setDoc(teacherRef, { availability: updatedAvailability }, { merge: true });
-
-            // Update student's booking history and balance
-            const studentRef = doc(db, "users", booking.studentId);
-            await setDoc(studentRef, {
-                bookingHistory: arrayUnion(bookingRef.id),
-                balance: increment(-booking.price)
-            }, { merge: true });
-
-            setShowBookingOverlay(false);
-            alert("Booking confirmed successfully!");
-            
-        } catch (error) {
-            console.error("Error confirming booking:", error);
-            alert("Failed to confirm booking. Please try again.");
-        }
-    };
 
     const Events = () => {
-        if (!availability) return null;
-        console.log("calendar availability:" + availability);
-        const { monday, sunday } = getWeekBounds();
+        if (!availability) {
+            setError('No availability data found');
+            return null;
+        }
+
+        const { monday, sunday } = getWeekBounds(weekOffset);
         
         const eventList = availability.map((event, index) => {
-            // Check if event and event.date exist and have the required properties
             if (!event?.date?.year || !event?.date?.month || !event?.date?.day) {
-                console.error('Invalid event date format:', event);
+                setError(`Invalid event format at position ${index + 1}`);
                 return null;
             }
             
-            // Convert event.date (object with day, month, year) to Date object
-            const eventDate = new Date(event.date.year, event.date.month - 1, event.date.day);
-            // Set time to midnight
-            eventDate.setHours(0, 0, 0, 0);
-            
-            // Create copies of bounds with time set to midnight
-            const mondayBound = new Date(monday);
-            mondayBound.setHours(0, 0, 0, 0);
-            const sundayBound = new Date(sunday);
-            sundayBound.setHours(0, 0, 0, 0);
-            
-            if (eventDate >= mondayBound && eventDate <= sundayBound) {
-                const weekday = eventDate.getDay();
-                const adjustedWeekday = weekday === 0 ? 7 : weekday;
+            try {
+                const eventDate = normalizeToMidnight(event.date);
+                const mondayBound = normalizeToMidnight(monday);
+                const sundayBound = normalizeToMidnight(sunday);
                 
-                return (
-                    <EventDisplay 
-                        key={index}
-                        day={adjustedWeekday}
-                        endTime={event.endTime}
-                        startTime={event.startTime}
-                    />
-                );
+                if (eventDate >= mondayBound && eventDate <= sundayBound) {
+                    const adjustedWeekday = getAdjustedWeekday(eventDate);
+                    
+                    return (
+                        <EventDisplay 
+                            key={index}
+                            day={adjustedWeekday}
+                            endTime={event.endTime}
+                            startTime={event.startTime}
+                        />
+                    );
+                }
+                return null;
+            } catch (error) {
+                setError(`Error processing event at position ${index + 1}: ${error.message}`);
+                return null;
             }
-            return null;
         }).filter(Boolean);
 
         return (
@@ -144,7 +57,7 @@ export default function Calendar({availability, handleClickEvent, teacherData, u
                 {eventList}
             </ol>
         );
-    }
+    };
     
     
     const EventDisplay = ({day, startTime, endTime}) => {
@@ -195,35 +108,22 @@ export default function Calendar({availability, handleClickEvent, teacherData, u
     
 
     const WeekdayHeader = () => {
-        // Get current week's Monday with offset
-        const getMonday = (d) => {
-            const date = new Date(d);
-            // Add offset weeks to current date
-            date.setDate(date.getDate() + (weekOffset * 7));
-            const day = date.getDay();
-            const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-            return new Date(date.setDate(diff));
-        };
+        const { monday } = getWeekBounds(weekOffset);
+        const weekDates = generateWeekDates(monday);
         
-        const monday = getMonday(new Date());
-        
-        // Generate dates for the week
-        const weekDates = [...Array(7)].map((_, i) => {
-            const date = new Date(monday);
-            date.setDate(monday.getDate() + i);
-            return date.getDate();
-        });
+        const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const mobileDayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
         return (
             <div className="sticky top-0 z-30 flex-none bg-white shadow ring-1 ring-black ring-opacity-5 sm:pr-8">
                 <div className="grid grid-cols-7 text-sm leading-6 text-gray-500 sm:hidden">
-                    {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
+                    {mobileDayLabels.map((day, i) => (
                         <button key={i} type="button" className="flex flex-col items-center pb-3 pt-2">
-                            {day} 
+                            {day}
                             <span className={`mt-1 flex h-8 w-8 items-center justify-center font-semibold ${
-                                weekDates[i] === today ? 'rounded-full bg-indigo-600 text-white' : 'text-gray-900'
+                                weekDates[i].isToday ? 'rounded-full bg-indigo-600 text-white' : 'text-gray-900'
                             }`}>
-                                {weekDates[i]}
+                                {weekDates[i].date}
                             </span>
                         </button>
                     ))}
@@ -231,14 +131,14 @@ export default function Calendar({availability, handleClickEvent, teacherData, u
 
                 <div className="-mr-px hidden grid-cols-7 divide-x divide-gray-100 border-r border-gray-100 text-sm leading-6 text-gray-500 sm:grid">
                     <div className="col-end-1 w-14"></div>
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => (
+                    {dayLabels.map((day, i) => (
                         <div key={i} className="flex items-center justify-center py-3">
                             <span className="flex items-baseline">
-                                {day} 
+                                {day}
                                 <span className={`ml-1.5 ${
-                                    weekDates[i] === today ? 'flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 font-semibold text-white' : 'items-center justify-center font-semibold text-gray-900'
+                                    weekDates[i].isToday ? 'flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 font-semibold text-white' : 'items-center justify-center font-semibold text-gray-900'
                                 }`}>
-                                    {weekDates[i]}
+                                    {weekDates[i].date}
                                 </span>
                             </span>
                         </div>
@@ -247,7 +147,6 @@ export default function Calendar({availability, handleClickEvent, teacherData, u
             </div>
         );
     };
-
 
     return (
         <>
@@ -335,6 +234,7 @@ export default function Calendar({availability, handleClickEvent, teacherData, u
                     </div>
                 </div>
             </div>
+            {error && <ErrorMessage message={error} />}
             {showBookingOverlay && (
                 <BookingOverlay
                     selectedSlot={selectedTimeSlot}

@@ -2,11 +2,27 @@ import {useState} from 'react';
 import { useUser } from '../providers/UserContext';
 import DayField from '@/components/calendar/DayField';
 import ErrorMessage from '@/components/common/ErrorMessage';
+import { timeToDecimal } from '@/lib/utils/timeUtils';
 
-const timeToDecimal = (time) => {
-    if (!time) return null;
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours + (minutes / 60);
+const generateTimeOptions = () => {
+    const options = [];
+    options.push(<option key="default">Select Time</option>);
+    
+    for (let hour = 0; hour < 24; hour++) {
+        const hourStr = hour.toString().padStart(2, '0');
+        
+        // Add hour:00
+        options.push(
+            <option key={`${hourStr}:00`}>{hourStr}:00</option>
+        );
+        
+        // Add hour:30
+        options.push(
+            <option key={`${hourStr}:30`}>{hourStr}:30</option>
+        );
+    }
+    
+    return options;
 };
 
 export default function CalendarOverlay({ setShowOverlay, onEventAdded }) {
@@ -26,59 +42,46 @@ export default function CalendarOverlay({ setShowOverlay, onEventAdded }) {
             <div>
                 <label htmlFor="time" className="block text-sm font-medium leading-6 text-gray-900"> {name} </label>
                 <select onChange={onChange} value={value} id="time" name="time" className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                    <option>Select Time</option>
-                    <option>00:00</option>
-                    <option>00:30</option>
-                    <option>01:00</option>
-                    <option>01:30</option>
-                    <option>02:00</option>
-                    <option>02:30</option>
-                    <option>03:00</option>
-                    <option>03:30</option>
-                    <option>04:00</option>
-                    <option>04:30</option>
-                    <option>05:00</option>
-                    <option>05:30</option>
-                    <option>06:00</option>
-                    <option>06:30</option>
-                    <option>07:00</option>
-                    <option>07:30</option>
-                    <option>08:00</option>
-                    <option>08:30</option>
-                    <option>09:00</option>
-                    <option>09:30</option>
-                    <option>10:00</option>
-                    <option>10:30</option>
-                    <option>11:00</option>
-                    <option>11:30</option>
-                    <option>12:00</option>
-                    <option>12:30</option>
-                    <option>13:00</option>
-                    <option>13:30</option>
-                    <option>14:00</option>
-                    <option>14:30</option>
-                    <option>15:00</option>
-                    <option>15:30</option>
-                    <option>16:00</option>
-                    <option>16:30</option>
-                    <option>17:00</option>
-                    <option>17:30</option>
-                    <option>18:00</option>
-                    <option>18:30</option>
-                    <option>19:00</option>
-                    <option>19:30</option>
-                    <option>20:00</option>
-                    <option>20:30</option>
-                    <option>21:00</option>
-                    <option>21:30</option>
-                    <option>22:00</option>
-                    <option>22:30</option>
-                    <option>23:00</option>
-                    <option>23:30</option>
+                    {generateTimeOptions()}
                 </select>
             </div>
         )
     }
+
+    const checkOverlap = (availability, newEvent) => {
+        for (let i = 0; i < availability.length; i++) {
+            const curEvent = availability[i];
+            
+            if (curEvent.date.year === newEvent.date.year && 
+                curEvent.date.month === newEvent.date.month && 
+                curEvent.date.day === newEvent.date.day) {
+                if (
+                    (newEvent.startTime >= curEvent.startTime && newEvent.startTime < curEvent.endTime) ||
+                    (newEvent.endTime > curEvent.startTime && newEvent.endTime <= curEvent.endTime) ||
+                    (newEvent.startTime <= curEvent.startTime && newEvent.endTime >= curEvent.endTime)
+                ) {
+                    return true;
+                } 
+            } 
+        }
+        return false;
+    };
+
+    const saveEvent = async (newEvent) => {
+        if (!user?.uid) return;
+
+        try {
+            const updatedAvailability = [...availability, newEvent];
+            await updateAvailability(updatedAvailability);
+            
+            if (onEventAdded) onEventAdded();
+            setShowOverlay(false);
+        } catch (error) {
+            console.error('Error saving event:', error);
+            setError(`Error saving event: ${error.message}`);
+            throw error; // Re-throw to handle in calling function if needed
+        }
+    };
 
     const handleSave = async (e) => {
         e.preventDefault();
@@ -94,7 +97,6 @@ export default function CalendarOverlay({ setShowOverlay, onEventAdded }) {
             return;  
         }
 
-        // Create date object using the values from the date object directly
         const newEvent = {
             date: {
                 year: date.year,
@@ -105,37 +107,12 @@ export default function CalendarOverlay({ setShowOverlay, onEventAdded }) {
             endTime: endDecimal
         };
 
-        // Check for overlapping events
-        for (let i = 0; i < availability.length; i++) {
-            const curEvent = availability[i];
-            
-            // Compare year, month, and day separately
-            if (curEvent.date.year === newEvent.date.year && 
-                curEvent.date.month === newEvent.date.month && 
-                curEvent.date.day === newEvent.date.day) {
-                if (
-                    (newEvent.startTime >= curEvent.startTime && newEvent.startTime < curEvent.endTime) ||
-                    (newEvent.endTime > curEvent.startTime && newEvent.endTime <= curEvent.endTime) ||
-                    (newEvent.startTime <= curEvent.startTime && newEvent.endTime >= curEvent.endTime)
-                ) {
-                    setError('This time slot overlaps with an existing event');
-                    return;
-                } 
-            } 
+        if (checkOverlap(availability, newEvent)) {
+            setError('This time slot overlaps with an existing event');
+            return;
         }
 
-        if (user?.uid) {
-            try {
-                const updatedAvailability = [...availability, newEvent];
-                await updateAvailability(updatedAvailability);
-                
-                if (onEventAdded) onEventAdded();
-                setShowOverlay(false);
-            } catch (error) {
-                console.error('Error saving event:', error);
-                setError(`Error saving event: ${error.message}`);
-            }
-        }
+        await saveEvent(newEvent);
     };
 
     return (

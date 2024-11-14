@@ -1,16 +1,11 @@
 "use client";
 import { useState } from 'react';
 import { useUser } from '@/components/providers/UserContext';
+import { formatTime } from '@/lib/utils/timeUtils';
 
 export default function BookingOverlay({ selectedSlot, teacherData, onConfirm, onClose }) {
     const { user } = useUser();
     const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const formatTime = (time) => {
-        const hours = Math.floor(time);
-        const minutes = (time % 1) * 60;
-        return `${hours}:${minutes === 0 ? '00' : minutes}`;
-    };
 
     const handleConfirm = async () => {
         setIsSubmitting(true);

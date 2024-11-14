@@ -147,57 +147,6 @@ export function UserProvider({ children }) {
         return teachers;
     };
 
-    const handleBookingConfirmed = async (booking) => {
-        try {
-            // 1. Create the booking document
-            const bookingRef = doc(collection(db, "bookings"));
-            await setDoc(bookingRef, booking);
-
-            // 2. Update teacher's availability
-            const teacherRef = doc(db, "users", booking.teacherId);
-            const teacherDoc = await getDoc(teacherRef);
-            const currentAvailability = teacherDoc.data().availability;
-
-            const updatedAvailability = currentAvailability.map(slot => {
-                if (isSameDay(slot.date, booking.date) && 
-                    slot.startTime <= booking.startTime && 
-                    slot.endTime >= booking.endTime) {
-                    
-                    const newSlots = [];
-                    if (slot.startTime < booking.startTime) {
-                        newSlots.push({
-                            date: slot.date,
-                            startTime: slot.startTime,
-                            endTime: booking.startTime
-                        });
-                    }
-                    if (slot.endTime > booking.endTime) {
-                        newSlots.push({
-                            date: slot.date,
-                            startTime: booking.endTime,
-                            endTime: slot.endTime
-                        });
-                    }
-                    return newSlots;
-                }
-                return slot;
-            }).flat().filter(Boolean);
-
-            await setDoc(teacherRef, { availability: updatedAvailability }, { merge: true });
-
-            // 3. Update student's booking history
-            const studentRef = doc(db, "users", booking.studentId);
-            await setDoc(studentRef, {
-                bookingHistory: arrayUnion(bookingRef.id)
-            }, { merge: true });
-
-            return true;
-        } catch (error) {
-            console.error("Error confirming booking:", error);
-            throw error;
-        }
-    };
-
     const value = {
         user,
         setUser,
@@ -210,7 +159,6 @@ export function UserProvider({ children }) {
         updatePrice,
         updateNickname,
         updateDescription,
-        handleBookingConfirmed,
     };
 
     return (
