@@ -1,8 +1,10 @@
 import BookingOverlay from '@/components/calendar/BookingOverlay';
 import { useState } from 'react';
 import { normalizeToMidnight,getAdjustedWeekday,getWeekBounds,generateWeekDates} from '@/lib/utils/timeUtils';
-import { handleBookingConfirmed } from '@/components/booking/confirmbook'
+import { handleBookingConfirmed } from '@/components/booking/ConfirmBook'
+import { handleTimeSlotClick} from '@/lib/utils/timeUtils'
 import ErrorMessage from '@/components/common/ErrorMessage';
+import { addDays, isSameDay, getDate } from 'date-fns';
 
 export default function Calendar({availability, teacherData}) {
     const [weekOffset, setWeekOffset] = useState(0);
@@ -14,26 +16,40 @@ export default function Calendar({availability, teacherData}) {
     const handleNextWeek = () => {setWeekOffset(prev => prev + 1);};
 
     const Events = () => {
-        if (!availability) {
-            setError('No availability data found');
+        console.log("Availability in event:", availability);
+        
+        if (!Array.isArray(availability)) {
+            console.log("Availability is not an array");
             return null;
         }
 
         const { monday, sunday } = getWeekBounds(weekOffset);
+        const mondayBound = normalizeToMidnight(monday);
+        const sundayBound = normalizeToMidnight(sunday);
+        
+        console.log("Week bounds:", mondayBound, sundayBound);
         
         const eventList = availability.map((event, index) => {
+            console.log("Processing event:", event);
+            
             if (!event?.date?.year || !event?.date?.month || !event?.date?.day) {
-                setError(`Invalid event format at position ${index + 1}`);
+                console.log("Invalid event format:", event);
                 return null;
             }
             
             try {
                 const eventDate = normalizeToMidnight(event.date);
-                const mondayBound = normalizeToMidnight(monday);
-                const sundayBound = normalizeToMidnight(sunday);
+                
+                console.log("Date comparisons:", {
+                    eventDate,
+                    mondayBound,
+                    sundayBound,
+                    isWithinBounds: eventDate >= mondayBound && eventDate <= sundayBound
+                });
                 
                 if (eventDate >= mondayBound && eventDate <= sundayBound) {
                     const adjustedWeekday = getAdjustedWeekday(eventDate);
+                    console.log("Event within bounds:", { adjustedWeekday });
                     
                     return (
                         <EventDisplay 
@@ -44,9 +60,10 @@ export default function Calendar({availability, teacherData}) {
                         />
                     );
                 }
+                console.log("Event outside bounds");
                 return null;
             } catch (error) {
-                setError(`Error processing event at position ${index + 1}: ${error.message}`);
+                console.error("Error processing event:", error);
                 return null;
             }
         }).filter(Boolean);
@@ -109,7 +126,15 @@ export default function Calendar({availability, teacherData}) {
 
     const WeekdayHeader = () => {
         const { monday } = getWeekBounds(weekOffset);
-        const weekDates = generateWeekDates(monday);
+        const mondayDate = new Date(monday.year, monday.month - 1, monday.day);
+        
+        const weekDates = Array(7).fill(null).map((_, index) => {
+            const date = addDays(mondayDate, index);
+            return {
+                date: getDate(date),
+                isToday: isSameDay(date, new Date())
+            };
+        });
         
         const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
         const mobileDayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];

@@ -21,19 +21,23 @@ import {
  * @param {number} date.day - Day of month
  * @returns {Date} Date object normalized to midnight
  */
-export function normalizeToMidnight({ year, month, day }) {
-    return setMilliseconds(
-        setSeconds(
-            setMinutes(
-                setHours(
-                    new Date(year, month - 1, day),
-                    0
-                ),
-                0
-            ),
-            0
-        ),
-        0
+export function normalizeToMidnight(date) {
+    // If date is already a Date object, use it directly
+    if (date instanceof Date) {
+        return new Date(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate(),
+            0, 0, 0, 0
+        );
+    }
+    
+    // If date is an object with year, month, day properties
+    return new Date(
+        date.year,
+        date.month - 1, // JavaScript months are 0-based
+        date.day,
+        0, 0, 0, 0
     );
 }
 
@@ -64,11 +68,23 @@ export function generateWeekDates(monday) {
  * @param {number} weekOffset - Number of weeks to offset from current week
  * @returns {{monday: Date, sunday: Date}} Monday and Sunday dates
  */
-export function getWeekBounds(weekOffset = 0) {
-    const curr = addWeeks(new Date(), weekOffset);
-    const monday = startOfWeek(curr, { weekStartsOn: 1 });
+export function getWeekBounds(weekOffset) {
+    const today = new Date();
+    const monday = startOfWeek(addWeeks(today, weekOffset), { weekStartsOn: 1 });
     const sunday = addDays(monday, 6);
-    return { monday, sunday };
+    
+    return {
+        monday: {
+            year: monday.getFullYear(),
+            month: monday.getMonth() + 1, // Convert back to 1-based month
+            day: monday.getDate()
+        },
+        sunday: {
+            year: sunday.getFullYear(),
+            month: sunday.getMonth() + 1, // Convert back to 1-based month
+            day: sunday.getDate()
+        }
+    };
 }
 
 /**
@@ -92,3 +108,7 @@ export const formatTime = (time) => {
     const minutes = (time % 1) * 60;
     return `${hours}:${minutes === 0 ? '00' : minutes}`;
 }; 
+
+export const handleTimeSlotClick = () => {
+    // stab
+}
