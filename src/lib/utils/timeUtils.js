@@ -108,7 +108,3 @@ export const formatTime = (time) => {
     const minutes = (time % 1) * 60;
     return `${hours}:${minutes === 0 ? '00' : minutes}`;
 }; 
-
-export const handleTimeSlotClick = () => {
-    // stab
-}

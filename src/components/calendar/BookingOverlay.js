@@ -15,17 +15,17 @@ export default function BookingOverlay({ selectedSlot, teacherData, onConfirm, o
                 teacherId: teacherData.uid,
                 date: selectedSlot.date,
                 startTime: selectedSlot.startTime,
-                endTime: selectedSlot.startTime + 1, // 1 hour lesson
+                endTime: selectedSlot.startTime + 1,
                 status: "confirmed",
                 createdAt: new Date().toISOString(),
                 price: teacherData.pricing
             };
 
-            await onConfirm(booking);
+            await onConfirm(booking, teacherData.availability, user.balance);
             onClose();
         } catch (error) {
             console.error("Booking error:", error);
-            alert("Failed to book lesson. Please try again.");
+            alert(error.message);
         } finally {
             setIsSubmitting(false);
         }

@@ -22,7 +22,7 @@ export default function StudentAccount() {
         if (selectedValue) {
             console.log('Selected teacher ID:', selectedValue);
             const teacherData = teacherList[selectedValue];
-            setTeacherPrice(teacherData.price);
+            setTeacherPrice(teacherData.pricing);
             setTeacherName(teacherData.nickname);
             console.log('Teacher data:', teacherData);
             setTeacherAvailability(teacherData.availability);

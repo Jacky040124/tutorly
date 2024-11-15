@@ -111,6 +111,12 @@ export default function TeacherAccount() {
                 <Header/>
                 <Calendar 
                     availability={availability} 
+                    teacherData={{
+                        uid: user.uid,
+                        email: user.email,
+                        // Include other necessary teacher data
+                    }}
+                    userType="teacher"
                     handleClickEvent={handleClickEvent}
                 />
                 {showCalendarOverlay && <CalendarOverlay setShowOverlay={setShowCalendarOverlay}/>}

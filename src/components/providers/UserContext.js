@@ -140,7 +140,7 @@ export function UserProvider({ children }) {
         querySnapshot.forEach((doc) => {
             const userData = doc.data();
             if (userData.type === "teacher") {
-                teachers[userData.email] = userData;
+                teachers[userData.uid] = userData;
             }
         });
         setTeacherList(teachers);
