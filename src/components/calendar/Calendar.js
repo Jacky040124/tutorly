@@ -14,7 +14,8 @@ export default function Calendar({availability, userType, handleClickEvent}) {
     const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
     const [error, setError] = useState('');
     const [bookings, setBookings] = useState([]);
-    const { user, selectedTeacher, teacherList } = useUser();
+    const [bookingConfirmed, setBookingConfirmed] = useState(false);
+    const { user, selectedTeacher, teacherList, updateUserBalance } = useUser();
     const teacherData = userType === 'teacher' ? user : teacherList[selectedTeacher];
 
     useEffect(() => {
@@ -41,7 +42,7 @@ export default function Calendar({availability, userType, handleClickEvent}) {
         };
 
         fetchBookings();
-    }, [userType, user?.uid, teacherData?.uid]);
+    }, [userType, user?.uid, teacherData?.uid, bookingConfirmed]);
 
     if (userType === 'teacher' && !user?.uid) {
         return <div>Loading user data...</div>;
@@ -352,7 +353,14 @@ export default function Calendar({availability, userType, handleClickEvent}) {
                 <BookingOverlay
                     selectedSlot={selectedTimeSlot}
                     teacherData={teacherData}
-                    onConfirm={(booking) => handleBookingConfirmed(booking, availability, setShowBookingOverlay, user.balance)}
+                    onConfirm={(booking) => handleBookingConfirmed(
+                        booking,
+                        teacherData.availability,
+                        setShowBookingOverlay,
+                        user.balance,
+                        setBookingConfirmed,
+                        updateUserBalance
+                    )}
                     onClose={() => setShowBookingOverlay(false)}
                 />
             )}

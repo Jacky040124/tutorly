@@ -4,7 +4,7 @@ import { useUser } from '@/components/providers/UserContext';
 import { formatTime } from '@/lib/utils/timeUtils';
 
 export default function BookingOverlay({ selectedSlot, teacherData, onConfirm, onClose }) {
-    const { user } = useUser();
+    const { user, updateUserBalance } = useUser();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleConfirm = async () => {
@@ -21,7 +21,7 @@ export default function BookingOverlay({ selectedSlot, teacherData, onConfirm, o
                 price: teacherData.pricing
             };
 
-            await onConfirm(booking, teacherData.availability, user.balance);
+            await onConfirm(booking, teacherData.availability, user.balance, updateUserBalance);
             onClose();
         } catch (error) {
             console.error("Booking error:", error);

@@ -136,6 +136,19 @@ export function UserProvider({ children }) {
         }
     };
 
+    const updateUserBalance = async (newBalance) => {
+        if (!user?.uid) return;
+        try {
+            setUser(prevUser => ({
+                ...prevUser,
+                balance: newBalance
+            }));
+        } catch (error) {
+            console.error("Error updating user balance:", error);
+            throw error;
+        }
+    };
+
     // fetch a list of all teachers
     const fetchTeachers = async () => {
         const teachers = {};
@@ -164,6 +177,7 @@ export function UserProvider({ children }) {
         updateDescription,
         selectedTeacher,
         setSelectedTeacher,
+        updateUserBalance,
     };
 
     return (
