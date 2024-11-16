@@ -1,70 +1,64 @@
-import BookingOverlay from '@/components/calendar/BookingOverlay';
 import { useState, useEffect } from 'react';
-import { normalizeToMidnight,getAdjustedWeekday,getWeekBounds} from '@/lib/utils/timeUtils';
-import { handleBookingConfirmed } from '@/components/booking/ConfirmBook'
-import ErrorMessage from '@/components/common/ErrorMessage';
-import { addDays, isSameDay, getDate } from 'date-fns';
 import { useUser } from '@/components/providers/UserContext';
+import { normalizeToMidnight, getAdjustedWeekday, getWeekBounds, calculateGridPositions, calculateSelectedDate} from '@/lib/utils/timeUtils';
+import { generateWeekDates } from '@/lib/utils/dateUtils';
+import { WEEKDAY_LABELS,WEEKDAY_COLUMN_MAPPING } from '@/lib/utils/dateUtils';
 import { getTeacherBookings } from '@/services/booking.service';
+import { handleBookingConfirmed } from '@/components/booking/ConfirmBook';
+import BookingOverlay from './BookingOverlay';
+import ErrorMessage from '@/components/common/ErrorMessage';
 
-export default function Calendar({availability, teacherData, userType, handleClickEvent}) {
+export default function Calendar({availability, userType, handleClickEvent}) {
     const [weekOffset, setWeekOffset] = useState(0);
     const [showBookingOverlay, setShowBookingOverlay] = useState(false);
     const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
     const [error, setError] = useState('');
     const [bookings, setBookings] = useState([]);
-    const { user } = useUser();
+    const { user, selectedTeacher, teacherList } = useUser();
+    const teacherData = userType === 'teacher' ? user : teacherList[selectedTeacher];
 
     useEffect(() => {
         const fetchBookings = async () => {
-            console.log('Fetching bookings...');
-            console.log('TeacherData:', teacherData);
-            
-            if (!teacherData) {
-                console.log('TeacherData is null or undefined');
-                return;
-            }
-            
-            if (!teacherData.uid) {
-                console.log('TeacherData structure:', Object.keys(teacherData));
-                console.log('Missing uid in teacherData');
-                return;
-            }
-
-            console.log("Attempting to fetch bookings for teacher:", teacherData.uid);
-            try {
-                const fetchedBookings = await getTeacherBookings(teacherData.uid);
-                console.log("Fetched bookings:", fetchedBookings);
-                setBookings(fetchedBookings);
-            } catch (error) {
-                console.error("Error fetching bookings:", error);
-                setError("Failed to fetch bookings");
+            if (userType === 'teacher' && user?.uid) {
+                try {
+                    const fetchedBookings = await getTeacherBookings(user.uid);
+                    console.log("Fetched bookings:", fetchedBookings);
+                    setBookings(fetchedBookings);
+                } catch (error) {
+                    console.error("Error fetching bookings:", error);
+                    setError("Failed to fetch bookings");
+                }
+            } else if (userType === 'student' && teacherData?.uid) {
+                try {
+                    const fetchedBookings = await getTeacherBookings(teacherData.uid);
+                    console.log("Fetched bookings:", fetchedBookings);
+                    setBookings(fetchedBookings);
+                } catch (error) {
+                    console.error("Error fetching bookings:", error);
+                    setError("Failed to fetch bookings");
+                }
             }
         };
 
         fetchBookings();
-    }, [teacherData?.uid]);
+    }, [userType, user?.uid, teacherData?.uid]);
 
-    if (!teacherData?.uid) {
-        return <div>Loading teacher data...</div>;
+    if (userType === 'teacher' && !user?.uid) {
+        return <div>Loading user data...</div>;
     }
 
-    useEffect(() => {
-        console.log("showBookingOverlay changed to:", showBookingOverlay);
-    }, [showBookingOverlay]);
+    if (userType === 'student' && !teacherData?.uid) {
+        return <div>Please select a teacher</div>;
+    }
 
-    const handleLastWeek = () => {setWeekOffset(prev => prev - 1);};
+    const handlePreviousWeek = () => {setWeekOffset(prev => prev - 1);};
     const handleNextWeek = () => {setWeekOffset(prev => prev + 1);};
 
     const handleTimeSlotClick = (day, startTime, endTime) => {
         if (userType === 'student') {
             if (endTime - startTime >= 1) {
-                const { monday } = getWeekBounds(weekOffset);
-                const selectedDate = new Date(monday.year, monday.month - 1, monday.day);
-                selectedDate.setDate(selectedDate.getDate() + (day - 1));
-                
                 setSelectedTimeSlot({
-                    date: { year: selectedDate.getFullYear(), month: selectedDate.getMonth() + 1, day: selectedDate.getDate()},
+                    date: calculateSelectedDate(day, weekOffset),
                     startTime: startTime,
                     endTime: Math.min(startTime + 1, endTime)
                 });
@@ -96,7 +90,16 @@ export default function Calendar({availability, teacherData, userType, handleCli
                 const eventDate = normalizeToMidnight(event.date);
                 
                 if (eventDate >= mondayBound && eventDate <= sundayBound) {
-                    const adjustedWeekday = getAdjustedWeekday(eventDate);
+                    const eventDay = new Date(event.date.year, event.date.month - 1, event.date.day).getDay();
+                    // Convert Sunday (0) to 7, otherwise use day number
+                    const adjustedWeekday = eventDay === 0 ? 7 : eventDay;
+                    
+                    console.log('Event:', {
+                        date: event.date,
+                        calculatedDay: adjustedWeekday,
+                        startTime: event.startTime,
+                        endTime: event.endTime
+                    });
                     
                     return (
                         <EventDisplay 
@@ -110,11 +113,12 @@ export default function Calendar({availability, teacherData, userType, handleCli
                 }
                 return null;
             } catch (error) {
+                console.error('Error processing event:', error);
                 return null;
             }
         });
 
-        // Process bookings
+        // Similar update for bookings
         const bookingEvents = bookings.map((booking, index) => {
             if (!booking?.date?.year || !booking?.date?.month || !booking?.date?.day) {
                 return null;
@@ -124,7 +128,15 @@ export default function Calendar({availability, teacherData, userType, handleCli
                 const bookingDate = normalizeToMidnight(booking.date);
                 
                 if (bookingDate >= mondayBound && bookingDate <= sundayBound) {
-                    const adjustedWeekday = getAdjustedWeekday(bookingDate);
+                    const bookingDay = new Date(booking.date.year, booking.date.month - 1, booking.date.day).getDay();
+                    const adjustedWeekday = bookingDay === 0 ? 7 : bookingDay;
+                    
+                    console.log('Booking:', {
+                        date: booking.date,
+                        calculatedDay: adjustedWeekday,
+                        startTime: booking.startTime,
+                        endTime: booking.endTime
+                    });
                     
                     return (
                         <EventDisplay 
@@ -139,6 +151,7 @@ export default function Calendar({availability, teacherData, userType, handleCli
                 }
                 return null;
             } catch (error) {
+                console.error('Error processing booking:', error);
                 return null;
             }
         });
@@ -154,7 +167,8 @@ export default function Calendar({availability, teacherData, userType, handleCli
     
     
     const EventDisplay = ({day, startTime, endTime, isBooking, studentId}) => {
-        const numberToColStart = {
+        // Map days (1-7) to column classes
+        const WEEKDAY_COLUMN_MAPPING = {
             1: 'sm:col-start-1',  // Monday
             2: 'sm:col-start-2',  // Tuesday
             3: 'sm:col-start-3',  // Wednesday
@@ -167,8 +181,17 @@ export default function Calendar({availability, teacherData, userType, handleCli
         const startRow = (startTime * 12) + 2;
         const EndRows = (endTime-startTime) * 12;
 
+        console.log('EventDisplay:', {
+            day,
+            columnClass: WEEKDAY_COLUMN_MAPPING[day],
+            startTime,
+            endTime,
+            startRow,
+            EndRows
+        });
+
         return (
-            <li className={`relative mt-px hidden ${numberToColStart[day]} sm:flex`} 
+            <li className={`relative mt-px hidden ${WEEKDAY_COLUMN_MAPPING[day]} sm:flex`} 
                 style={{ gridRow: `${startRow} / span ${EndRows}` }}>
                 <a onClick={() => !isBooking && handleTimeSlotClick(day, startTime, endTime)} 
                    className={`group absolute inset-1 flex flex-col overflow-y-auto rounded-lg 
@@ -188,44 +211,33 @@ export default function Calendar({availability, teacherData, userType, handleCli
                     </p>
                 </a>
             </li>
-        )
-    }
+        );
+    };
 
     const VerticalGrid = () => {
         return (
-        <div className={`col-start-1 col-end-2 row-start-1 hidden grid-cols-7 grid-rows-1 divide-x divide-gray-100 sm:grid sm:grid-cols-7`}>
-            <div className="col-start-1 row-span-full"></div>
-            <div className="col-start-2 row-span-full"></div>
-            <div className="col-start-3 row-span-full"></div>
-            <div className="col-start-4 row-span-full"></div>
-            <div className="col-start-5 row-span-full"></div>
-            <div className="col-start-6 row-span-full"></div>
-            <div className="col-start-7 row-span-full"></div>
-            <div className="col-start-8 row-span-full w-8"></div>
-        </div>
+            <div className="col-start-1 col-end-2 row-start-1 hidden grid-cols-7 grid-rows-1 divide-x divide-gray-100 sm:grid sm:grid-cols-7">
+                <div className="col-start-1 row-span-full" data-day="Monday"></div>
+                <div className="col-start-2 row-span-full" data-day="Tuesday"></div>
+                <div className="col-start-3 row-span-full" data-day="Wednesday"></div>
+                <div className="col-start-4 row-span-full" data-day="Thursday"></div>
+                <div className="col-start-5 row-span-full" data-day="Friday"></div>
+                <div className="col-start-6 row-span-full" data-day="Saturday"></div>
+                <div className="col-start-7 row-span-full" data-day="Sunday"></div>
+                <div className="col-start-8 row-span-full w-8"></div>
+            </div>
         );
     };
     
-
     const WeekdayHeader = () => {
         const { monday } = getWeekBounds(weekOffset);
         const mondayDate = new Date(monday.year, monday.month - 1, monday.day);
+        const weekDates = generateWeekDates(mondayDate);
         
-        const weekDates = Array(7).fill(null).map((_, index) => {
-            const date = addDays(mondayDate, index);
-            return {
-                date: getDate(date),
-                isToday: isSameDay(date, new Date())
-            };
-        });
-        
-        const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        const mobileDayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-
         return (
             <div className="sticky top-0 z-30 flex-none bg-white shadow ring-1 ring-black ring-opacity-5 sm:pr-8">
                 <div className="grid grid-cols-7 text-sm leading-6 text-gray-500 sm:hidden">
-                    {mobileDayLabels.map((day, i) => (
+                    {WEEKDAY_LABELS.mobile.map((day, i) => (
                         <button key={i} type="button" className="flex flex-col items-center pb-3 pt-2">
                             {day}
                             <span className={`mt-1 flex h-8 w-8 items-center justify-center font-semibold ${
@@ -239,7 +251,7 @@ export default function Calendar({availability, teacherData, userType, handleCli
 
                 <div className="-mr-px hidden grid-cols-7 divide-x divide-gray-100 border-r border-gray-100 text-sm leading-6 text-gray-500 sm:grid">
                     <div className="col-end-1 w-14"></div>
-                    {dayLabels.map((day, i) => (
+                    {WEEKDAY_LABELS.full.map((day, i) => (
                         <div key={i} className="flex items-center justify-center py-3">
                             <span className="flex items-baseline">
                                 {day}
@@ -259,11 +271,10 @@ export default function Calendar({availability, teacherData, userType, handleCli
     return (
         <>
             <div className="flex h-full flex-col">
-
                 <div className="isolate flex flex-auto flex-col overflow-auto bg-white">
                     <div className="flex max-w-full flex-none flex-col sm:max-w-none md:max-w-full" style={{ width: "165%" }}>
                         <div className="flex justify-between items-center">
-                            <button onClick={handleLastWeek} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            <button onClick={handlePreviousWeek} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
                                 Previous Week
                             </button>
                             <button onClick={handleNextWeek} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
@@ -346,7 +357,7 @@ export default function Calendar({availability, teacherData, userType, handleCli
                 />
             )}
             
-            {/* Debug section */}
+            {/* Debug */}
             <div className="mt-4 p-4 bg-gray-100 rounded-lg">
                 <h3 className="text-lg font-semibold mb-2">Debug Information:</h3>
                 <div className="space-y-2">

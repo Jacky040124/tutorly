@@ -53,6 +53,16 @@ export default function BookingOverlay({ selectedSlot, teacherData, onConfirm, o
                                 <p className="text-sm font-bold text-gray-700 mt-2">
                                     Price: ${teacherData.pricing}
                                 </p>
+                                
+                                <div className="mt-4 p-3 bg-blue-50 rounded-md">
+                                    <p className="text-sm text-blue-800">
+                                        <span className="font-semibold">Payment Notice:</span> Online payment is currently under development. 
+                                        Please e-transfer the lesson fee to your teacher at:
+                                    </p>
+                                    <p className="text-sm font-medium text-blue-900 mt-1">
+                                        {teacherData.email}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                         <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">

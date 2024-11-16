@@ -1,6 +1,6 @@
 "use client";
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { db, auth } from "@/lib/firebase";
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from "@/lib/firebase";
 import { useEffect, useState } from 'react';
 import { useUser } from '@/components/providers/UserContext';
 import Calendar from '@/components/calendar/Calendar';
@@ -111,11 +111,6 @@ export default function TeacherAccount() {
                 <Header/>
                 <Calendar 
                     availability={availability} 
-                    teacherData={{
-                        uid: user.uid,
-                        email: user.email,
-                        // Include other necessary teacher data
-                    }}
                     userType="teacher"
                     handleClickEvent={handleClickEvent}
                 />

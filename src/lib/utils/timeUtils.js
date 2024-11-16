@@ -1,15 +1,4 @@
-import { 
-    setHours,
-    setMinutes,
-    setSeconds,
-    setMilliseconds,
-    getDay,
-    startOfWeek, 
-    addDays, 
-    getDate, 
-    isSameDay,
-    addWeeks
-} from 'date-fns';
+import { getDay,startOfWeek, addDays, getDate, isSameDay,addWeeks} from 'date-fns';
 
 // ... other utility functions ...
 
@@ -46,9 +35,20 @@ export function normalizeToMidnight(date) {
  * @param {Date} date - Date object
  * @returns {number} Adjusted weekday where Monday is 1 and Sunday is 7
  */
-export function getAdjustedWeekday(date) {
-    const weekday = getDay(date);
-    return weekday === 0 ? 7 : weekday;
+export function getAdjustedWeekday(eventDate, weekOffset = 0) {
+    // Get the Monday of the current week being viewed
+    const today = new Date();
+    const monday = startOfWeek(addWeeks(today, weekOffset), { weekStartsOn: 1 });
+    
+    // Convert eventDate to a Date object if it's not already
+    const date = eventDate instanceof Date ? eventDate : 
+                 new Date(eventDate.year, eventDate.month - 1, eventDate.day);
+    
+    // Get the day of the week (0-6, where 0 is Sunday)
+    const day = date.getDay();
+    
+    // Convert to 1-7 where 1 is Monday and 7 is Sunday
+    return day === 0 ? 7 : day;
 }
 
 /**
@@ -108,3 +108,26 @@ export const formatTime = (time) => {
     const minutes = (time % 1) * 60;
     return `${hours}:${minutes === 0 ? '00' : minutes}`;
 }; 
+
+
+export function calculateSelectedDate(day, weekOffset) {
+    const today = new Date();
+    const monday = new Date(today);
+    monday.setDate(monday.getDate() - monday.getDay() + 1 + (weekOffset * 7));
+    
+    const selectedDate = new Date(monday);
+    selectedDate.setDate(monday.getDate() + (day - 1));
+    
+    return {
+        year: selectedDate.getFullYear(),
+        month: selectedDate.getMonth() + 1,
+        day: selectedDate.getDate()
+    };
+}
+
+
+export const calculateGridPositions = (startTime, endTime) => {
+    const startRow = (startTime * 12) + 2;
+    const spanRows = (endTime - startTime) * 12;
+    return { startRow, spanRows };
+};

@@ -8,31 +8,10 @@ import ErrorMessage from '@/components/common/ErrorMessage';
 
 
 export default function StudentAccount() {
-    const { user, loading: userLoading, teacherList, fetchTeachers} = useUser();
+    const { user, loading: userLoading, teacherList, fetchTeachers, selectedTeacher, setSelectedTeacher} = useUser();
     const [isLoading, setIsLoading] = useState(true);
-    const [selectedTeacher, setSelectedTeacher] = useState('');
-    const [teacherAvailability, setTeacherAvailability] = useState(null);
-    const [teacherName, setTeacherName] = useState('');
-    const [teacherPrice, setTeacherPrice] = useState(0);
-    const [error, setError] = useState('')
-
-    async function handleSelectTeacher(e) {
-        const selectedValue = e.target.value;
-        setSelectedTeacher(selectedValue);
-        if (selectedValue) {
-            console.log('Selected teacher ID:', selectedValue);
-            const teacherData = teacherList[selectedValue];
-            setTeacherPrice(teacherData.pricing);
-            setTeacherName(teacherData.nickname);
-            console.log('Teacher data:', teacherData);
-            setTeacherAvailability(teacherData.availability);
-            console.log('teacher Availability:', teacherData.availability);
-        } else {
-            setTeacherAvailability(null);
-            setTeacherName('');
-            setTeacherPrice(0);
-        }
-    }
+    const [error, setError] = useState('');
+    const handleSelectTeacher = (e) => setSelectedTeacher(e.target.value);
 
     const Header = () => {
         return(
@@ -42,16 +21,12 @@ export default function StudentAccount() {
                 </h1>
 
                 <div>
-                    <select 
-                        onChange={handleSelectTeacher}
-                        value={selectedTeacher}
-                        className="rounded-md border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
-                    >
+                    <select onChange={handleSelectTeacher} value={selectedTeacher} className="rounded-md border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50">
                         <option value="">Select a Teacher</option>
                         {teacherList && Object.entries(teacherList).map(([id, teacher]) => (
-                            <option key={id} value={id}>
-                                {teacher.nickname}
-                            </option>
+                        <option key={id} value={id}> 
+                            {teacher.nickname} 
+                        </option>
                         ))}
                     </select>
                 </div>
@@ -60,8 +35,6 @@ export default function StudentAccount() {
     }
 
     useEffect(() => {
-        console.log("Student page mount - userLoading:", userLoading, "user:", user, "isLoading:", isLoading);
-        
         const fetchData = async () => {
             try {
                 if (!user?.uid) {
@@ -104,26 +77,20 @@ export default function StudentAccount() {
         <div>
             {error && <ErrorMessage message={error} />}
             <h2>Hi, {user.nickname}</h2>
-            <h1> {teacherName ? `${teacherName}'s rate is ${teacherPrice} dollars per hour` : 'Select a teacher'}</h1>
+            <h1> {selectedTeacher && teacherList[selectedTeacher] ? 
+                `${teacherList[selectedTeacher].nickname}'s rate is ${teacherList[selectedTeacher].pricing} dollars per hour` 
+                : 'Select a teacher'}
+            </h1>
             <h1>Your balance is {user.balance} dollars</h1>
             <Header/>
             <div className="flex h-full flex-col">
-                <Calendar 
-                    availability={teacherAvailability}
-                    teacherData={{
-                        uid: selectedTeacher,
-                        nickname: teacherName,
-                        pricing: teacherPrice
-                    }}
-                    userType="student"
-                />
-
+                <Calendar availability={teacherList[selectedTeacher]?.availability} userType="student"/>
+                
                 <div className="text-sm text-gray-500 mt-2">
                     Debug - Selected Teacher: {selectedTeacher}
                     <br />
-                    Debug - Availability: {JSON.stringify(teacherAvailability)}
+                    Debug - Availability: {JSON.stringify(teacherList[selectedTeacher]?.availability)}
                 </div>
-
             </div>
         </div>
     );

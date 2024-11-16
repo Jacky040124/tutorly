@@ -12,6 +12,7 @@ export function UserProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [availability, setAvailability] = useState([]);
     const [teacherList, setTeacherList] = useState({});
+    const [selectedTeacher, setSelectedTeacher] = useState('');
 
     useEffect(() => {
         console.log("UserContext mount");
@@ -56,6 +57,7 @@ export function UserProvider({ children }) {
         return () => unsubscribe();
     }, []);
 
+    // TODO : Refactor into auth.service
     const signIn = async (email, password) => {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -134,6 +136,7 @@ export function UserProvider({ children }) {
         }
     };
 
+    // fetch a list of all teachers
     const fetchTeachers = async () => {
         const teachers = {};
         const querySnapshot = await getDocs(collection(db, "users"));
@@ -159,6 +162,8 @@ export function UserProvider({ children }) {
         updatePrice,
         updateNickname,
         updateDescription,
+        selectedTeacher,
+        setSelectedTeacher,
     };
 
     return (

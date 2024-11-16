@@ -3,6 +3,10 @@ import { db } from '@/lib/firebase';
 
 export async function confirmBooking(booking, availability, userBalance) {
     try {
+        if (userBalance < booking.price) {
+            throw new Error("Insufficient balance to make this booking");
+        }
+
         console.log('Booking data:', {
             teacherId: booking.teacherId,
             teacherIdType: typeof booking.teacherId,
