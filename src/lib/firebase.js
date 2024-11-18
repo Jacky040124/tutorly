@@ -1,22 +1,21 @@
-import { doc, setDoc, getDoc, collection, getDocs } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { doc, setDoc, getDoc, collection, getDocs } from "firebase/firestore";
 
-
-// = Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyDdKApKZNEERKmPLfB8SxlGsJRTZV5ALvc",
-    authDomain: "tutor-website-5528f.firebaseapp.com",
-    projectId: "tutor-website-5528f",
-    storageBucket: "tutor-website-5528f.appspot.com",
-    messagingSenderId: "320690040214",
-    appId: "1:320690040214:web:fde29b5326692c27e981b7",
-    measurementId: "G-J0MZ8W9SSG"
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
-// Initialize Firebase app and Firestore
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+
 export { app, db, auth, doc, setDoc, getDoc, collection, getDocs };
 
