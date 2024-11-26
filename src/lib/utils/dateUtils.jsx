@@ -1,15 +1,5 @@
 import {addDays, getDate, isSameDay,} from 'date-fns';
 
-export const WEEKDAY_COLUMN_MAPPING = {
-    1: 'sm:col-start-1',  // Monday
-    2: 'sm:col-start-2',  // Tuesday
-    3: 'sm:col-start-3',  // Wednesday
-    4: 'sm:col-start-4',  // Thursday
-    5: 'sm:col-start-5',  // Friday
-    6: 'sm:col-start-6',  // Saturday
-    7: 'sm:col-start-7'   // Sunday
-}; 
-
 export const WEEKDAY_LABELS = {
     full: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     mobile: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
@@ -23,4 +13,27 @@ export const generateWeekDates = (mondayDate) => {
             isToday: isSameDay(date, new Date())
         };
     });
+};
+
+export const getRepeatingDates = (baseDate) => {
+  const dates = [];
+  const currentMonth = baseDate.month;
+  let currentDate = new Date(baseDate.year, baseDate.month - 1, baseDate.day);
+  
+  // Keep adding weeks until we either hit 4 dates or leave current month
+  while (dates.length < 4) {
+    const nextDate = {
+      year: currentDate.getFullYear(),
+      month: currentDate.getMonth() + 1,
+      day: currentDate.getDate()
+    };
+    
+    // Stop if we've moved to next month
+    if (nextDate.month !== currentMonth) break;
+    
+    dates.push(nextDate);
+    currentDate.setDate(currentDate.getDate() + 7);
+  }
+  
+  return dates;
 };

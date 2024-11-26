@@ -2,7 +2,14 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import { onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, getDoc, collection, getDocs } from '@/lib/firebase'
+import {
+  doc,
+  setDoc,
+  getDoc,
+  collection,
+  getDocs,
+  runTransaction,
+} from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 
 const UserContext = createContext();
@@ -82,9 +89,11 @@ export function UserProvider({ children }) {
     const updateAvailability = async (newAvailability) => {
         if (!user?.uid) return;
         try {
-            const docRef = doc(db, "users", user.uid);
-            await setDoc(docRef, { availability: newAvailability }, { merge: true });
-            setAvailability(newAvailability);
+            await runTransaction(db, async (transaction) => {
+                const docRef = doc(db, "users", user.uid);
+                transaction.set(docRef, { availability: newAvailability }, { merge: true });
+                setAvailability(newAvailability);
+            });
         } catch (error) {
             console.error("Error updating availability:", error);
             throw error;

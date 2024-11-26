@@ -8,10 +8,13 @@
     "start": "next start"
   },
   "dependencies": {
+    "@google-apps/meet": "^0.3.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "dotenv": "^16.4.5",
     "firebase-admin": "^12.6.0",
     "firebase-functions": "^6.1.0",
+    "googleapis": "^144.0.0",
     "next": "^14.2.15",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -23,7 +26,9 @@
     "eslint-config-next": "14.2.15",
     "eslint-plugin-react": "^7.37.2",
     "globals": "^15.12.0",
+    "node-polyfill-webpack-plugin": "^4.0.0",
     "postcss": "^8",
-    "tailwindcss": "^3.4.1"
+    "tailwindcss": "^3.4.1",
+    "webpack": "^5.96.1"
   }
 }

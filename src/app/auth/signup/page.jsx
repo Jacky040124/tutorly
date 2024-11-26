@@ -1,60 +1,71 @@
 "use client";
 
 import { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
-import { db, auth } from "@/lib/firebase";
 import Link from "next/link";
 import { Button } from "@/components/common/Button";
 import { TextField } from "@/components/common/Fields";
 import ErrorMessage from "@/components/common/ErrorMessage";
+import {
+  isVerificationLink,
+  checkEmailExists,
+  createNewUser,
+  sendVerificationEmail,
+} from "@/services/auth.service";
 
 export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [nickname, setnickname] = useState("");
+  const [nickname, setNickname] = useState("");
   const [error, setError] = useState("");
+
   const handleSignup = async (e) => {
-    e.preventDefault(); // Prevent form submission
+    e.preventDefault();
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
-
-      await setDoc(doc(db, "users", user.uid), {
-        createdAt: new Date().toISOString(),
-        email: user.email,
-        uid: user.uid,
-        type: "student",
-        nickname: nickname,
-        balance: 0,
-        bookingHistory: [],
-      });
-      setError("Sign Up Successful, Sign in here");
-    } catch (signUpError) {
-      if (signUpError.code === "auth/email-already-in-use") {
+      if (await checkEmailExists(email)) {
         setError("You already have an Account, Sign in here");
-      } else {
-        setError(signUpError.message);
+        return;
       }
-      console.error("Error during sign-up:", signUpError.message);
+
+      if (isVerificationLink()) {
+        const savedEmail = window.localStorage.getItem("emailForSignIn");
+
+        if (!savedEmail || savedEmail !== email) {
+          setError("Please use the same email that was used for verification.");
+          return;
+        }
+
+        try {
+          await createNewUser(email, password, nickname);
+          window.localStorage.removeItem("emailForSignIn");
+          setError("Sign Up Successful, Sign in here");
+        } catch (signUpError) {
+          setError(signUpError.message);
+          console.error("Error during sign-up:", signUpError.message);
+        }
+        return;
+      }
+
+      // If not a verification link, send the verification email
+      await sendVerificationEmail(email);
+      window.localStorage.setItem("emailForSignIn", email);
+      setError("Verification email sent! Please check your inbox.");
+    } catch (error) {
+      setError(error.message);
+      console.error("Error:", error);
     }
   };
 
   const handleEmailChange = (e) => setEmail(e.target.value);
   const handlePasswordChange = (e) => setPassword(e.target.value);
-  const handleNicknameChange = (e) => setnickname(e.target.value);
+  const handleNicknameChange = (e) => setNickname(e.target.value);
 
   return (
-    <div className="flex min-h-screen">
-      <div className="w-1/2 flex flex-col px-8 lg:px-12 xl:px-16">
+    <div className="auth-container">
+      <div className="auth-form-container">
         <div className="absolute top-4 left-4">
           <Link href="/" aria-label="Home">
-            <Button variant="outline" color="slate">
+            <Button variant="outline" color="slate" className="overlay-button-secondary">
               ← Back to home
             </Button>
           </Link>
@@ -110,7 +121,7 @@ export default function SignUp() {
                   className="w-full flex justify-center bg-green-600 hover:bg-green-700"
                   onClick={handleSignup}
                 >
-                  Sign up as teacher →
+                  Sign up
                 </Button>
                 <Link
                   href="/auth/signupteacher"

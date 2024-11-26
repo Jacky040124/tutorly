@@ -10,18 +10,47 @@ export default function BookingOverlay({ selectedSlot, teacherData, onConfirm, o
     const handleConfirm = async () => {
         setIsSubmitting(true);
         try {
-            const booking = {
-                studentId: user.uid,
-                teacherId: teacherData.uid,
-                date: selectedSlot.date,
-                startTime: selectedSlot.startTime,
-                endTime: selectedSlot.startTime + 1,
-                status: "confirmed",
-                createdAt: new Date().toISOString(),
-                price: teacherData.pricing
-            };
+            const totalPrice = selectedSlot.isRepeating 
+                ? teacherData.pricing * selectedSlot.totalClasses 
+                : teacherData.pricing;
 
-            await onConfirm(booking, teacherData.availability, user.balance, updateUserBalance);
+            if (user.balance < totalPrice) {
+                throw new Error(`Insufficient balance. Required: $${totalPrice}`);
+            }
+
+            if (selectedSlot.isRepeating) {
+                const bulkId = `bulk_${Date.now()}_${user.uid}`;
+                const bulkBookings = Array.from({ length: selectedSlot.totalClasses }, (_, index) => ({
+                    studentId: user.uid,
+                    teacherId: teacherData.uid,
+                    date: {
+                        ...selectedSlot.date,
+                        day: selectedSlot.date.day + (index * 7)
+                    },
+                    startTime: selectedSlot.startTime,
+                    endTime: selectedSlot.startTime + 1,
+                    status: "confirmed",
+                    createdAt: new Date().toISOString(),
+                    price: teacherData.pricing,
+                    bulkId,
+                    lessonNumber: index + 1,
+                    totalLessons: selectedSlot.totalClasses
+                }));
+
+                await onConfirm(bulkBookings, teacherData.availability, user.balance, updateUserBalance);
+            } else {
+                const booking = {
+                    studentId: user.uid,
+                    teacherId: teacherData.uid,
+                    date: selectedSlot.date,
+                    startTime: selectedSlot.startTime,
+                    endTime: selectedSlot.startTime + 1,
+                    status: "confirmed",
+                    createdAt: new Date().toISOString(),
+                    price: teacherData.pricing
+                };
+                await onConfirm(booking, teacherData.availability, user.balance, updateUserBalance);
+            }
             onClose();
         } catch (error) {
             console.error("Booking error:", error);
@@ -51,7 +80,15 @@ export default function BookingOverlay({ selectedSlot, teacherData, onConfirm, o
                                     Time: {formatTime(selectedSlot.startTime)} - {formatTime(selectedSlot.startTime + 1)}
                                 </p>
                                 <p className="text-sm font-bold text-gray-700 mt-2">
-                                    Price: ${teacherData.pricing}
+                                    Price per lesson: ${teacherData.pricing}
+                                    {selectedSlot.isRepeating && (
+                                        <>
+                                            <br />
+                                            <span className="text-blue-600">
+                                                Total for {selectedSlot.totalClasses} lessons: ${teacherData.pricing * selectedSlot.totalClasses}
+                                            </span>
+                                        </>
+                                    )}
                                 </p>
                                 
                                 <div className="mt-4 p-3 bg-blue-50 rounded-md">
@@ -63,12 +100,26 @@ export default function BookingOverlay({ selectedSlot, teacherData, onConfirm, o
                                         {teacherData.email}
                                     </p>
                                 </div>
+                                {selectedSlot.isRepeating && (
+                                    <div className="bg-blue-50 p-3 rounded-md mb-4">
+                                        <p className="text-sm text-blue-800">
+                                            <span className="font-semibold">Bulk Booking:</span> 
+                                            {selectedSlot.totalClasses} lessons
+                                        </p>
+                                        <p className="text-sm text-blue-800">
+                                            Total Price: ${teacherData.pricing * selectedSlot.totalClasses}
+                                        </p>
+                                        <p className="text-xs text-blue-600 mt-1">
+                                            Weekly lessons for {selectedSlot.totalClasses} weeks
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                             <button
                                 type="button"
-                                className="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 sm:col-start-2"
+                                className="overlay-button-primary sm:col-start-2"
                                 onClick={handleConfirm}
                                 disabled={isSubmitting}
                             >
@@ -76,7 +127,7 @@ export default function BookingOverlay({ selectedSlot, teacherData, onConfirm, o
                             </button>
                             <button
                                 type="button"
-                                className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
+                                className="overlay-button-secondary sm:col-start-1 sm:mt-0"
                                 onClick={onClose}
                                 disabled={isSubmitting}
                             >

@@ -8,7 +8,7 @@ export default function Home() {
       <div className="w-full h-[35vh] bg-green-600 p-5">
         <Link href="/auth/signin">
           {" "}
-          <button className="standard-button">
+          <button className="overlay-button-primary">
             Sign in
           </button>{" "}
         </Link>
@@ -40,7 +40,7 @@ export default function Home() {
             </h1>
             <Link href="/auth/signup">
               {" "}
-              <button className="standard-button">
+              <button className="overlay-button-primary">
                 Get Started
               </button>{" "}
             </Link>

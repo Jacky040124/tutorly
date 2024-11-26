@@ -18,6 +18,20 @@ export default function Login() {
     const router = useRouter();
     const { user, setUser } = useUser();
 
+    // Auto-fill from verification flow
+    useEffect(() => {
+        const savedEmail = window.localStorage.getItem("emailForSignIn");
+        const savedPassword = window.localStorage.getItem("tempPassword");
+        
+        if (savedEmail) {
+            setEmail(savedEmail);
+        }
+        if (savedPassword) {
+            setPassword(savedPassword);
+            // Clean up after using
+            window.localStorage.removeItem("tempPassword");
+        }
+    }, []);
 
     const handleSignIn = async (e) => {
         e.preventDefault(); // Prevent form submission
@@ -74,60 +88,62 @@ export default function Login() {
     };
 
     return (
-        <div className="flex min-h-screen">
-            <div className="w-1/2 flex flex-col px-8 lg:px-12 xl:px-16">
-                <div className="absolute top-4 left-4">
-                    <Link href="/" aria-label="Home">
-                        <Button variant="outline" color="slate">
-                            ← Back to home
-                        </Button>
-                    </Link>
-                </div>
-
-                <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
-                    <div>
-                        <h2 className="text-3xl font-bold">Sign in to your account</h2>
-                        <p className="mt-2 text-sm text-gray-600">
-                            Don&apos;t have an account?{' '}
-                            <Link href="/auth/signup" className="font-medium text-green-600 hover:text-green-500">
-                                Sign up
-                            </Link>{' '}
-                            for a free trial.
-                        </p>
+        <div className="auth-container">
+            <div className="auth-form-container">
+                <div className="auth-form">
+                    <div className="absolute top-4 left-4">
+                        <Link href="/" aria-label="Home">
+                            <Button variant="outline" color="slate" className="overlay-button-secondary">
+                                ← Back to home
+                            </Button>
+                        </Link>
                     </div>
 
-                    <div className="mt-8">
-                        <form onSubmit={handleSignIn} className="space-y-6">
-                            <TextField
-                                label="Email address"
-                                name="email"
-                                type="email"
-                                autoComplete="email"
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                            <TextField
-                                label="Password"
-                                name="password"
-                                type="password"
-                                autoComplete="current-password"
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
-                            
-                            {error && <ErrorMessage message={error} />}
+                    <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
+                        <div>
+                            <h2 className="text-3xl font-bold">Sign in to your account</h2>
+                            <p className="mt-2 text-sm text-gray-600">
+                                Don&apos;t have an account?{' '}
+                                <Link href="/auth/signup" className="font-medium text-green-600 hover:text-green-500">
+                                    Sign up
+                                </Link>{' '}
+                                for a free trial.
+                            </p>
+                        </div>
 
-                            <div>
-                                <Button
-                                    type="submit"
-                                    variant="solid"
-                                    color="blue"
-                                    className="w-full flex justify-center bg-green-600 hover:bg-green-700"
-                                >
-                                    Sign in →
-                                </Button>
-                            </div>
-                        </form>
+                        <div className="mt-8">
+                            <form onSubmit={handleSignIn} className="space-y-6">
+                                <TextField
+                                    label="Email address"
+                                    name="email"
+                                    type="email"
+                                    autoComplete="email"
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                                <TextField
+                                    label="Password"
+                                    name="password"
+                                    type="password"
+                                    autoComplete="current-password"
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                                
+                                {error && <ErrorMessage message={error} />}
+
+                                <div>
+                                    <Button
+                                        type="submit"
+                                        variant="solid"
+                                        color="blue"
+                                        className="w-full flex justify-center bg-green-600 hover:bg-green-700"
+                                    >
+                                        Sign in →
+                                    </Button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>

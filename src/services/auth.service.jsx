@@ -1,98 +1,54 @@
-import { auth, db } from '@/lib/firebase';
 import { 
-    signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword,
-    signOut as firebaseSignOut 
-} from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+  signInWithEmailAndPassword, 
+  isSignInWithEmailLink,
+  createUserWithEmailAndPassword,
+  sendSignInLinkToEmail
+} from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 
-export const signIn = async (email, password) => {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const docRef = doc(db, "users", userCredential.user.uid);
-    const docSnap = await getDoc(docRef);
-    
-    if (!docSnap.exists()) {
-        throw new Error("User data not found");
-    }
-    
-    const userData = docSnap.data();
-    let formattedUser;
-
-    if (userData.type === "teacher") {
-        formattedUser = {
-            email: userCredential.user.email,
-            uid: userCredential.user.uid,
-            type: userData.type,
-            nickname: userData.nickname,
-            description: userData.description,
-            availability: userData.availability,
-            pricing: userData.pricing
-        };
-    } else if (userData.type === "student") {
-        formattedUser = {
-            email: userCredential.user.email,
-            uid: userCredential.user.uid,
-            type: userData.type,
-            nickname: userData.nickname,
-            balance: userData.balance,
-            bookingHistory: userData.bookingHistory
-        };
-    }
-
-    return {
-        user: formattedUser,
-        redirectTo: `/dashboard/user/${userData.type}`
-    };
+export const isVerificationLink = () => {
+  return isSignInWithEmailLink(auth, window.location.href);
 };
 
-export const signUpStudent = async (email, password, nickname) => {
-    if (!email || !password || !nickname) {
-        throw new Error("All fields are required");
+export const checkEmailExists = async (email) => {
+  try {
+    await signInWithEmailAndPassword(auth, email, "dummy-password");
+    return true;
+  } catch (error) {
+    if (error.code !== "auth/invalid-credential") {
+      throw error;
     }
-
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    
-    const userData = {
-        email: userCredential.user.email,
-        uid: userCredential.user.uid,
-        createdAt: new Date().toISOString(),
-        type: "student",
-        nickname,
-        balance: 0,
-        bookingHistory: [],
-    };
-
-    await setDoc(doc(db, "users", userCredential.user.uid), userData);
-    
-    return userData;
+    return false;
+  }
 };
 
-export const signUpTeacher = async (email, password, nickname, description) => {
-    if (!email || !password || !nickname || !description) {
-        throw new Error("All fields are required");
-    }
+export const createNewUser = async (email, password, nickname) => {
+  const userCredential = await createUserWithEmailAndPassword(
+    auth,
+    email,
+    password
+  );
+  const user = userCredential.user;
 
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    
-    const userData = {
-        email: userCredential.user.email,
-        uid: userCredential.user.uid,
-        createdAt: new Date().toISOString(),
-        type: "teacher",
-        nickname,
-        description,
-        availability: [],
-        pricing: 0,
-    };
+  await setDoc(doc(db, "users", user.uid), {
+    createdAt: new Date().toISOString(),
+    email: user.email,
+    uid: user.uid,
+    type: "student",
+    nickname: nickname,
+    balance: 0,
+    bookingHistory: [],
+  });
 
-    await setDoc(doc(db, "users", userCredential.user.uid), userData);
-    
-    return {
-        message: "Sign Up Successful, Sign in here",
-        userData
-    };
+  return user;
 };
 
-export const signOut = async () => {
-    await firebaseSignOut(auth);
+export const sendVerificationEmail = async (email) => {
+  const actionCodeSettings = {
+    url: window.location.origin + "/auth/signup",
+    handleCodeInApp: true,
+  };
+
+  await sendSignInLinkToEmail(auth, email, actionCodeSettings);
 }; 

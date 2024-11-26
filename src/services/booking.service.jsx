@@ -1,123 +1,158 @@
-import { doc, setDoc, arrayUnion, increment, runTransaction, collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import {
+  doc,
+  runTransaction,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
-export async function confirmBooking(booking, availability, userBalance) {
-    try {
-        if (userBalance < booking.price) {
-            throw new Error("Insufficient balance to make this booking");
-        }
+export async function confirmBooking(bookings, availability, userBalance) {
+  console.log('Starting booking confirmation:', {
+    bookingsCount: Array.isArray(bookings) ? bookings.length : 1,
+    availabilityCount: availability.length
+  });
 
-        console.log('Booking data:', {
-            teacherId: booking.teacherId,
-            teacherIdType: typeof booking.teacherId,
-            studentId: booking.studentId,
-            studentIdType: typeof booking.studentId
-        });
+  try {
+    const bookingsArray = Array.isArray(bookings) ? bookings : [bookings];
+    console.log('Processing bookings:', bookingsArray);
 
-        return await runTransaction(db, async (transaction) => {
-            const bookingRef = doc(db, "bookings", `${booking.studentId}_${booking.teacherId}_${Date.now()}`);
-            const teacherRef = doc(db, "users", booking.teacherId);
-            const studentRef = doc(db, "users", booking.studentId);
+    return await runTransaction(db, async (transaction) => {
+      console.log('Started Firestore transaction');
+      let updatedAvailability = availability;
 
-            // Get current teacher document
-            const teacherDoc = await transaction.get(teacherRef);
-            if (!teacherDoc.exists()) {
-                throw new Error("Teacher not found - ID: " + booking.teacherId);
-            }
+      for (const booking of bookingsArray) {
+        console.log('Processing booking:', booking);
+        updatedAvailability = filterOutBookedSlot(updatedAvailability, booking);
+      }
 
-            const teacherData = teacherDoc.data();
-            console.log('Teacher document found:', teacherData);
+      console.log('Updating Firestore');
+      for (const booking of bookingsArray) {
+        const bookingRef = doc(
+          db,
+          "bookings",
+          `${booking.studentId}_${booking.teacherId}_${Date.now()}_${
+            booking.lessonNumber || 1
+          }`
+        );
+        transaction.set(bookingRef, booking);
+      }
 
-            const updatedAvailability = filterOutBookedSlot(teacherData.availability, booking);
-            
-            console.log("Current teacher data:", teacherData);
-            console.log("Updated availability:", updatedAvailability);
+      const teacherRef = doc(db, "users", bookingsArray[0].teacherId);
+      transaction.set(
+        teacherRef,
+        { availability: updatedAvailability },
+        { merge: true }
+      );
 
-            // Update teacher document
-            transaction.set(teacherRef, {
-                ...teacherData,
-                availability: updatedAvailability
-            }, { merge: true });
-
-            // Create booking
-            transaction.set(bookingRef, {
-                ...booking, 
-                status: "confirmed", 
-                createdAt: new Date().toISOString()
-            });
-
-            // Update student
-            transaction.update(studentRef, {
-                bookingHistory: arrayUnion(bookingRef.id),
-                balance: increment(-booking.price)
-            });
-
-            return {
-                success: true, 
-                message: "Booking confirmed successfully!",
-                updatedAvailability
-            };
-        });
-    } catch (error) {
-        console.error("Error confirming booking:", error);
-        throw error;
-    }
+      return {
+        success: true,
+        message: "Booking(s) confirmed successfully!",
+        updatedAvailability,
+      };
+    });
+  } catch (error) {
+    console.error('Booking confirmation failed:', error);
+    throw error;
+  }
 }
 
 function filterOutBookedSlot(availability, booking) {
-    console.log('Initial booking data:', booking);
-    
-    return availability.filter(slot => {
-        // Ensure dates match
-        const datesMatch = 
-            slot.date.year === booking.date.year &&
-            slot.date.month === booking.date.month &&
-            slot.date.day === booking.date.day;
-            
-        if (!datesMatch) return true; // Keep slots on different dates
-        
-        // Only compare start times
-        const startTimeMatch = parseFloat(slot.startTime) === parseFloat(booking.startTime);
-        
-        console.log('Comparing slot:', {
-            slot,
-            datesMatch,
-            startTimeMatch,
-            slotStartTime: slot.startTime,
-            bookingStartTime: booking.startTime,
-            match : datesMatch && startTimeMatch
-        });
+  // If this is part of a bulk booking, check all slots in the series
+  if (booking.bulkId) {
+    const totalWeeks = booking.totalLessons;
+    const bookingDates = Array.from({ length: totalWeeks }, (_, index) => ({
+      year: booking.date.year,
+      month: booking.date.month,
+      day: booking.date.day + index * 7,
+    }));
 
-        // Return true to keep slots that DON'T match
-        return !(datesMatch && startTimeMatch);
+    return availability.filter((slot) => {
+      // Check if this slot conflicts with any date in the series
+      return !bookingDates.some(
+        (date) =>
+          slot.date.year === date.year &&
+          slot.date.month === date.month &&
+          slot.date.day === date.day &&
+          parseFloat(slot.startTime) === parseFloat(booking.startTime)
+      );
     });
+  }
+
+  // Regular single booking logic
+  return availability.filter((slot) => {
+    const datesMatch =
+      slot.date.year === booking.date.year &&
+      slot.date.month === booking.date.month &&
+      slot.date.day === booking.date.day;
+
+    if (!datesMatch) return true;
+
+    const startTimeMatch =
+      parseFloat(slot.startTime) === parseFloat(booking.startTime);
+
+    return !(datesMatch && startTimeMatch);
+  });
 }
 
 export async function getTeacherBookings(teacherId) {
-    try {
-        console.log("Fetching bookings for teacher:", teacherId);
-        
-        const bookingsRef = collection(db, "bookings");
-        const q = query(bookingsRef, 
-            where("teacherId", "==", teacherId),
-            where("status", "==", "confirmed")
-        );
-        
-        const querySnapshot = await getDocs(q);
-        const bookings = [];
-        
-        querySnapshot.forEach((doc) => {
-            bookings.push({
-                id: doc.id,
-                ...doc.data()
-            });
-        });
-        
-        console.log("Found bookings:", bookings);
-        return bookings;
-    } catch (error) {
-        console.error("Error fetching teacher bookings:", error);
-        return [];
-    }
+  try {
+    console.log("Fetching bookings for teacher:", teacherId);
+
+    const bookingsRef = collection(db, "bookings");
+    const q = query(
+      bookingsRef,
+      where("teacherId", "==", teacherId),
+      where("status", "==", "confirmed")
+    );
+
+    const querySnapshot = await getDocs(q);
+    const bookings = [];
+
+    querySnapshot.forEach((doc) => {
+      bookings.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    console.log("Found bookings:", bookings);
+    return bookings;
+  } catch (error) {
+    console.error("Error fetching teacher bookings:", error);
+    return [];
+  }
 }
 
+function validateBulkBookingAvailability(bookingsArray, availability) {
+  for (const booking of bookingsArray) {
+    const availableSlot = availability.some(
+      (slot) =>
+        slot.date.year === booking.date.year &&
+        slot.date.month === booking.date.month &&
+        slot.date.day === booking.date.day &&
+        parseFloat(slot.startTime) === parseFloat(booking.startTime)
+    );
+
+    if (!availableSlot) {
+      throw new Error(
+        `Time slot not available: ${booking.date.day}/${booking.date.month}/${booking.date.year} at ${booking.startTime}:00`
+      );
+    }
+  }
+  return true;
+}
+
+export async function createConference() {
+  const request = {
+    displayName: "Project Kickoff",
+    description: "Initial project planning meeting",
+    conferenceDetails: {
+      duration: 60, // in minutes
+      scheduledTime: "2024-12-01T10:00:00Z",
+    },
+  };
+  const response = await conferenceClient.createConference(request);
+  console.log("Conference created:", response);
+}

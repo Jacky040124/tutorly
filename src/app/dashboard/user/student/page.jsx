@@ -81,7 +81,6 @@ export default function StudentAccount() {
                 `${teacherList[selectedTeacher].nickname}'s rate is ${teacherList[selectedTeacher].pricing} dollars per hour` 
                 : 'Select a teacher'}
             </h1>
-            <h1>Your balance is {user.balance} dollars</h1>
             <Header/>
             <div className="flex h-full flex-col">
                 <Calendar availability={teacherList[selectedTeacher]?.availability} userType="student"/>
