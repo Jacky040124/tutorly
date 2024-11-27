@@ -1,51 +1,78 @@
 import { confirmBooking } from "@/services/booking.service";
+import { sendMail, generateBookingConfirmationEmail } from "@/services/mail.service";
+import { useUser } from '@/components/providers/UserContext';
 
-// TODO : Reactivate balance system after strip API plugged in
-export async function handleBookingConfirmed(
-  booking,
-  teacherAvailability,
-  setShowBookingOverlay,
-  userBalance,
-  setBookingConfirmed,
-  updateUserBalance
-) {
-  try {
-    const result = await confirmBooking(
-      booking,
-      teacherAvailability,
-      userBalance
-    );
-    setShowBookingOverlay(false);
-    setBookingConfirmed((prev) => !prev);
+// Custom hook to get booking-related data and functions
+export function useBookingConfirmation() {
+  const { user, updateUserBalance } = useUser();
+  
+  const handleBookingConfirmed = async (
+    booking,
+    teacherAvailability,
+    setShowBookingOverlay,
+    setBookingConfirmed,
+    teacherData
+  ) => {
+    console.log("Starting handleBookingConfirmed with:", {
+      userEmail: user?.email,
+      bookingDetails: booking,
+      hasTeacherAvailability: !!teacherAvailability
+    });
 
-    // Create custom alert message with meet link
-    const message = `
-Booking Confirmed!
-${result.message}
+    if (!user?.email) {
+      console.error("Email sending failed: No user email found");
+      throw new Error('User email is required for booking confirmation');
+    }
 
-Meeting Details:
-${
-  Array.isArray(booking)
-    ? booking
-        .map(
-          (b, i) => `
-Lesson ${i + 1}:
-Date: ${b.date.day}/${b.date.month}/${b.date.year}
-Time: ${b.startTime}:00 - ${b.endTime}:00
-Meet Link: ${b.meetLink || "Not available"}
-`
-        )
-        .join("\n")
-    : `
-Date: ${booking.date.day}/${booking.date.month}/${booking.date.year}
-Time: ${booking.startTime}:00 - ${booking.endTime}:00
-Meet Link: ${booking.meetLink || "Not available"}
-`
-}`;
+    try {
+      console.log("Attempting to confirm booking...");
+      const result = await confirmBooking(booking, teacherAvailability);
+      console.log("Booking confirmed successfully:", result);
 
-    alert(message);
-  } catch (error) {
-    console.error("Error confirming booking:", error);
-    alert(error.message);
-  }
+      try {
+        console.log("Preparing to send confirmation email to:", user.email);
+        const emailContent = generateBookingConfirmationEmail(booking, teacherData);
+        console.log("Generated email content:", emailContent);
+
+        await sendMail(
+          user.email,
+          'Booking Confirmation - MeetYourTutor',
+          emailContent
+        );
+        console.log('Confirmation email sent successfully to:', user.email);
+      } catch (emailError) {
+        console.error("Email sending failed with error:", {
+          error: emailError,
+          errorMessage: emailError.message,
+          errorStack: emailError.stack,
+          recipientEmail: user.email,
+          bookingDetails: booking,
+          teacherDetails: teacherData
+        });
+      }
+
+      console.log("Updating UI state...");
+      setShowBookingOverlay(false);
+      setBookingConfirmed(true);
+      
+      if (updateUserBalance) {
+        console.log("Updating user balance...");
+        await updateUserBalance();
+        console.log("User balance updated successfully");
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error in handleBookingConfirmed:", {
+        error: error,
+        errorMessage: error.message,
+        errorStack: error.stack,
+        bookingDetails: booking,
+        userEmail: user.email
+      });
+      throw error;
+    }
+  };
+
+  return { handleBookingConfirmed };
 }

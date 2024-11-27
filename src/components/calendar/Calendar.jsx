@@ -11,7 +11,7 @@ import {
 import { generateWeekDates } from "@/lib/utils/dateUtils";
 import { WEEKDAY_LABELS } from "@/lib/utils/dateUtils";
 import { getTeacherBookings } from "@/services/booking.service";
-import { handleBookingConfirmed } from "@/components/booking/ConfirmBook";
+import { useBookingConfirmation } from "@/components/booking/ConfirmBook";
 import BookingOverlay from "./BookingOverlay";
 import ErrorMessage from "@/components/common/ErrorMessage";
 
@@ -25,6 +25,7 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
   const { user, selectedTeacher, teacherList, updateUserBalance } = useUser();
   const teacherData = userType === "teacher" ? user : teacherList[selectedTeacher];
+  const { handleBookingConfirmed } = useBookingConfirmation();
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -79,22 +80,26 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
 
   const handleTimeSlotClick = (day, startTime, endTime, isRepeating, totalClasses, link) => {
     console.log("handleTimeSlotClick received link:", link);
+    
+    if (!user?.email) {
+        setError("Please sign in to book a lesson");
+        return;
+    }
+
     if (userType === "student") {
-      if (endTime - startTime >= 1) {
-        const slot = {
-          date: calculateSelectedDate(day, weekOffset),
-          startTime: startTime,
-          endTime: Math.min(startTime + 1, endTime),
-          isRepeating: isRepeating,
-          totalClasses: totalClasses,
-          link: link,
-        };
-        console.log("Setting selectedTimeSlot with link:", slot.link);
-        setSelectedTimeSlot(slot);
-        setShowBookingOverlay(true);
-      } else {
-        alert("This time slot is too short for a lesson");
-      }
+        if (endTime - startTime >= 1) {
+            const slot = {
+                date: calculateSelectedDate(day, weekOffset),
+                startTime: startTime,
+                endTime: Math.min(startTime + 1, endTime),
+                isRepeating: isRepeating,
+                totalClasses: totalClasses,
+                link: link,
+            };
+            console.log("Setting selectedTimeSlot with link:", slot.link);
+            setSelectedTimeSlot(slot);
+            setShowBookingOverlay(true);
+        }
     } else if (handleClickEvent) {
       handleClickEvent(day, startTime, endTime);
     }
@@ -523,9 +528,8 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
               booking,
               teacherData.availability,
               setShowBookingOverlay,
-              user.balance,
               setBookingConfirmed,
-              updateUserBalance
+              teacherData
             )
           }
           onClose={() => setShowBookingOverlay(false)}

@@ -12,6 +12,13 @@ export default function BookingOverlay({ selectedSlot, teacherData, onConfirm, o
     const handleConfirm = async () => {
         console.log("handleConfirm starting with selectedSlot link:", selectedSlot?.link);
         setIsSubmitting(true);
+        
+        if (!user?.email) {
+            setIsSubmitting(false);
+            alert("Please sign in to book a lesson");
+            return;
+        }
+
         try {
             const totalPrice = selectedSlot.isRepeating 
                 ? teacherData.pricing * selectedSlot.totalClasses 
@@ -41,7 +48,14 @@ export default function BookingOverlay({ selectedSlot, teacherData, onConfirm, o
                     link: selectedSlot.link || null
                 }));
 
-                await onConfirm(bulkBookings, teacherData.availability, user.balance, updateUserBalance);
+                await onConfirm(
+                  bulkBookings,
+                  teacherData.availability,
+                  user.balance,
+                  updateUserBalance,
+                  user,
+                  teacherData
+                );
             } else {
                 const booking = {
                     studentId: user.uid,
@@ -55,7 +69,10 @@ export default function BookingOverlay({ selectedSlot, teacherData, onConfirm, o
                     link: selectedSlot.link || null
                 };
                 console.log("Created single booking with link:", booking.link);
-                await onConfirm(booking, teacherData.availability, user.balance, updateUserBalance);
+                await onConfirm(
+                  booking,
+                  teacherData.availability
+                );
             }
             onClose();
         } catch (error) {

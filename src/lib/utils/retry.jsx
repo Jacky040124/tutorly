@@ -26,6 +26,7 @@ export async function withRetry(operation, maxAttempts = 3, delay = 1000) {
   throw lastError;
 }
 
+// helper
 function isRetryableError(error) {
   // Define retryable error conditions
   const retryableStatusCodes = [408, 429, 500, 502, 503, 504];

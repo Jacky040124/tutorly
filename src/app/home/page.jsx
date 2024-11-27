@@ -2,16 +2,14 @@
 import Link from "next/link";
 
 export default function Home() {
+
   return (
     <div>
       {/* Home */}
-
       <div className="w-full h-[35vh] bg-green-600 p-5">
         <Link href="/auth/signin">
           {" "}
-          <button className="overlay-button-primary">
-            Sign in
-          </button>{" "}
+          <button className="overlay-button-primary">Sign in</button>{" "}
         </Link>
 
         <nav className="flex justify-center pb-10">
@@ -49,7 +47,6 @@ export default function Home() {
           <div className="w-40 h-40 bg-green-500"></div>
         </div>
       </div>
-
       <hr className="bg-gray-200 w-2/3 m-auto" />
       {/* Teacher */}
       <div className="flex justify-around mb-8 pt-10">
@@ -68,7 +65,6 @@ export default function Home() {
           <p className="text-gray-500 text-base">Courses taught</p>
         </div>
       </div>
-
       <div className="grid grid-cols-3 gap-5 mb-5 p-5">
         {Array(9)
           .fill(null)
@@ -81,11 +77,9 @@ export default function Home() {
             </div>
           ))}
       </div>
-
       <div className="mt-5 pl-10">
         <button className="standard-button">Show more</button>
       </div>
-
       {/* Tutorial */}
       <div className="max-w-5xl mx-auto p-5 text-center pt-10 pb-10">
         <h1 className="text-4xl font-bold mb-5">Find the right fit for you</h1>
@@ -116,7 +110,6 @@ export default function Home() {
             ))}
         </div>
       </div>
-
       <hr className="bg-gray-200 w-2/3 m-auto" />
       {/* BecomeATutor */}
       <div className="max-w-5xl mx-auto p-5">
@@ -148,7 +141,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-
       <hr className="bg-gray-200 w-2/3 m-auto" />
       {/* Disclaimer */}
       <div className="max-w-5xl mx-auto p-5 text-left">

@@ -8,7 +8,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { ZoomService } from "./zoom.service";
-import { Logger } from "@/utils/logger";
+import { Logger } from "@/lib/utils/logger";
 
 export async function confirmBooking(bookings, availability, userBalance) {
   console.log("confirmBooking received bookings:", {
