@@ -7,6 +7,8 @@ import Calendar from '@/components/calendar/Calendar';
 import CalendarOverlay from '@/components/calendar/CalendarOverlay';
 import TeacherProfileOverlay from '@/components/overlays/TeacherProfileOverlay';
 import ErrorMessage from '@/components/common/ErrorMessage';
+import FutureBookings from "@/components/calendar/FutureBookings";
+import { fetchFutureBookings } from '@/services';
 
 
 export default function TeacherAccount() {
@@ -16,6 +18,7 @@ export default function TeacherAccount() {
     const [isLoading, setIsLoading] = useState(true);
     const { loading: userLoading } = useUser();
     const [error, setError] = useState();
+    const [futureBookings, setFutureBookings] = useState([]);
 
     const handleClickEvent = async (day, startTime, endTime) => {
         const confirmDelete = window.confirm("Do you want to remove this time slot?");
@@ -70,23 +73,29 @@ export default function TeacherAccount() {
     }
 
     useEffect(() => {
-        const fetchAvailability = async () => {
+        const fetchData = async () => {
             if (!user?.uid) return;
             
             try {
+                // Fetch availability
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
                 const availabilityData = docSnap.data()?.availability || [];
                 updateAvailability(availabilityData);
+                
+                // Fetch future bookings
+                const bookings = await fetchFutureBookings(user.uid);
+                setFutureBookings(bookings);
             } catch (error) {
-                console.error('Error fetching availability:', error);
+                console.error('Error fetching data:', error);
+                setError(error.message);
             } finally {
                 setIsLoading(false);
             }
         };
         
         if (!userLoading) {
-            fetchAvailability();
+            fetchData();
         }
     }, [user, userLoading]);
     
@@ -103,21 +112,30 @@ export default function TeacherAccount() {
     }
     
     return (
-        <div>
-            {error && <ErrorMessage message={error} />}
-            <h2>Hi, {user.nickname}</h2>
-            <h1>Who&apos;s ready to maximise shareholder value?</h1>
-            <div className="flex h-full flex-col">
-                <Header/>
-                <Calendar 
-                    availability={availability} 
-                    userType="teacher"
-                    handleClickEvent={handleClickEvent}
-                />
-                {showCalendarOverlay && <CalendarOverlay setShowOverlay={setShowCalendarOverlay}/>}
-                {showTeacherProfileOverlay && <TeacherProfileOverlay setShowOverlay={setShowTeacherProfileOverlay}/>}
-                
-            </div>
+      <div>
+        {error && <ErrorMessage message={error} />}
+        <h2>Hi, {user.nickname}</h2>
+        <h1>Who&apos;s ready to maximise shareholder value?</h1>
+        <div className="flex h-full flex-col">
+          <Header />
+          <Calendar
+            availability={availability}
+            userType="teacher"
+            handleClickEvent={handleClickEvent}
+          />
+
+          {showCalendarOverlay && (
+            <CalendarOverlay setShowOverlay={setShowCalendarOverlay} />
+          )}
+          {showTeacherProfileOverlay && (
+            <TeacherProfileOverlay
+              setShowOverlay={setShowTeacherProfileOverlay}
+            />
+          )}
         </div>
+        <FutureBookings
+          bookings={futureBookings}
+        />
+      </div>
     );
 }

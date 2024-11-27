@@ -21,22 +21,32 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [error, setError] = useState("");
   const [bookings, setBookings] = useState([]);
+  const [futureBookings, setFutureBookings] = useState([]);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
   const { user, selectedTeacher, teacherList, updateUserBalance } = useUser();
-  const teacherData =
-    userType === "teacher" ? user : teacherList[selectedTeacher];
+  const teacherData = userType === "teacher" ? user : teacherList[selectedTeacher];
 
   useEffect(() => {
     const fetchBookings = async () => {
       if (userType === "teacher" && user?.uid) {
         try {
           const fetchedBookings = await getTeacherBookings(user.uid);
-          console.log("Fetched bookings:", fetchedBookings);
           setBookings(fetchedBookings);
+
+          const currentDate = new Date();
+          const future = fetchedBookings.filter((booking) => {
+            const bookingDate = new Date(
+              booking.date.year,
+              booking.date.month - 1,
+              booking.date.day
+            );
+            return bookingDate >= currentDate;
+          });
+          setFutureBookings(future);
         } catch (error) {
           console.error("Error fetching bookings:", error);
           setError("Failed to fetch bookings");
-        }
+        } 
       } else if (userType === "student" && teacherData?.uid) {
         try {
           const fetchedBookings = await getTeacherBookings(teacherData.uid);
@@ -67,22 +77,20 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
     setWeekOffset((prev) => prev + 1);
   };
 
-  const handleTimeSlotClick = (
-    day,
-    startTime,
-    endTime,
-    isRepeating,
-    totalClasses
-  ) => {
+  const handleTimeSlotClick = (day, startTime, endTime, isRepeating, totalClasses, link) => {
+    console.log("handleTimeSlotClick received link:", link);
     if (userType === "student") {
       if (endTime - startTime >= 1) {
-        setSelectedTimeSlot({
+        const slot = {
           date: calculateSelectedDate(day, weekOffset),
           startTime: startTime,
           endTime: Math.min(startTime + 1, endTime),
           isRepeating: isRepeating,
           totalClasses: totalClasses,
-        });
+          link: link,
+        };
+        console.log("Setting selectedTimeSlot with link:", slot.link);
+        setSelectedTimeSlot(slot);
         setShowBookingOverlay(true);
       } else {
         alert("This time slot is too short for a lesson");
@@ -117,10 +125,7 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
             event.date.day
           ).getDay();
           const adjustedWeekday = eventDay === 0 ? 7 : eventDay;
-          console.log(
-            "Adjusted Weekday for availability event:",
-            adjustedWeekday
-          );
+
 
           return (
             <EventDisplay
@@ -133,6 +138,7 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
               repeatGroupId={event.repeatGroupId}
               repeatIndex={event.repeatIndex}
               totalClasses={event.totalClasses}
+              link={event.link}
             />
           );
         }
@@ -163,13 +169,6 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
             booking.date.day
           ).getDay();
           const adjustedWeekday = bookingDay === 0 ? 7 : bookingDay;
-
-          console.log("Booking:", {
-            date: booking.date,
-            calculatedDay: adjustedWeekday,
-            startTime: booking.startTime,
-            endTime: booking.endTime,
-          });
 
           return (
             <EventDisplay
@@ -213,6 +212,7 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
     repeatGroupId,
     repeatIndex,
     totalClasses,
+    link
   }) => {
     const startRow = startTime * 12 + 2;
     const EndRows = (endTime - startTime) * 12;
@@ -227,8 +227,6 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
       7: "sm:col-start-7", // Sunday
     };
 
-    console.log("Mapped style element for day:", WEEKDAY_COLUMN_MAPPING[day]);
-
     return (
       <li
         className={`relative mt-px hidden ${WEEKDAY_COLUMN_MAPPING[day]} sm:flex`}
@@ -242,7 +240,8 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
               startTime,
               endTime,
               isRepeating,
-              totalClasses
+              totalClasses,
+              link,
             )
           }
           className={`group absolute inset-1 flex flex-col overflow-y-auto rounded-lg 
@@ -532,23 +531,6 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
           onClose={() => setShowBookingOverlay(false)}
         />
       )}
-
-      {/* Debug */}
-      <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-        <h3 className="text-lg font-semibold mb-2">Debug Information:</h3>
-        <div className="space-y-2">
-          <p>Number of Bookings: {bookings.length}</p>
-          <div className="text-sm font-mono whitespace-pre-wrap">
-            <p className="font-semibold">Bookings:</p>
-            {bookings.map((booking, index) => (
-              <div key={index} className="mb-2 p-2 bg-white rounded">
-                <p>Date: {`${booking.date.day}/${booking.date.month}/${booking.date.year}`}</p>
-                <p>Time: {`${booking.startTime}:00 - ${booking.endTime}:00`}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
     </>
   );
 }

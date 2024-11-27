@@ -5,6 +5,7 @@ import ErrorMessage from "@/components/common/ErrorMessage";
 import { timeToDecimal } from "@/lib/utils/timeUtils";
 import { InputField, ToggleField } from "@/components/common/Fields";
 import { getRepeatingDates } from "@/lib/utils/dateUtils";
+import { ZoomService } from "@/services/zoom.service";
 
 // onEventAdded is an optional prop
 export default function CalendarOverlay({ setShowOverlay, onEventAdded }) {
@@ -72,25 +73,55 @@ export default function CalendarOverlay({ setShowOverlay, onEventAdded }) {
 
     const repeatGroupId = isRepeating ? `repeat_${Date.now()}` : null;
     const dates = isRepeating ? getRepeatingDates(date) : [date];
-    const newEvents = dates.map((eventDate, index) => ({
-      date: eventDate,
-      startTime: startDecimal,
-      endTime: endDecimal,
-      isRepeating,
-      repeatGroupId,
-      repeatIndex: isRepeating ? index : null,
-      totalClasses: isRepeating ? dates.length : null,
-      meetingLink: null
-    }));
-
-    // Overlap check
-    const hasOverlap = newEvents.some(event => checkOverlap(availability, event));
-    if (hasOverlap) {
-      setError("One or more time slots overlap with existing events");
-      return;
-    }
 
     try {
+      // Create Zoom meetings for each event
+      const newEvents = await Promise.all(dates.map(async (eventDate, index) => {
+        try {
+          const meetingRequest = {
+            teacherId: user.uid,
+            date: eventDate,
+            startTime: startDecimal,
+            endTime: endDecimal
+          };
+          
+          const meeting = await ZoomService.createMeeting(meetingRequest);
+          console.log("Created Zoom meeting with link:", meeting.link);
+          
+          return {
+            date: eventDate,
+            startTime: startDecimal,
+            endTime: endDecimal,
+            isRepeating,
+            repeatGroupId,
+            repeatIndex: isRepeating ? index : null,
+            totalClasses: isRepeating ? dates.length : null,
+            link: meeting.link
+          };
+        } catch (error) {
+          console.error("Failed to create Zoom meeting:", error);
+          // If Zoom meeting creation fails, continue without the link
+          return {
+            date: eventDate,
+            startTime: startDecimal,
+            endTime: endDecimal,
+            isRepeating,
+            repeatGroupId,
+            repeatIndex: isRepeating ? index : null,
+            totalClasses: isRepeating ? dates.length : null,
+            link: null
+          };
+        }
+      }));
+
+
+      // Overlap check
+      const hasOverlap = newEvents.some(event => checkOverlap(availability, event));
+      if (hasOverlap) {
+        setError("One or more time slots overlap with existing events");
+        return;
+      }
+
       await updateAvailability([...availability, ...newEvents]);
       if (onEventAdded) onEventAdded();
       setShowOverlay(false);

@@ -7,36 +7,66 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { ZoomService } from "./zoom.service";
+import { Logger } from "@/utils/logger";
 
 export async function confirmBooking(bookings, availability, userBalance) {
-  console.log('Starting booking confirmation:', {
-    bookingsCount: Array.isArray(bookings) ? bookings.length : 1,
-    availabilityCount: availability.length
+  console.log("confirmBooking received bookings:", {
+    bookings,
+    hasLink: Array.isArray(bookings) ? 
+      bookings.map(b => !!b.link) : 
+      !!bookings.link,
+    actualLinks: Array.isArray(bookings) ?
+      bookings.map(b => b.link) :
+      bookings.link
   });
 
   try {
     const bookingsArray = Array.isArray(bookings) ? bookings : [bookings];
-    console.log('Processing bookings:', bookingsArray);
 
     return await runTransaction(db, async (transaction) => {
-      console.log('Started Firestore transaction');
       let updatedAvailability = availability;
 
       for (const booking of bookingsArray) {
-        console.log('Processing booking:', booking);
-        updatedAvailability = filterOutBookedSlot(updatedAvailability, booking);
-      }
+        console.log("Processing booking in transaction:", {
+          bookingId: booking.studentId,
+          hasLink: !!booking.link,
+          link: booking.link
+        });
 
-      console.log('Updating Firestore');
-      for (const booking of bookingsArray) {
-        const bookingRef = doc(
-          db,
-          "bookings",
-          `${booking.studentId}_${booking.teacherId}_${Date.now()}_${
-            booking.lessonNumber || 1
-          }`
-        );
-        transaction.set(bookingRef, booking);
+        try {
+          const enrichedBooking = {
+            ...booking,
+            link: booking.link || null
+          };
+
+          console.log("Created enriched booking:", {
+            hasLink: !!enrichedBooking.link,
+            link: enrichedBooking.link
+          });
+
+          const bookingRef = doc(
+            db,
+            "bookings",
+            `${booking.studentId}_${booking.teacherId}_${Date.now()}_${
+              booking.lessonNumber || 1
+            }`
+          );
+
+          transaction.set(bookingRef, enrichedBooking);
+          console.log("Saved booking to Firestore:", {
+            ref: bookingRef.path,
+            hasLink: !!enrichedBooking.link
+          });
+
+          updatedAvailability = filterOutBookedSlot(
+            updatedAvailability,
+            booking
+          );
+        } catch (error) {
+          console.error("Error in booking loop:", error);
+          throw error;
+        }
       }
 
       const teacherRef = doc(db, "users", bookingsArray[0].teacherId);
@@ -47,13 +77,17 @@ export async function confirmBooking(bookings, availability, userBalance) {
       );
 
       return {
-        success: true,
         message: "Booking(s) confirmed successfully!",
         updatedAvailability,
       };
     });
   } catch (error) {
-    console.error('Booking confirmation failed:', error);
+    console.error("Error in confirmBooking:", {
+      error,
+      bookings: Array.isArray(bookings) ? 
+        bookings.map(b => ({ ...b, hasLink: !!b.link })) : 
+        { ...bookings, hasLink: !!bookings.link }
+    });
     throw error;
   }
 }
@@ -144,15 +178,105 @@ function validateBulkBookingAvailability(bookingsArray, availability) {
   return true;
 }
 
-export async function createConference() {
-  const request = {
-    displayName: "Project Kickoff",
-    description: "Initial project planning meeting",
-    conferenceDetails: {
-      duration: 60, // in minutes
-      scheduledTime: "2024-12-01T10:00:00Z",
-    },
-  };
-  const response = await conferenceClient.createConference(request);
-  console.log("Conference created:", response);
+export async function fetchFutureBookings(teacherId) {
+  try {
+    const bookings = await getTeacherBookings(teacherId);
+    const currentDate = new Date();
+    
+    // Normalize current date to midnight for comparison
+    const normalizedCurrentDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate()
+    );
+
+    const futureBookings = bookings.filter(booking => {
+      const bookingDate = new Date(
+        booking.date.year,
+        booking.date.month - 1, // JavaScript months are 0-based
+        booking.date.day
+      );
+      return bookingDate >= normalizedCurrentDate;
+    }).sort((a, b) => {
+      // Sort by date and time
+      const dateA = new Date(a.date.year, a.date.month - 1, a.date.day);
+      const dateB = new Date(b.date.year, b.date.month - 1, b.date.day);
+      
+      if (dateA.getTime() !== dateB.getTime()) {
+        return dateA - dateB;
+      }
+      return a.startTime - b.startTime;
+    });
+
+    return futureBookings;
+  } catch (error) {
+    console.error("Error fetching future bookings:", error);
+    throw error;
+  }
+}
+
+export async function getStudentBookings(studentId) {
+  try {
+    console.log("Fetching bookings for student:", studentId);
+
+    const bookingsRef = collection(db, "bookings");
+    const q = query(
+      bookingsRef,
+      where("studentId", "==", studentId),
+      where("status", "==", "confirmed")
+    );
+
+    const querySnapshot = await getDocs(q);
+    const bookings = [];
+
+    querySnapshot.forEach((doc) => {
+      bookings.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
+
+    console.log("Found student bookings:", bookings);
+    return bookings;
+  } catch (error) {
+    console.error("Error fetching student bookings:", error);
+    return [];
+  }
+}
+
+export async function fetchFutureStudentBookings(studentId) {
+  try {
+    const bookings = await getStudentBookings(studentId);
+    const currentDate = new Date();
+    
+    // Normalize current date to midnight for comparison
+    const normalizedCurrentDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate()
+    );
+
+    const futureBookings = bookings.filter(booking => {
+      const bookingDate = new Date(
+        booking.date.year,
+        booking.date.month - 1, // JavaScript months are 0-based
+        booking.date.day
+      );
+      return bookingDate >= normalizedCurrentDate;
+    }).sort((a, b) => {
+      // Sort by date and time
+      const dateA = new Date(a.date.year, a.date.month - 1, a.date.day);
+      const dateB = new Date(b.date.year, b.date.month - 1, b.date.day);
+      
+      if (dateA.getTime() !== dateB.getTime()) {
+        return dateA - dateB;
+      }
+      return a.startTime - b.startTime;
+    });
+
+    return futureBookings;
+  } catch (error) {
+    console.error("Error fetching future student bookings:", error);
+    throw error;
+  }
 }

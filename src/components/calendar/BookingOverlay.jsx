@@ -4,10 +4,13 @@ import { useUser } from '@/components/providers/UserContext';
 import { formatTime } from '@/lib/utils/timeUtils';
 
 export default function BookingOverlay({ selectedSlot, teacherData, onConfirm, onClose }) {
+    console.log("BookingOverlay received selectedSlot with link:", selectedSlot?.link);
+    
     const { user, updateUserBalance } = useUser();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleConfirm = async () => {
+        console.log("handleConfirm starting with selectedSlot link:", selectedSlot?.link);
         setIsSubmitting(true);
         try {
             const totalPrice = selectedSlot.isRepeating 
@@ -34,7 +37,8 @@ export default function BookingOverlay({ selectedSlot, teacherData, onConfirm, o
                     price: teacherData.pricing,
                     bulkId,
                     lessonNumber: index + 1,
-                    totalLessons: selectedSlot.totalClasses
+                    totalLessons: selectedSlot.totalClasses,
+                    link: selectedSlot.link || null
                 }));
 
                 await onConfirm(bulkBookings, teacherData.availability, user.balance, updateUserBalance);
@@ -47,8 +51,10 @@ export default function BookingOverlay({ selectedSlot, teacherData, onConfirm, o
                     endTime: selectedSlot.startTime + 1,
                     status: "confirmed",
                     createdAt: new Date().toISOString(),
-                    price: teacherData.pricing
+                    price: teacherData.pricing,
+                    link: selectedSlot.link || null
                 };
+                console.log("Created single booking with link:", booking.link);
                 await onConfirm(booking, teacherData.availability, user.balance, updateUserBalance);
             }
             onClose();

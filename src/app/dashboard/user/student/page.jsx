@@ -5,12 +5,15 @@ import { useEffect, useState } from 'react';
 import { useUser } from '@/components/providers/UserContext';
 import Calendar from '@/components/calendar/Calendar';
 import ErrorMessage from '@/components/common/ErrorMessage';
+import { fetchFutureStudentBookings } from "@/services/booking.service";
+import FutureBookings from "@/components/calendar/FutureBookings";
 
 
 export default function StudentAccount() {
     const { user, loading: userLoading, teacherList, fetchTeachers, selectedTeacher, setSelectedTeacher} = useUser();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    const [futureBookings, setFutureBookings] = useState([]);
     const handleSelectTeacher = (e) => setSelectedTeacher(e.target.value);
 
     const Header = () => {
@@ -43,6 +46,10 @@ export default function StudentAccount() {
                     return;
                 }
                 console.log("Fetching data for user:", user.uid);
+                
+                // Fetch future bookings
+                const bookings = await fetchFutureStudentBookings(user.uid);
+                setFutureBookings(bookings);
                 
             } catch (error) {
                 setError(`Error fetching data: ${error.message}`);
@@ -84,7 +91,7 @@ export default function StudentAccount() {
             <Header/>
             <div className="flex h-full flex-col">
                 <Calendar availability={teacherList[selectedTeacher]?.availability} userType="student"/>
-                
+                <FutureBookings bookings={futureBookings} />
                 <div className="text-sm text-gray-500 mt-2">
                     Debug - Selected Teacher: {selectedTeacher}
                     <br />
