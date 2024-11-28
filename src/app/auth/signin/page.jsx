@@ -4,86 +4,89 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useUser } from '@/components/providers/UserContext';
-import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+import { useError } from '@/components/providers/ErrorContext';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/common/Button';
 import { TextField } from '@/components/common/Fields';
-import ErrorMessage from '@/components/common/ErrorMessage';
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
     const router = useRouter();
-    const { user, setUser } = useUser();
+    const { setUser } = useUser();
+    const { showError } = useError();
 
-    // Auto-fill from verification flow
     useEffect(() => {
-        const savedEmail = window.localStorage.getItem("emailForSignIn");
-        const savedPassword = window.localStorage.getItem("tempPassword");
-        
-        if (savedEmail) {
-            setEmail(savedEmail);
+        try {
+            const savedEmail = window.localStorage.getItem("emailForSignIn");
+            const savedPassword = window.localStorage.getItem("tempPassword");
+            
+            if (savedEmail) setEmail(savedEmail);
+            if (savedPassword) {
+                setPassword(savedPassword);
+                window.localStorage.removeItem("tempPassword");
+            }
+        } catch (error) {
+            showError("Failed to load saved credentials");
         }
-        if (savedPassword) {
-            setPassword(savedPassword);
-            // Clean up after using
-            window.localStorage.removeItem("tempPassword");
-        }
-    }, []);
+    }, [showError]);
+
+    const updateUserContext = (userCredential, userData) => {
+        const baseUserData = {
+            email: userCredential.user.email,
+            uid: userCredential.user.uid,
+            type: userData.type,
+            nickname: userData.nickname,
+        };
+
+        const typeSpecificData = userData.type === "teacher" 
+            ? {
+                description: userData.description,
+                availability: userData.availability,
+                pricing: userData.pricing
+            }
+            : {
+                balance: userData.balance,
+                bookingHistory: userData.bookingHistory
+            };
+
+        setUser({ ...baseUserData, ...typeSpecificData });
+    };
 
     const handleSignIn = async (e) => {
-        e.preventDefault(); // Prevent form submission
+        e.preventDefault();
         
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            console.log('Sign-in successful:', userCredential.user.uid);
             
-            // Get user data from Firestore
             const docRef = doc(db, "users", userCredential.user.uid);
             const docSnap = await getDoc(docRef);
             
             if (!docSnap.exists()) {
-                setError("User data not found");
-                return;
+                throw new Error("User data not found");
             }
             
             const userData = docSnap.data();
-            console.log('User data from Firestore:', userData);
-            
-            // Update user context based on user type
-            if (userData.type === "teacher") {
-                setUser({
-                    email: userCredential.user.email,
-                    uid: userCredential.user.uid,
-                    type: userData.type,
-                    nickname: userData.nickname,
-                    description: userData.description,
-                    availability: userData.availability,
-                    pricing: userData.pricing
-                });
-            } else if (userData.type === "student") {
-                setUser({
-                    email: userCredential.user.email,
-                    uid: userCredential.user.uid,
-                    type: userData.type,
-                    nickname: userData.nickname,
-                    balance: userData.balance,
-                    bookingHistory: userData.bookingHistory
-                });
-            }
+            updateUserContext(userCredential, userData);
 
-            // Handle navigation after successful sign-in
-            if (userData.type === "teacher") {
-                router.replace("/dashboard/user/teacher");
-            } else if (userData.type === "student") {
-                router.replace("/dashboard/user/student");
-            }
+            // Navigate based on user type
+            const route = userData.type === "teacher" 
+                ? "/dashboard/user/teacher" 
+                : "/dashboard/user/student";
+            router.replace(route);
             
         } catch (error) {
             console.error('Sign-in error:', error);
-            setError(error.message || "Sign in failed");
+            const errorMessage = {
+                'auth/user-not-found': 'No account found with this email',
+                'auth/wrong-password': 'Incorrect password',
+                'auth/invalid-email': 'Invalid email format',
+                'auth/too-many-requests': 'Too many failed attempts. Please try again later',
+            }[error.code] || error.message;
+            
+            showError(errorMessage);
         }
     };
 
@@ -130,8 +133,6 @@ export default function Login() {
                                     required
                                 />
                                 
-                                {error && <ErrorMessage message={error} />}
-
                                 <div>
                                     <Button
                                         type="submit"

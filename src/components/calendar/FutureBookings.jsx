@@ -1,13 +1,15 @@
 import { formatTime } from "@/lib/utils/timeUtils";
 import { useUser } from "@/components/providers/UserContext";
+import { useBooking } from "@/components/providers/BookingContext"
 
-export default function FutureBookings({ bookings }) {
+export default function FutureBookings() {
   const { userType, teacherList, user } = useUser();
+  const { futureBookings } = useBooking();
 
-  if (!bookings || !Array.isArray(bookings) || bookings.length === 0) {
+  if (!futureBookings || !Array.isArray(futureBookings) || futureBookings.length === 0) {
     return (
       <div className="mt-8 p-6 bg-white rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4">Upcoming Bookings</h2>
+        <h2 className="text-xl font-semibold mb-4">Upcoming futureBookings</h2>
         <p className="text-gray-500">No upcoming bookings</p>
       </div>
     );
@@ -34,11 +36,8 @@ export default function FutureBookings({ bookings }) {
     <div className="mt-8 p-6 bg-white rounded-lg shadow">
       <h2 className="text-xl font-semibold mb-4">Upcoming Bookings</h2>
       <div className="space-y-4">
-        {bookings.map((booking, index) => (
-          <div
-            key={index}
-            className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-          >
+        {futureBookings.map((booking, index) => (
+          <div key={index} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
             <div className="flex justify-between items-start">
               <div>
                 <p className="font-medium">
@@ -54,9 +53,7 @@ export default function FutureBookings({ bookings }) {
                 )}
               </div>
               <div className="text-right flex flex-col items-end gap-2">
-                <p className="text-sm text-gray-500">
-                  {getDisplayName(booking)}
-                </p>
+                <p className="text-sm text-gray-500">{getDisplayName(booking)}</p>
                 <button
                   onClick={() => handleJoinMeeting(booking.link)}
                   className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"

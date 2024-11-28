@@ -1,16 +1,21 @@
 import { useState } from 'react';
 import { useUser } from '../providers/UserContext';
 import ErrorMessage from '../common/ErrorMessage';
+import { useOverlay } from '../providers/OverlayContext';
 
-export default function TeacherProfileOverlay({ setShowOverlay }) {
+export default function TeacherProfileOverlay() {
     const { user, updatePrice, updateNickname, updateDescription } = useUser();
+    const { setShowTeacherProfileOverlay } = useOverlay
+
+
+    
     const [nickname, setNickname] = useState(user.nickname);
     const [description, setDescription] = useState(user.description);
     const [pricing, setPricing] = useState(user.pricing);
     const [error, setError] = useState('');
 
     const handleCancel = () => {
-        setShowOverlay(false);
+        setShowTeacherProfileOverlay(false);
     };
 
     const handleSave = async (e) => {
@@ -22,7 +27,7 @@ export default function TeacherProfileOverlay({ setShowOverlay }) {
                 updatePrice(pricing)
             ]);
             
-            setShowOverlay(false);
+            setShowTeacherProfileOverlay(false);
         } catch (error) {
             setError(`Failed to update profile: ${error.message}`);
         }

@@ -1,19 +1,19 @@
 "use client";
-import { collection, getDocs, doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useUser } from "@/components/providers/UserContext";
+import { useLoading } from "@/components/providers/LoadingContext";
+import { useError } from "@/components/providers/ErrorContext";
+import { useBooking } from "@/components/providers/BookingContext";
+import { fetchFutureStudentBookings } from "@/services/booking.service";
 import Calendar from "@/components/calendar/Calendar";
 import ErrorMessage from "@/components/common/ErrorMessage";
-import { fetchFutureStudentBookings } from "@/services/booking.service";
 import FutureBookings from "@/components/calendar/FutureBookings";
 
 export default function StudentAccount() {
-  const { user, loading: userLoading, teacherList, fetchTeachers, selectedTeacher, setSelectedTeacher } = useUser();
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [futureBookings, setFutureBookings] = useState([]);
-  const handleSelectTeacher = (e) => setSelectedTeacher(e.target.value);
+  const { user, teacherList, fetchTeachers, selectedTeacher, setSelectedTeacher } = useUser();
+  const {setIsLoading} = useLoading();
+  const {error, setError} = useError();
+  const {setFutureBookings} = useBooking();
 
   const Header = () => {
     return (
@@ -26,7 +26,7 @@ export default function StudentAccount() {
 
         <div>
           <select
-            onChange={handleSelectTeacher}
+            onChange={(e) => setSelectedTeacher(e.target.value)}
             value={selectedTeacher}
             className="rounded-md border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
           >
@@ -47,13 +47,10 @@ export default function StudentAccount() {
     const fetchData = async () => {
       try {
         if (!user?.uid) {
-          console.log("No user ID yet, setting isLoading false");
           setIsLoading(false);
           return;
         }
-        console.log("Fetching data for user:", user.uid);
 
-        // Fetch future bookings
         const bookings = await fetchFutureStudentBookings(user.uid);
         setFutureBookings(bookings);
       } catch (error) {
@@ -63,23 +60,12 @@ export default function StudentAccount() {
       }
     };
 
-    if (!userLoading) {
-      fetchData();
-    }
-  }, [user, userLoading]);
+    fetchData();
+  }, [user]);
 
   useEffect(() => {
     fetchTeachers();
   }, []);
-
-  if (userLoading || isLoading) {
-    console.log("Rendering loading state - userLoading:", userLoading, "isLoading:", isLoading);
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
 
   if (!user) {
     return (
@@ -94,7 +80,6 @@ export default function StudentAccount() {
       {error && <ErrorMessage message={error} />}
       <h2>Hi, {user.nickname}</h2>
       <h1>
-        {" "}
         {selectedTeacher && teacherList[selectedTeacher]
           ? `${teacherList[selectedTeacher].nickname}'s rate is ${teacherList[selectedTeacher].pricing} dollars per hour`
           : "Select a teacher"}
@@ -102,8 +87,7 @@ export default function StudentAccount() {
       <Header />
       <div className="flex h-full flex-col">
         <Calendar />
-        <FutureBookings bookings={futureBookings} />
-
+        <FutureBookings />
       </div>
     </div>
   );

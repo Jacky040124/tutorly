@@ -10,7 +10,6 @@ export default function BookingOverlay() {
   const { user, selectedTeacher, teacherList } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const teacherData = teacherList[selectedTeacher];
-  console.log("teacherData:", teacherData);
 
   const handleClose = () => {
     setShowBookingOverlay(false);

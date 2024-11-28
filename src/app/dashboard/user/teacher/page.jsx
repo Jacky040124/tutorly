@@ -1,7 +1,7 @@
 "use client";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useUser } from "@/components/providers/UserContext";
 import Calendar from "@/components/calendar/Calendar";
 import CalendarOverlay from "@/components/calendar/CalendarOverlay";
@@ -9,15 +9,18 @@ import TeacherProfileOverlay from "@/components/overlays/TeacherProfileOverlay";
 import ErrorMessage from "@/components/common/ErrorMessage";
 import FutureBookings from "@/components/calendar/FutureBookings";
 import { fetchFutureBookings } from "@/services";
+import { useError } from "@/components/providers/ErrorContext";
+import { useOverlay } from "@/components/providers/OverlayContext";
+import { useLoading } from "@/components/providers/LoadingContext";
+
 
 export default function TeacherAccount() {
-  const { user, availability, updateAvailability } = useUser();
-  const [showCalendarOverlay, setShowCalendarOverlay] = useState(false);
-  const [showTeacherProfileOverlay, setShowTeacherProfileOverlay] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const { loading: userLoading } = useUser();
-  const [error, setError] = useState();
-  const [futureBookings, setFutureBookings] = useState([]);
+  const { user, updateAvailability, loading: userLoading } = useUser();
+  const { error, setError} = useError();
+  const { showCalendarOverlay, setShowCalendarOverlay, showTeacherProfileOverlay, setShowTeacherProfileOverlay } =
+    useOverlay();
+  const {setFutureBookings} = useBooking();
+  const {isLoading, setLoading} = useLoading();
 
   const Header = () => {
     return (
@@ -45,6 +48,7 @@ export default function TeacherAccount() {
     const fetchData = async () => {
       if (!user?.uid) return;
 
+      setLoading('teacherData', true);
       try {
         // Fetch availability
         const docRef = doc(db, "users", user.uid);
@@ -59,7 +63,7 @@ export default function TeacherAccount() {
         console.error("Error fetching data:", error);
         setError(error.message);
       } finally {
-        setIsLoading(false);
+        setLoading('teacherData', false);
       }
     };
 
@@ -68,7 +72,7 @@ export default function TeacherAccount() {
     }
   }, [user, userLoading]);
 
-  if (userLoading || isLoading) {
+  if (userLoading || isLoading('teacherData')) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-lg">Loading...</div>
@@ -92,11 +96,10 @@ export default function TeacherAccount() {
       <div className="flex h-full flex-col">
         <Header />
         <Calendar />
-
-        {showCalendarOverlay && <CalendarOverlay setShowOverlay={setShowCalendarOverlay} />}
-        {showTeacherProfileOverlay && <TeacherProfileOverlay setShowOverlay={setShowTeacherProfileOverlay} />}
+        {showCalendarOverlay && <CalendarOverlay />}
+        {showTeacherProfileOverlay && <TeacherProfileOverlay />}
       </div>
-      <FutureBookings bookings={futureBookings} />
+      <FutureBookings />
     </div>
   );
 }

@@ -4,61 +4,40 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/common/Button";
 import { TextField } from "@/components/common/Fields";
-import ErrorMessage from "@/components/common/ErrorMessage";
-import {
-  isVerificationLink,
-  checkEmailExists,
-  createNewUser,
-  sendVerificationEmail,
-} from "@/services/auth.service";
+import { useError } from "@/components/providers/ErrorContext";
+import { signUpStudent } from "@/services/auth.service";
+import { useRouter } from 'next/navigation';
 
 export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
-  const [error, setError] = useState("");
+  const { showError } = useError();
+  const router = useRouter();
 
   const handleSignup = async (e) => {
     e.preventDefault();
 
     try {
-      if (await checkEmailExists(email)) {
-        setError("You already have an Account, Sign in here");
-        return;
+      if (!email || !password || !nickname) {
+        throw new Error("All fields are required");
       }
 
-      if (isVerificationLink()) {
-        const savedEmail = window.localStorage.getItem("emailForSignIn");
-
-        if (!savedEmail || savedEmail !== email) {
-          setError("Please use the same email that was used for verification.");
-          return;
-        }
-
-        try {
-          await createNewUser(email, password, nickname);
-          window.localStorage.removeItem("emailForSignIn");
-          setError("Sign Up Successful, Sign in here");
-        } catch (signUpError) {
-          setError(signUpError.message);
-          console.error("Error during sign-up:", signUpError.message);
-        }
-        return;
-      }
-
-      // If not a verification link, send the verification email
-      await sendVerificationEmail(email);
-      window.localStorage.setItem("emailForSignIn", email);
-      setError("Verification email sent! Please check your inbox.");
+      await signUpStudent(email, password, nickname);
+      showError("Sign Up Successful! Please sign in.");
+      setTimeout(() => router.push('/auth/signin'), 2000);
+      
     } catch (error) {
-      setError(error.message);
-      console.error("Error:", error);
+      console.error("Signup error:", error);
+      const errorMessage = {
+        'auth/email-already-in-use': 'An account with this email already exists',
+        'auth/invalid-email': 'Invalid email format',
+        'auth/weak-password': 'Password should be at least 6 characters',
+      }[error.code] || error.message;
+      
+      showError(errorMessage);
     }
   };
-
-  const handleEmailChange = (e) => setEmail(e.target.value);
-  const handlePasswordChange = (e) => setPassword(e.target.value);
-  const handleNicknameChange = (e) => setNickname(e.target.value);
 
   return (
     <div className="auth-container">
@@ -76,23 +55,19 @@ export default function SignUp() {
             <h2 className="text-3xl font-bold">Create your account</h2>
             <p className="mt-2 text-sm text-gray-600">
               Already have an account?{" "}
-              <Link
-                href="/auth/signin"
-                className="font-medium text-green-600 hover:text-green-500"
-              >
+              <Link href="/auth/signin" className="font-medium text-green-600 hover:text-green-500">
                 Sign in
               </Link>
             </p>
           </div>
 
           <div className="mt-8">
-            <form className="space-y-6" action="#" method="POST">
+            <form onSubmit={handleSignup} className="space-y-6">
               <TextField
                 label="Nickname"
                 name="nickname"
-                type="nickname"
-                autoComplete="nickname"
-                onChange={handleNicknameChange}
+                type="text"
+                onChange={(e) => setNickname(e.target.value)}
                 required
               />
               <TextField
@@ -100,7 +75,7 @@ export default function SignUp() {
                 name="email"
                 type="email"
                 autoComplete="email"
-                onChange={handleEmailChange}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
               <TextField
@@ -108,18 +83,16 @@ export default function SignUp() {
                 name="password"
                 type="password"
                 autoComplete="new-password"
-                onChange={handlePasswordChange}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
 
-              {error && <ErrorMessage message={error} />}
-
               <div className="space-y-4">
                 <Button
+                  type="submit"
                   variant="solid"
                   color="blue"
                   className="w-full flex justify-center bg-green-600 hover:bg-green-700"
-                  onClick={handleSignup}
                 >
                   Sign up
                 </Button>
@@ -138,9 +111,7 @@ export default function SignUp() {
       <div className="hidden lg:block w-1/2 bg-green-600 relative">
         <div className="absolute inset-0 flex flex-col justify-center items-center text-white p-12">
           <h1 className="text-4xl font-bold mb-6">Start Learning Today</h1>
-          <p className="text-xl text-center max-w-md">
-            Join our community and learn from the best.
-          </p>
+          <p className="text-xl text-center max-w-md">Join our community and learn from the best.</p>
         </div>
       </div>
     </div>

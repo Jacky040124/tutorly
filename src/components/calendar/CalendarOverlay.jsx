@@ -8,16 +8,21 @@ import { getRepeatingDates } from "@/lib/utils/dateUtils";
 import { ZoomService } from "@/services/zoom.service";
 
 // onEventAdded is an optional prop
-export default function CalendarOverlay({ setShowOverlay, onEventAdded }) {
+export default function CalendarOverlay() {
+    const { user, availability, updateAvailability } = useUser();
+    const { setShowCalendarOverlay } = useCalendar();
+
+
   const [date, setDate] = useState(null);
   const [start, setStart] = useState("");
-  const [isRepeating, setiIsRepeating] = useState(false);
+  const {error, setError} = useError();
+
   const [end, setEnd] = useState("");
-  const { user, availability, updateAvailability } = useUser();
-  const [error, setError] = useState("");
+  const [isRepeating, setiIsRepeating] = useState(false);
+  
 
   const handleCancel = () => {
-    setShowOverlay(false);
+    setShowCalendarOverlay(false);
   };
   const handleDate = (e) => {
     setDate(e);
@@ -123,8 +128,7 @@ export default function CalendarOverlay({ setShowOverlay, onEventAdded }) {
       }
 
       await updateAvailability([...availability, ...newEvents]);
-      if (onEventAdded) onEventAdded();
-      setShowOverlay(false);
+      setShowCalendarOverlay(false);
     } catch (error) {
       console.error("Error saving events:", error);
       setError(`Error saving events: ${error.message}`);
