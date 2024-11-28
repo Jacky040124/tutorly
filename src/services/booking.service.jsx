@@ -7,10 +7,9 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { ZoomService } from "./zoom.service";
-import { Logger } from "@/lib/utils/logger";
+import { sendMail, generateBookingConfirmationEmail } from "@/services/mail.service";
 
-export async function confirmBooking(bookings, availability, userBalance) {
+export async function confirmBooking(bookings, availability) {
   console.log("confirmBooking received bookings:", {
     bookings,
     hasLink: Array.isArray(bookings) ? 
@@ -277,6 +276,33 @@ export async function fetchFutureStudentBookings(studentId) {
     return futureBookings;
   } catch (error) {
     console.error("Error fetching future student bookings:", error);
+    throw error;
+  }
+}
+
+export async function handleBookingConfirmed(
+  booking,
+  teacherAvailability,
+  teacherData,
+  userEmail,
+  setShowBookingOverlay,
+  setBookingConfirmed
+) {
+  try {
+    const result = await confirmBooking(booking, teacherAvailability);
+    
+    try {
+      const emailContent = generateBookingConfirmationEmail(booking, teacherData);
+      await sendMail(userEmail, "Booking Confirmation - MeetYourTutor", emailContent);
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError);
+    }
+
+    setShowBookingOverlay(false);
+    setBookingConfirmed(true);
+    return result;
+  } catch (error) {
+    console.error("Booking confirmation failed:", error);
     throw error;
   }
 }

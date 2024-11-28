@@ -1,23 +1,31 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@/components/providers/UserContext";
+import { useBooking } from "@/components/providers/BookingContext";
+import { useError } from "@/components/providers/ErrorContext";
 import { normalizeToMidnight, getWeekBounds, calculateSelectedDate, formatTime } from "@/lib/utils/timeUtils";
 import { generateWeekDates, WEEKDAY_LABELS } from "@/lib/utils/dateUtils";
 import { getTeacherBookings } from "@/services/booking.service";
-import { useBookingConfirmation } from "@/components/booking/ConfirmBook";
 import BookingOverlay from "./BookingOverlay";
-import ErrorMessage from "@/components/common/ErrorMessage";
 
-export default function Calendar({ availability, userType, handleClickEvent }) {
+// TODO: Consider Seperate Student Calendar and Teacher Calendar
+// TODO: Consider Seperating Event Rendering Component from Calendar Component
+export default function Calendar() {
+  const { user, selectedTeacher, teacherList } = useUser();
+  const {
+    setSelectedSlot,
+    showBookingOverlay,
+    setShowBookingOverlay,
+    setFutureBookings,
+    bookings,
+    setBookings,
+    bookingConfirmed,
+  } = useBooking();
+  const { showError } = useError();
+
   const [weekOffset, setWeekOffset] = useState(0);
-  const [showBookingOverlay, setShowBookingOverlay] = useState(false);
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
-  const [error, setError] = useState("");
-  const [bookings, setBookings] = useState([]);
-  const [futureBookings, setFutureBookings] = useState([]);
-  const [bookingConfirmed, setBookingConfirmed] = useState(false);
-  const { user, selectedTeacher, teacherList, updateUserBalance } = useUser();
+  const userType = user.type;
   const teacherData = userType === "teacher" ? user : teacherList[selectedTeacher];
-  const { handleBookingConfirmed } = useBookingConfirmation();
+  const availability = userType === "teacher" ? user.availability : teacherList[selectedTeacher]?.availability;
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -28,18 +36,14 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
 
           const currentDate = new Date();
           const future = fetchedBookings.filter((booking) => {
-            const bookingDate = new Date(
-              booking.date.year,
-              booking.date.month - 1,
-              booking.date.day
-            );
+            const bookingDate = new Date(booking.date.year, booking.date.month - 1, booking.date.day);
             return bookingDate >= currentDate;
           });
           setFutureBookings(future);
         } catch (error) {
           console.error("Error fetching bookings:", error);
-          setError("Failed to fetch bookings");
-        } 
+          showError("Failed to fetch bookings");
+        }
       } else if (userType === "student" && teacherData?.uid) {
         try {
           const fetchedBookings = await getTeacherBookings(teacherData.uid);
@@ -47,21 +51,13 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
           setBookings(fetchedBookings);
         } catch (error) {
           console.error("Error fetching bookings:", error);
-          setError("Failed to fetch bookings");
+          showError("Failed to fetch bookings");
         }
       }
     };
 
     fetchBookings();
   }, [userType, user?.uid, teacherData?.uid, bookingConfirmed]);
-
-  if (userType === "teacher" && !user?.uid) {
-    return <div>Loading user data...</div>;
-  }
-
-  if (userType === "student" && !teacherData?.uid) {
-    return <div>Please select a teacher</div>;
-  }
 
   const handlePreviousWeek = () => {
     setWeekOffset((prev) => prev - 1);
@@ -70,30 +66,43 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
     setWeekOffset((prev) => prev + 1);
   };
 
-  const handleTimeSlotClick = (day, startTime, endTime, isRepeating, totalClasses, link) => {
-    console.log("handleTimeSlotClick received link:", link);
-    
-    if (!user?.email) {
-        setError("Please sign in to book a lesson");
-        return;
-    }
+  const handleRemove = async (day, startTime, endTime) => {
+    const confirmDelete = window.confirm("Do you want to remove this time slot?");
 
+    if (confirmDelete) {
+      try {
+        const updatedAvailability = availability.filter((event) => {
+          const eventDate = new Date(event.date.year, event.date.month - 1, event.date.day);
+          const eventDay = eventDate.getDay();
+          const adjustedEventDay = eventDay === 0 ? 7 : eventDay;
+
+          return !(adjustedEventDay === day && event.startTime === startTime && event.endTime === endTime);
+        });
+
+        await updateAvailability(updatedAvailability);
+      } catch (error) {
+        console.error("Error removing event:", error);
+        setError(`Failed to remove event: ${error.message}`);
+      }
+    }
+  };
+
+  const handleTimeSlotClick = (day, startTime, endTime, isRepeating, totalClasses, link) => {
     if (userType === "student") {
-        if (endTime - startTime >= 1) {
-            const slot = {
-                date: calculateSelectedDate(day, weekOffset),
-                startTime: startTime,
-                endTime: Math.min(startTime + 1, endTime),
-                isRepeating: isRepeating,
-                totalClasses: totalClasses,
-                link: link,
-            };
-            console.log("Setting selectedTimeSlot with link:", slot.link);
-            setSelectedTimeSlot(slot);
-            setShowBookingOverlay(true);
-        }
-    } else if (handleClickEvent) {
-      handleClickEvent(day, startTime, endTime);
+      if (endTime - startTime >= 1) {
+        const slot = {
+          date: calculateSelectedDate(day, weekOffset),
+          startTime: startTime,
+          endTime: Math.min(startTime + 1, endTime),
+          isRepeating: isRepeating,
+          totalClasses: totalClasses,
+          link: link,
+        };
+        setSelectedSlot(slot);
+        setShowBookingOverlay(true);
+      }
+    } else {
+      handleRemove(day, startTime, endTime);
     }
   };
 
@@ -106,7 +115,6 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
     const mondayBound = normalizeToMidnight(monday);
     const sundayBound = normalizeToMidnight(sunday);
 
-    // Process availability slots
     const availabilityEvents = availability.map((event, index) => {
       if (!event?.date?.year || !event?.date?.month || !event?.date?.day) {
         return null;
@@ -116,13 +124,8 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
         const eventDate = normalizeToMidnight(event.date);
 
         if (eventDate >= mondayBound && eventDate <= sundayBound) {
-          const eventDay = new Date(
-            event.date.year,
-            event.date.month - 1,
-            event.date.day
-          ).getDay();
+          const eventDay = new Date(event.date.year, event.date.month - 1, event.date.day).getDay();
           const adjustedWeekday = eventDay === 0 ? 7 : eventDay;
-
 
           return (
             <EventDisplay
@@ -132,7 +135,6 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
               startTime={event.startTime}
               isBooking={false}
               isRepeating={event.isRepeating}
-              repeatGroupId={event.repeatGroupId}
               repeatIndex={event.repeatIndex}
               totalClasses={event.totalClasses}
               link={event.link}
@@ -146,25 +148,12 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
       }
     });
 
-    // Similar update for bookings
     const bookingEvents = bookings.map((booking, index) => {
-      if (
-        !booking?.date?.year ||
-        !booking?.date?.month ||
-        !booking?.date?.day
-      ) {
-        return null;
-      }
-
       try {
         const bookingDate = normalizeToMidnight(booking.date);
 
         if (bookingDate >= mondayBound && bookingDate <= sundayBound) {
-          const bookingDay = new Date(
-            booking.date.year,
-            booking.date.month - 1,
-            booking.date.day
-          ).getDay();
+          const bookingDay = new Date(booking.date.year, booking.date.month - 1, booking.date.day).getDay();
           const adjustedWeekday = bookingDay === 0 ? 7 : bookingDay;
 
           return (
@@ -202,14 +191,10 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
     endTime,
     isBooking,
     studentId,
-    bulkId,
-    lessonNumber,
-    totalLessons,
     isRepeating,
-    repeatGroupId,
     repeatIndex,
     totalClasses,
-    link
+    link,
   }) => {
     const startRow = startTime * 12 + 2;
     const EndRows = (endTime - startTime) * 12;
@@ -230,17 +215,7 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
         style={{ gridRow: `${startRow} / span ${EndRows}` }}
       >
         <a
-          onClick={() =>
-            !isBooking &&
-            handleTimeSlotClick(
-              day,
-              startTime,
-              endTime,
-              isRepeating,
-              totalClasses,
-              link,
-            )
-          }
+          onClick={() => !isBooking && handleTimeSlotClick(day, startTime, endTime, isRepeating, totalClasses, link)}
           className={`group absolute inset-1 flex flex-col overflow-y-auto rounded-lg 
             ${
               isBooking
@@ -254,10 +229,7 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
         >
           <div className="flex flex-col">
             <div className="flex items-center justify-between">
-              <time
-                className="text-gray-600"
-                dateTime={`2022-01-15T${startTime}:00`}
-              >
+              <time className="text-gray-600" dateTime={`2022-01-15T${startTime}:00`}>
                 {formatTime(startTime)} - {formatTime(endTime)}
               </time>
               {isRepeating && !isBooking && (
@@ -266,14 +238,8 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
                 </span>
               )}
             </div>
-            {isBooking && studentId && (
-              <span className="text-red-600 text-[10px] mt-0.5">Booked</span>
-            )}
-            {isRepeating && !isBooking && (
-              <span className="text-green-600 text-[10px] mt-0.5">
-                Recurring Class
-              </span>
-            )}
+            {isBooking && studentId && <span className="text-red-600 text-[10px] mt-0.5">Booked</span>}
+            {isRepeating && !isBooking && <span className="text-green-600 text-[10px] mt-0.5">Recurring Class</span>}
           </div>
         </a>
       </li>
@@ -304,17 +270,11 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
       <div className="sticky top-0 z-30 flex-none bg-white shadow ring-1 ring-black ring-opacity-5 sm:pr-8">
         <div className="grid grid-cols-7 text-sm leading-6 text-gray-500 sm:hidden">
           {WEEKDAY_LABELS.mobile.map((day, i) => (
-            <button
-              key={i}
-              type="button"
-              className="flex flex-col items-center pb-3 pt-2"
-            >
+            <button key={i} type="button" className="flex flex-col items-center pb-3 pt-2">
               {day}
               <span
                 className={`mt-1 flex h-8 w-8 items-center justify-center font-semibold ${
-                  weekDates[i].isToday
-                    ? "rounded-full bg-indigo-600 text-white"
-                    : "text-gray-900"
+                  weekDates[i].isToday ? "rounded-full bg-indigo-600 text-white" : "text-gray-900"
                 }`}
               >
                 {weekDates[i].date}
@@ -346,14 +306,20 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
     );
   };
 
+  // Loading States
+  if (userType === "teacher" && !user?.uid) {
+    return <div>Loading user data...</div>;
+  }
+
+  if (userType === "student" && !teacherData?.uid) {
+    return <div>Please select a teacher</div>;
+  }
+
   return (
     <>
       <div className="flex h-full flex-col">
         <div className="isolate flex flex-auto flex-col overflow-auto bg-white">
-          <div
-            className="flex max-w-full flex-none flex-col sm:max-w-none md:max-w-full"
-            style={{ width: "165%" }}
-          >
+          <div className="flex max-w-full flex-none flex-col sm:max-w-none md:max-w-full" style={{ width: "165%" }}>
             <div className="flex justify-between items-center">
               <button
                 onClick={handlePreviousWeek}
@@ -361,10 +327,7 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
               >
                 Previous Week
               </button>
-              <button
-                onClick={handleNextWeek}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
+              <button onClick={handleNextWeek} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
                 Next Week
               </button>
             </div>
@@ -510,23 +473,7 @@ export default function Calendar({ availability, userType, handleClickEvent }) {
           </div>
         </div>
       </div>
-      {error && <ErrorMessage message={error} />}
-      {showBookingOverlay && (
-        <BookingOverlay
-          selectedSlot={selectedTimeSlot}
-          teacherData={teacherData}
-          onConfirm={(booking) =>
-            handleBookingConfirmed(
-              booking,
-              teacherData.availability,
-              setShowBookingOverlay,
-              setBookingConfirmed,
-              teacherData
-            )
-          }
-          onClose={() => setShowBookingOverlay(false)}
-        />
-      )}
+      {showBookingOverlay && <BookingOverlay />}
     </>
   );
 }

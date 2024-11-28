@@ -1,4 +1,4 @@
-import { withRetry } from "@/lib/utils/retry";
+import { withRetry } from "@/utils/retry";
 import { useState } from 'react';
 
 export class ZoomService {

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from 'react';
-import { onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import {
   doc,
   setDoc,
@@ -21,6 +21,8 @@ export function UserProvider({ children }) {
     const [teacherList, setTeacherList] = useState({});
     const [selectedTeacher, setSelectedTeacher] = useState('');
 
+
+    //TODO: figure out what this useEffect do and whather it is necessary
     useEffect(() => {
         console.log("UserContext mount");
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -63,28 +65,6 @@ export function UserProvider({ children }) {
 
         return () => unsubscribe();
     }, []);
-
-    // TODO : Refactor into auth.service
-    const signIn = async (email, password) => {
-        try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const docRef = doc(db, "users", userCredential.user.uid);
-            const docSnap = await getDoc(docRef);
-            const userData = docSnap.data();
-            
-            setUser({
-                email: userCredential.user.email,
-                uid: userCredential.user.uid,
-                type: userData?.type
-            });
-            
-            setAvailability(userData?.availability || []);
-            return { success: true, userData };
-        } catch (error) {
-            console.error("Error signing in:", error);
-            return { success: false, error };
-        }
-    };
 
     const updateAvailability = async (newAvailability) => {
         if (!user?.uid) return;
@@ -178,7 +158,6 @@ export function UserProvider({ children }) {
         loading,
         availability,
         updateAvailability,
-        signIn,
         teacherList,
         fetchTeachers,
         updatePrice,
