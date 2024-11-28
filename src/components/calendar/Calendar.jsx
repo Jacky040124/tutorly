@@ -1,15 +1,7 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@/components/providers/UserContext";
-import {
-  normalizeToMidnight,
-  getAdjustedWeekday,
-  getWeekBounds,
-  calculateGridPositions,
-  calculateSelectedDate,
-  formatTime,
-} from "@/lib/utils/timeUtils";
-import { generateWeekDates } from "@/lib/utils/dateUtils";
-import { WEEKDAY_LABELS } from "@/lib/utils/dateUtils";
+import { normalizeToMidnight, getWeekBounds, calculateSelectedDate, formatTime } from "@/lib/utils/timeUtils";
+import { generateWeekDates, WEEKDAY_LABELS } from "@/lib/utils/dateUtils";
 import { getTeacherBookings } from "@/services/booking.service";
 import { useBookingConfirmation } from "@/components/booking/ConfirmBook";
 import BookingOverlay from "./BookingOverlay";
