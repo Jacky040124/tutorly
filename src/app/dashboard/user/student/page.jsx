@@ -44,15 +44,14 @@ export default function StudentAccount() {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchInitialData = async () => {
       try {
-        if (!user?.uid) {
-          setIsLoading(false);
-          return;
-        }
+        await fetchTeachers();
 
-        const bookings = await fetchFutureStudentBookings(user.uid);
-        setFutureBookings(bookings);
+        if (user?.uid) {
+          const bookings = await fetchFutureStudentBookings(user.uid);
+          setFutureBookings(bookings);
+        }
       } catch (error) {
         setError(`Error fetching data: ${error.message}`);
       } finally {
@@ -60,12 +59,8 @@ export default function StudentAccount() {
       }
     };
 
-    fetchData();
+    fetchInitialData();
   }, [user]);
-
-  useEffect(() => {
-    fetchTeachers();
-  }, []);
 
   if (!user) {
     return (

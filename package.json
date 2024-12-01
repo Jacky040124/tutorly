@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@google-apps/meet": "^0.3.0",
+    "@headlessui/react": "^2.2.0",
     "@sendgrid/mail": "^8.1.4",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
