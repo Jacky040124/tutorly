@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useUser } from "@/components/providers/UserContext";
-import { useBooking } from "@/components/providers/BookingContext";
+import { useUser, useBooking } from "@/components/providers";
 import { formatTime } from "@/lib/utils/timeUtils";
 import { handleBookingConfirmed } from "@/services/booking.service";
 

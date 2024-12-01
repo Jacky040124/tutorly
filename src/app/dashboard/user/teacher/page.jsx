@@ -12,6 +12,7 @@ import { fetchFutureBookings } from "@/services";
 import { useError } from "@/components/providers/ErrorContext";
 import { useOverlay } from "@/components/providers/OverlayContext";
 import { useLoading } from "@/components/providers/LoadingContext";
+import { useBooking } from "@/components/providers/BookingContext";
 
 
 export default function TeacherAccount() {
@@ -20,7 +21,7 @@ export default function TeacherAccount() {
   const { showCalendarOverlay, setShowCalendarOverlay, showTeacherProfileOverlay, setShowTeacherProfileOverlay } =
     useOverlay();
   const {setFutureBookings} = useBooking();
-  const {isLoading, setLoading} = useLoading();
+  const {isLoading, setIsLoading} = useLoading();
 
   const Header = () => {
     return (
@@ -48,7 +49,7 @@ export default function TeacherAccount() {
     const fetchData = async () => {
       if (!user?.uid) return;
 
-      setLoading('teacherData', true);
+      setIsLoading('teacherData', true);
       try {
         // Fetch availability
         const docRef = doc(db, "users", user.uid);
@@ -63,7 +64,7 @@ export default function TeacherAccount() {
         console.error("Error fetching data:", error);
         setError(error.message);
       } finally {
-        setLoading('teacherData', false);
+        setIsLoading("teacherData", false);
       }
     };
 

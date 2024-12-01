@@ -1,9 +1,5 @@
 import { Inter, Lexend } from 'next/font/google'
-import { UserProvider } from '@/components/providers/UserContext'
-import { ErrorProvider } from '@/components/providers/ErrorContext'
-import { BookingProvider } from '@/components/providers/BookingContext'
-import { OverlayProvider } from "@/components/providers/OverlayContext"
-import { LoadingProvider } from '@/components/providers/LoadingContext'
+import { UserProvider, BookingProvider, ErrorProvider, LoadingProvider, OverlayProvider } from '@/components/providers'
 import clsx from 'clsx'
 import "@/app/globals.css"
 

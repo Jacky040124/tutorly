@@ -1,11 +1,25 @@
 import { useState, useEffect } from "react";
-import { useUser } from "@/components/providers/UserContext";
-import { useBooking } from "@/components/providers/BookingContext";
-import { useError } from "@/components/providers/ErrorContext";
+import { useUser, useBooking, useError } from "@/components/providers";
 import { normalizeToMidnight, getWeekBounds, calculateSelectedDate, formatTime } from "@/lib/utils/timeUtils";
 import { generateWeekDates, WEEKDAY_LABELS } from "@/lib/utils/dateUtils";
 import { getTeacherBookings } from "@/services/booking.service";
 import BookingOverlay from "./BookingOverlay";
+import { CALENDAR_CONFIG, TOTAL_INTERVALS, HEADER_OFFSET, calculateGridPosition } from "@/lib/utils/calendarUtil";
+
+const VerticalGrid = () => {
+  return (
+    <div className="col-start-1 col-end-2 row-start-1 hidden grid-cols-7 grid-rows-1 divide-x divide-gray-100 sm:grid sm:grid-cols-7">
+      <div className="col-start-1 row-span-full" data-day="Monday"></div>
+      <div className="col-start-2 row-span-full" data-day="Tuesday"></div>
+      <div className="col-start-3 row-span-full" data-day="Wednesday"></div>
+      <div className="col-start-4 row-span-full" data-day="Thursday"></div>
+      <div className="col-start-5 row-span-full" data-day="Friday"></div>
+      <div className="col-start-6 row-span-full" data-day="Saturday"></div>
+      <div className="col-start-7 row-span-full" data-day="Sunday"></div>
+      <div className="col-start-8 row-span-full w-8"></div>
+    </div>
+  );
+};
 
 // TODO: Consider Seperate Student Calendar and Teacher Calendar
 // TODO: Consider Seperating Event Rendering Component from Calendar Component
@@ -58,13 +72,6 @@ export default function Calendar() {
 
     fetchBookings();
   }, [userType, user?.uid, teacherData?.uid, bookingConfirmed]);
-
-  const handlePreviousWeek = () => {
-    setWeekOffset((prev) => prev - 1);
-  };
-  const handleNextWeek = () => {
-    setWeekOffset((prev) => prev + 1);
-  };
 
   const handleRemove = async (day, startTime, endTime) => {
     const confirmDelete = window.confirm("Do you want to remove this time slot?");
@@ -177,7 +184,9 @@ export default function Calendar() {
     return (
       <ol
         className="col-start-1 col-end-2 row-start-1 grid grid-cols-1 sm:grid-cols-7 sm:pr-8"
-        style={{ gridTemplateRows: "1.75rem repeat(288, minmax(0, 1fr)) auto" }}
+        style={{
+          gridTemplateRows: `1.75rem repeat(${TOTAL_INTERVALS}, minmax(0, 1fr)) auto`,
+        }}
       >
         {availabilityEvents}
         {bookingEvents}
@@ -196,8 +205,8 @@ export default function Calendar() {
     totalClasses,
     link,
   }) => {
-    const startRow = startTime * 12 + 2;
-    const EndRows = (endTime - startTime) * 12;
+    const startRow = calculateGridPosition.startRow(startTime);
+    const rowSpan = calculateGridPosition.duration(startTime, endTime);
 
     const WEEKDAY_COLUMN_MAPPING = {
       1: "sm:col-start-1", // Monday
@@ -212,7 +221,7 @@ export default function Calendar() {
     return (
       <li
         className={`relative mt-px hidden ${WEEKDAY_COLUMN_MAPPING[day]} sm:flex`}
-        style={{ gridRow: `${startRow} / span ${EndRows}` }}
+        style={{ gridRow: `${startRow} / span ${rowSpan}` }}
       >
         <a
           onClick={() => !isBooking && handleTimeSlotClick(day, startTime, endTime, isRepeating, totalClasses, link)}
@@ -243,21 +252,6 @@ export default function Calendar() {
           </div>
         </a>
       </li>
-    );
-  };
-
-  const VerticalGrid = () => {
-    return (
-      <div className="col-start-1 col-end-2 row-start-1 hidden grid-cols-7 grid-rows-1 divide-x divide-gray-100 sm:grid sm:grid-cols-7">
-        <div className="col-start-1 row-span-full" data-day="Monday"></div>
-        <div className="col-start-2 row-span-full" data-day="Tuesday"></div>
-        <div className="col-start-3 row-span-full" data-day="Wednesday"></div>
-        <div className="col-start-4 row-span-full" data-day="Thursday"></div>
-        <div className="col-start-5 row-span-full" data-day="Friday"></div>
-        <div className="col-start-6 row-span-full" data-day="Saturday"></div>
-        <div className="col-start-7 row-span-full" data-day="Sunday"></div>
-        <div className="col-start-8 row-span-full w-8"></div>
-      </div>
     );
   };
 
@@ -306,6 +300,22 @@ export default function Calendar() {
     );
   };
 
+  const TimeLabels = () => {
+    const timeSlots = [];
+    for (let hour = CALENDAR_CONFIG.START_HOUR; hour < CALENDAR_CONFIG.END_HOUR; hour++) {
+      const displayHour = hour % 12 || 12;
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      
+      timeSlots.push(
+        <div key={hour}>
+          <div className="calendarText">{`${displayHour}${ampm}`}</div>
+        </div>,
+        <div key={`${hour}-half`}></div>
+      );
+    }
+    return timeSlots;
+  };
+
   // Loading States
   if (userType === "teacher" && !user?.uid) {
     return <div>Loading user data...</div>;
@@ -322,12 +332,15 @@ export default function Calendar() {
           <div className="flex max-w-full flex-none flex-col sm:max-w-none md:max-w-full" style={{ width: "165%" }}>
             <div className="flex justify-between items-center">
               <button
-                onClick={handlePreviousWeek}
+                onClick={() => setWeekOffset((prev) => prev - 1)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 Previous Week
               </button>
-              <button onClick={handleNextWeek} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+              <button
+                onClick={() => setWeekOffset((prev) => prev + 1)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
                 Next Week
               </button>
             </div>
@@ -339,130 +352,11 @@ export default function Calendar() {
                 <div
                   className="col-start-1 col-end-2 row-start-1 grid divide-y divide-gray-100"
                   style={{
-                    gridTemplateRows: "repeat(48, minmax(3.5rem, 1fr))",
+                    gridTemplateRows: `repeat(${CALENDAR_CONFIG.HOURS_TO_DISPLAY * 2}, minmax(3.5rem, 1fr))`
                   }}
                 >
                   <div className="row-end-1 h-7"></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">12AM</div>{" "}
-                  </div>
-                  <div> </div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">1AM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">2AM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">3AM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">4AM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">5AM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">6AM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">7AM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">8AM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">9AM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">10AM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">11AM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">12PM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">1PM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">2PM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">3PM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">4PM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">5PM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">6PM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">7PM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">8PM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">9PM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">10PM</div>{" "}
-                  </div>
-                  <div></div>
-                  <div>
-                    {" "}
-                    <div className="calendarText">11PM</div>{" "}
-                  </div>
-                  <div></div>
+                  <TimeLabels />
                 </div>
 
                 <VerticalGrid />

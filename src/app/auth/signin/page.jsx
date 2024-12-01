@@ -74,6 +74,8 @@ export default function Login() {
             // Navigate based on user type
             const route = userData.type === "teacher" 
                 ? "/dashboard/user/teacher" 
+                : userData.type === "manager"
+                ? "/dashboard/user/manager"
                 : "/dashboard/user/student";
             router.replace(route);
             

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import sgMail from '@sendgrid/mail';
 
+
+// POST is an HTTP method name -> any function name POST Nextjs automatically routes HTTP POST request to this funciton
 export async function POST(request) {
   try {
     const { to, subject, html } = await request.json();

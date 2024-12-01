@@ -1,6 +1,5 @@
 import { formatTime } from "@/lib/utils/timeUtils";
-import { useUser } from "@/components/providers/UserContext";
-import { useBooking } from "@/components/providers/BookingContext"
+import { useUser, useBooking } from "@/components/providers";
 
 export default function FutureBookings() {
   const { userType, teacherList, user } = useUser();

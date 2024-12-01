@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useUser } from "../providers/UserContext";
+import { useUser, useError, useOverlay } from "@/components/providers";
 import DayField from "@/components/calendar/DayField";
 import ErrorMessage from "@/components/common/ErrorMessage";
 import { timeToDecimal } from "@/lib/utils/timeUtils";
@@ -10,7 +10,7 @@ import { ZoomService } from "@/services/zoom.service";
 // onEventAdded is an optional prop
 export default function CalendarOverlay() {
     const { user, availability, updateAvailability } = useUser();
-    const { setShowCalendarOverlay } = useCalendar();
+    const { setShowCalendarOverlay } = useOverlay();
 
 
   const [date, setDate] = useState(null);

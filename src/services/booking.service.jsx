@@ -5,6 +5,7 @@ import {
   query,
   where,
   getDocs,
+  orderBy,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { sendMail, generateBookingConfirmationEmail } from "@/services/mail.service";
@@ -303,6 +304,29 @@ export async function handleBookingConfirmed(
     return result;
   } catch (error) {
     console.error("Booking confirmation failed:", error);
+    throw error;
+  }
+}
+
+export async function fetchAllTeacherBookings(teacherId) {
+  try {
+    const bookingsRef = collection(db, "bookings");
+    const q = query(
+      bookingsRef,
+      where("teacherId", "==", teacherId),
+      orderBy("date.year", "desc"),
+      orderBy("date.month", "desc"),
+      orderBy("date.day", "desc"),
+      orderBy("startTime", "desc")
+    );
+
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error("Error fetching teacher bookings:", error);
     throw error;
   }
 }

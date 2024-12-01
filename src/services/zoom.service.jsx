@@ -1,11 +1,15 @@
 import { withRetry } from "@/utils/retry";
-import { useState } from 'react';
+import { useState } from "react";
 
 export class ZoomService {
   static tokenCache = {
     token: null,
     expiresAt: null,
   };
+
+  static isTokenValid() {
+    return this.tokenCache.token && this.tokenCache.expiresAt && Date.now() < this.tokenCache.expiresAt;
+  }
 
   static async getAccessToken() {
     // Check cache first
@@ -14,9 +18,9 @@ export class ZoomService {
     }
 
     try {
-      const credentials = Buffer.from(
-        `${process.env.ZOOM_CLIENT_ID}:${process.env.ZOOM_CLIENT_SECRET}`
-      ).toString("base64");
+      const credentials = Buffer.from(`${process.env.ZOOM_CLIENT_ID}:${process.env.ZOOM_CLIENT_SECRET}`).toString(
+        "base64"
+      );
 
       const response = await fetch(
         `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${process.env.ZOOM_ACCOUNT_ID}`,
@@ -45,14 +49,6 @@ export class ZoomService {
       console.error("Error getting Zoom access token:", error);
       throw error;
     }
-  }
-
-  static isTokenValid() {
-    return (
-      this.tokenCache.token &&
-      this.tokenCache.expiresAt &&
-      Date.now() < this.tokenCache.expiresAt
-    );
   }
 
   static async createMeeting(bookingDetails) {
@@ -87,23 +83,61 @@ export class ZoomService {
     return withRetry(async () => {
       const token = await this.getAccessToken();
 
-      const response = await fetch(
-        `https://api.zoom.us/v2/meetings/${meetingId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`https://api.zoom.us/v2/meetings/${meetingId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (!response.ok && response.status !== 404) {
-        const error = new Error(
-          `Failed to delete meeting: ${response.statusText}`
-        );
+        const error = new Error(`Failed to delete meeting: ${response.statusText}`);
         error.status = response.status;
         throw error;
       }
     });
+  }
+
+  static async fetchArtifact(meetingId) {
+    console.log('ZoomService: Starting artifact fetch', { meetingId });
+    
+    try {
+      const response = await fetch(
+        `/api/zoom/artifacts?meetingId=${meetingId}`,
+        {method: 'GET', headers: {'Content-Type': 'application/json'}}
+      );
+
+      console.log('ZoomService: Received response', { 
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('ZoomService: Response not OK', {
+          status: response.status,
+          statusText: response.statusText,
+          errorText
+        });
+        throw new Error(`Failed to fetch meeting artifacts: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('ZoomService: Successfully parsed response', {
+        hasRecordings: Boolean(data?.recording_files?.length),
+        recordingsCount: data?.recording_files?.length
+      });
+      
+      return data;
+
+    } catch (error) {
+      console.error('ZoomService: Error in fetchArtifact', {
+        meetingId,
+        error: error.message,
+        fullError: error
+      });
+      throw error;
+    }
   }
 }
