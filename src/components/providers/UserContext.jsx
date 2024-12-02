@@ -138,6 +138,52 @@ export function UserProvider({ children }) {
         }
     };
 
+    const updateGradeLevel = async (newGradeLevel) => {
+        if (!user?.uid) return;
+        try {
+            const docRef = doc(db, "users", user.uid);
+            await setDoc(docRef, { 
+                academicDetails: { 
+                    ...user.academicDetails,
+                    gradeLevel: newGradeLevel 
+                }
+            }, { merge: true });
+            setUser(prevUser => ({
+                ...prevUser,
+                academicDetails: {
+                    ...prevUser.academicDetails,
+                    gradeLevel: newGradeLevel
+                }
+            }));
+        } catch (error) {
+            console.error("Error updating grade level:", error);
+            throw error;
+        }
+    };
+
+    const updateStudentDescription = async (newDescription) => {
+        if (!user?.uid) return;
+        try {
+            const docRef = doc(db, "users", user.uid);
+            await setDoc(docRef, { 
+                academicDetails: {
+                    ...user.academicDetails,
+                    description: newDescription
+                }
+            }, { merge: true });
+            setUser(prevUser => ({
+                ...prevUser,
+                academicDetails: {
+                    ...prevUser.academicDetails,
+                    description: newDescription
+                }
+            }));
+        } catch (error) {
+            console.error("Error updating student description:", error);
+            throw error;
+        }
+    };
+
     // fetch a list of all teachers
     const fetchTeachers = async () => {
         const teachers = {};
@@ -166,6 +212,8 @@ export function UserProvider({ children }) {
         selectedTeacher,
         setSelectedTeacher,
         updateUserBalance,
+        updateGradeLevel,
+        updateStudentDescription,
     };
 
     return (

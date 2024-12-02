@@ -6,6 +6,7 @@ import {
   where,
   getDocs,
   orderBy,
+  setDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { sendMail, generateBookingConfirmationEmail } from "@/services/mail.service";
@@ -327,6 +328,67 @@ export async function fetchAllTeacherBookings(teacherId) {
     }));
   } catch (error) {
     console.error("Error fetching teacher bookings:", error);
+    throw error;
+  }
+}
+
+export async function addFeedback(bookingId, feedback) {
+  console.log("Adding feedback:", { bookingId, feedback });
+  
+  try {
+    const bookingRef = doc(db, "bookings", bookingId);
+    await setDoc(bookingRef, {
+      feedback: {
+        rating: feedback.rating,
+        comment: feedback.comment,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        studentId: feedback.studentId,
+        meetingId: bookingId
+      }
+    }, { merge: true });
+
+    console.log("Successfully added feedback");
+    return true;
+  } catch (error) {
+    console.error("Error adding feedback:", error);
+    throw error;
+  }
+}
+
+export async function updateFeedback(bookingId, feedback) {
+  console.log("Updating feedback:", { bookingId, feedback });
+  
+  try {
+    const bookingRef = doc(db, "bookings", bookingId);
+    await setDoc(bookingRef, {
+      feedback: {
+        ...feedback,
+        updatedAt: new Date().toISOString()
+      }
+    }, { merge: true });
+
+    console.log("Successfully updated feedback");
+    return true;
+  } catch (error) {
+    console.error("Error updating feedback:", error);
+    throw error;
+  }
+}
+
+export async function deleteFeedback(bookingId) {
+  console.log("Deleting feedback:", { bookingId });
+  
+  try {
+    const bookingRef = doc(db, "bookings", bookingId);
+    await setDoc(bookingRef, {
+      feedback: null
+    }, { merge: true });
+
+    console.log("Successfully deleted feedback");
+    return true;
+  } catch (error) {
+    console.error("Error deleting feedback:", error);
     throw error;
   }
 }

@@ -7,8 +7,8 @@ import Calendar from "@/components/calendar/Calendar";
 import CalendarOverlay from "@/components/calendar/CalendarOverlay";
 import TeacherProfileOverlay from "@/components/overlays/TeacherProfileOverlay";
 import ErrorMessage from "@/components/common/ErrorMessage";
-import FutureBookings from "@/components/calendar/FutureBookings";
-import { fetchFutureBookings } from "@/services";
+import BookingList from "@/components/calendar/BookingList";
+import { fetchAllTeacherBookings } from "@/services/booking.service";
 import { useError } from "@/components/providers/ErrorContext";
 import { useOverlay } from "@/components/providers/OverlayContext";
 import { useLoading } from "@/components/providers/LoadingContext";
@@ -20,7 +20,7 @@ export default function TeacherAccount() {
   const { error, setError} = useError();
   const { showCalendarOverlay, setShowCalendarOverlay, showTeacherProfileOverlay, setShowTeacherProfileOverlay } =
     useOverlay();
-  const {setFutureBookings} = useBooking();
+  const {setFutureBookings, setBookings} = useBooking();
   const {isLoading, setIsLoading} = useLoading();
 
   const Header = () => {
@@ -57,9 +57,10 @@ export default function TeacherAccount() {
         const availabilityData = docSnap.data()?.availability || [];
         updateAvailability(availabilityData);
 
-        // Fetch future bookings
-        const bookings = await fetchFutureBookings(user.uid);
+        // Fetch all bookings instead of just future ones
+        const bookings = await fetchAllTeacherBookings(user.uid);
         setFutureBookings(bookings);
+        setBookings(bookings);
       } catch (error) {
         console.error("Error fetching data:", error);
         setError(error.message);
@@ -100,7 +101,7 @@ export default function TeacherAccount() {
         {showCalendarOverlay && <CalendarOverlay />}
         {showTeacherProfileOverlay && <TeacherProfileOverlay />}
       </div>
-      <FutureBookings />
+      <BookingList />
     </div>
   );
 }

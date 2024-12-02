@@ -4,16 +4,22 @@ import { useUser } from "@/components/providers/UserContext";
 import { useLoading } from "@/components/providers/LoadingContext";
 import { useError } from "@/components/providers/ErrorContext";
 import { useBooking } from "@/components/providers/BookingContext";
-import { fetchFutureStudentBookings } from "@/services/booking.service";
+import { 
+  fetchFutureStudentBookings, 
+  getStudentBookings,
+} from "@/services/booking.service";
 import Calendar from "@/components/calendar/Calendar";
 import ErrorMessage from "@/components/common/ErrorMessage";
-import FutureBookings from "@/components/calendar/FutureBookings";
+import BookingList from "@/components/calendar/BookingList";
+import StudentProfileOverlay from "@/components/overlays/StudentProfileOverlay";
+import { useOverlay } from "@/components/providers/OverlayContext";
 
 export default function StudentAccount() {
   const { user, teacherList, fetchTeachers, selectedTeacher, setSelectedTeacher } = useUser();
   const {setIsLoading} = useLoading();
-  const {error, setError} = useError();
-  const {setFutureBookings} = useBooking();
+  const {error, showError} = useError();
+  const {setFutureBookings, setBookings} = useBooking();
+  const { showStudentProfileOverlay, setShowStudentProfileOverlay } = useOverlay();
 
   const Header = () => {
     return (
@@ -25,6 +31,12 @@ export default function StudentAccount() {
         </h1>
 
         <div>
+          <button
+            onClick={() => setShowStudentProfileOverlay(true)}
+            className="standard-button mr-4"
+          >
+            Academic Profile
+          </button>
           <select
             onChange={(e) => setSelectedTeacher(e.target.value)}
             value={selectedTeacher}
@@ -51,6 +63,7 @@ export default function StudentAccount() {
         if (user?.uid) {
           const bookings = await fetchFutureStudentBookings(user.uid);
           setFutureBookings(bookings);
+          setBookings(bookings);
         }
       } catch (error) {
         setError(`Error fetching data: ${error.message}`);
@@ -61,6 +74,30 @@ export default function StudentAccount() {
 
     fetchInitialData();
   }, [user]);
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      if (!user?.uid || !selectedTeacher) return;
+      
+      try {
+        setIsLoading(true);
+        const allBookings = await getStudentBookings(user.uid);
+        const futureBookings = allBookings.filter(booking => {
+          const bookingDate = new Date(booking.date.year, booking.date.month - 1, booking.date.day);
+          return bookingDate >= new Date();
+        });
+        
+        setFutureBookings(futureBookings);
+        setBookings(allBookings);
+      } catch (error) {
+        showError(`Error fetching bookings: ${error.message}`);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, [selectedTeacher, user]);
 
   if (!user) {
     return (
@@ -82,8 +119,9 @@ export default function StudentAccount() {
       <Header />
       <div className="flex h-full flex-col">
         <Calendar />
-        <FutureBookings />
+        <BookingList />
       </div>
+      {showStudentProfileOverlay && <StudentProfileOverlay />}
     </div>
   );
 }
