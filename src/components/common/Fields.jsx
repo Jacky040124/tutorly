@@ -20,7 +20,7 @@ export const InputField = ({ name, onChange, value }) => {
       const options = [];
       options.push(<option key="default">Select Time</option>);
 
-      for (let hour = 0; hour < 24; hour++) {
+      for (let hour = 6; hour < 24; hour++) {
         const hourStr = hour.toString().padStart(2, "0");
 
         // Add hour:00
@@ -38,15 +38,14 @@ export const InputField = ({ name, onChange, value }) => {
         htmlFor="time"
         className="block text-sm font-medium leading-6 text-gray-900"
       >
-        {" "}
-        {name}{" "}
+        {name}
       </label>
       <select
         onChange={onChange}
         value={value}
         id="time"
         name="time"
-        className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-green-600 sm:text-sm sm:leading-6"
+        className="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
       >
         {generateTimeOptions()}
       </select>

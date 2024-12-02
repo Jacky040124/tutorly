@@ -9,6 +9,7 @@
   "teacher": {
     "profile": "Profile Settings",
     "greeting": "Hi",
-    "welcome": "Welcome to your teaching dashboard"
+    "welcome": "Welcome to your teaching dashboard",
+    "add": "Add Event"
   }
 } 

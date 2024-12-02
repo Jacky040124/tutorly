@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 const OverlayContext = createContext();
 
@@ -9,6 +9,14 @@ const [showCalendarOverlay, setShowCalendarOverlay] = useState(false);
 const [showTeacherProfileOverlay, setShowTeacherProfileOverlay] = useState(false);
 const [showStudentProfileOverlay, setShowStudentProfileOverlay] = useState(false);
 
+// Add a useEffect to monitor state changes
+useEffect(() => {
+  console.log('showCalendarOverlay state changed:', showCalendarOverlay);
+}, [showCalendarOverlay]);
+
+useEffect(() => {
+  console.log('showTeacherProfileOverlay state changed:', showTeacherProfileOverlay);
+}, [showTeacherProfileOverlay]);
 
   const value = {
     showCalendarOverlay,

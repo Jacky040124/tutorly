@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useUser } from '../providers/UserContext';
 import ErrorMessage from '../common/ErrorMessage';
-import { useOverlay } from '../providers/OverlayContext';
+import { useOverlay } from '@/components/providers/index';
 
 export default function TeacherProfileOverlay() {
     const { user, updatePrice, updateNickname, updateDescription } = useUser();
-    const { setShowTeacherProfileOverlay } = useOverlay
+    const { setShowTeacherProfileOverlay } = useOverlay();
 
 
     

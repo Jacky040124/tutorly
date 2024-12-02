@@ -13,17 +13,16 @@ import { useError } from "@/components/providers/ErrorContext";
 import { useOverlay } from "@/components/providers/OverlayContext";
 import { useLoading } from "@/components/providers/LoadingContext";
 import { useBooking } from "@/components/providers/BookingContext";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
+import LanguageSwitcher from "@/components/common/LanguageSwitcher";
 import { useTranslation } from 'react-i18next';
 
 
 export default function TeacherAccount() {
   const { user, updateAvailability, loading: userLoading } = useUser();
   const { error, setError} = useError();
-  const { showCalendarOverlay, setShowCalendarOverlay, showTeacherProfileOverlay, setShowTeacherProfileOverlay } =
-    useOverlay();
+  const { showCalendarOverlay, setShowCalendarOverlay, showTeacherProfileOverlay, setShowTeacherProfileOverlay } = useOverlay();
   const {setFutureBookings, setBookings} = useBooking();
-  const {isLoading, setIsLoading} = useLoading();
+  const {setIsLoading} = useLoading();
   const { i18n, t } = useTranslation('dashboard');
 
   const Header = () => {
@@ -38,10 +37,21 @@ export default function TeacherAccount() {
         <div className="flex items-center gap-4">
           <LanguageSwitcher />
           <button
-            onClick={() => setShowTeacherProfileOverlay(true)}
+            onClick={() => {
+              setShowCalendarOverlay(true);
+            }}
             className="standard-button mr-4"
           >
-            {t('teacher.profile')}
+            {t("teacher.add")}
+          </button>
+          <button 
+            onClick={() => {
+              setShowTeacherProfileOverlay(true);
+              console.log('TeacherProfile button clicked, showTeacherProfileOverlay:', showTeacherProfileOverlay);
+            }} 
+            className="standard-button mr-4"
+          >
+            {t("teacher.profile")}
           </button>
         </div>
       </header>
@@ -52,7 +62,7 @@ export default function TeacherAccount() {
     const fetchData = async () => {
       if (!user?.uid) return;
 
-      setIsLoading('teacherData', true);
+      setIsLoading("teacherData", true);
       try {
         // Fetch availability
         const docRef = doc(db, "users", user.uid);
@@ -77,14 +87,6 @@ export default function TeacherAccount() {
     }
   }, [user, userLoading]);
 
-  if (userLoading || isLoading('teacherData')) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
-
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -94,17 +96,19 @@ export default function TeacherAccount() {
   }
 
   return (
-    <div>
-      {error && <ErrorMessage message={error} />}
-      <h2>{t('teacher.greeting')}, {user.nickname}</h2>
-      <h1>{t('teacher.welcome')}</h1>
-      <div className="flex h-full flex-col">
-        <Header />
-        <Calendar />
-        {showCalendarOverlay && <CalendarOverlay />}
-        {showTeacherProfileOverlay && <TeacherProfileOverlay />}
+    <>
+      <div>
+        {error && <ErrorMessage message={error} />}
+        <h2>{t('teacher.greeting')}, {user.nickname}</h2>
+        <h1>{t('teacher.welcome')}</h1>
+        <div className="flex h-full flex-col">
+          <Header />
+          <Calendar />
+        </div>
+        <BookingList />
       </div>
-      <BookingList />
-    </div>
+      {showCalendarOverlay && <CalendarOverlay />}
+      {showTeacherProfileOverlay && <TeacherProfileOverlay />}
+    </>
   );
 }

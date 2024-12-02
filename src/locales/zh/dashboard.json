@@ -9,6 +9,7 @@
   "teacher": {
     "profile": "个人设置",
     "greeting": "你好",
-    "welcome": "欢迎来到您的教学面板"
+    "welcome": "欢迎来到您的教学面板",
+    "add": "添加时间"
   }
 } 

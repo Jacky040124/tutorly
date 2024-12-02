@@ -1,10 +1,12 @@
+"use client"
+
 import { useState, useEffect } from "react";
 import { useUser, useBooking, useError } from "@/components/providers";
 import { normalizeToMidnight, getWeekBounds, calculateSelectedDate, formatTime } from "@/lib/utils/timeUtils";
 import { generateWeekDates, WEEKDAY_LABELS } from "@/lib/utils/dateUtils";
 import { getTeacherBookings } from "@/services/booking.service";
 import BookingOverlay from "./BookingOverlay";
-import { CALENDAR_CONFIG, TOTAL_INTERVALS, HEADER_OFFSET, calculateGridPosition } from "@/lib/utils/calendarUtil";
+import { CALENDAR_CONFIG, TOTAL_INTERVALS, calculateGridPosition } from "@/lib/utils/calendarUtil";
 
 const VerticalGrid = () => {
   return (
@@ -24,7 +26,7 @@ const VerticalGrid = () => {
 // TODO: Consider Seperate Student Calendar and Teacher Calendar
 // TODO: Consider Seperating Event Rendering Component from Calendar Component
 export default function Calendar() {
-  const { user, selectedTeacher, teacherList } = useUser();
+  const { user, selectedTeacher, teacherList, updateAvailability, userLoading } = useUser();
   const {
     setSelectedSlot,
     showBookingOverlay,
@@ -39,7 +41,7 @@ export default function Calendar() {
   const [weekOffset, setWeekOffset] = useState(0);
   const userType = user.type;
   const teacherData = userType === "teacher" ? user : teacherList[selectedTeacher];
-  const availability = userType === "teacher" ? user.availability : teacherList[selectedTeacher]?.availability;
+  const currentAvailability = userType === "teacher" ? user.availability : teacherList[selectedTeacher]?.availability;
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -71,14 +73,14 @@ export default function Calendar() {
     };
 
     fetchBookings();
-  }, [userType, user?.uid, teacherData?.uid, bookingConfirmed]);
+  }, [user, bookingConfirmed, currentAvailability, userLoading]);
 
   const handleRemove = async (day, startTime, endTime) => {
     const confirmDelete = window.confirm("Do you want to remove this time slot?");
 
     if (confirmDelete) {
       try {
-        const updatedAvailability = availability.filter((event) => {
+        const updatedAvailability = currentAvailability.filter((event) => {
           const eventDate = new Date(event.date.year, event.date.month - 1, event.date.day);
           const eventDay = eventDate.getDay();
           const adjustedEventDay = eventDay === 0 ? 7 : eventDay;
@@ -89,7 +91,7 @@ export default function Calendar() {
         await updateAvailability(updatedAvailability);
       } catch (error) {
         console.error("Error removing event:", error);
-        setError(`Failed to remove event: ${error.message}`);
+        showError(`Failed to remove event: ${error.message}`);
       }
     }
   };
@@ -114,7 +116,7 @@ export default function Calendar() {
   };
 
   const Events = () => {
-    if (!Array.isArray(availability)) {
+    if (!Array.isArray(currentAvailability)) {
       return null;
     }
 
@@ -122,7 +124,7 @@ export default function Calendar() {
     const mondayBound = normalizeToMidnight(monday);
     const sundayBound = normalizeToMidnight(sunday);
 
-    const availabilityEvents = availability.map((event, index) => {
+    const availabilityEvents = currentAvailability.map((event, index) => {
       if (!event?.date?.year || !event?.date?.month || !event?.date?.day) {
         return null;
       }
@@ -304,8 +306,8 @@ export default function Calendar() {
     const timeSlots = [];
     for (let hour = CALENDAR_CONFIG.START_HOUR; hour < CALENDAR_CONFIG.END_HOUR; hour++) {
       const displayHour = hour % 12 || 12;
-      const ampm = hour >= 12 ? 'PM' : 'AM';
-      
+      const ampm = hour >= 12 ? "PM" : "AM";
+
       timeSlots.push(
         <div key={hour}>
           <div className="calendarText">{`${displayHour}${ampm}`}</div>
@@ -352,7 +354,7 @@ export default function Calendar() {
                 <div
                   className="col-start-1 col-end-2 row-start-1 grid divide-y divide-gray-100"
                   style={{
-                    gridTemplateRows: `repeat(${CALENDAR_CONFIG.HOURS_TO_DISPLAY * 2}, minmax(3.5rem, 1fr))`
+                    gridTemplateRows: `repeat(${CALENDAR_CONFIG.HOURS_TO_DISPLAY * 2}, minmax(3.5rem, 1fr))`,
                   }}
                 >
                   <div className="row-end-1 h-7"></div>

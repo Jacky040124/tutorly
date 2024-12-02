@@ -9,33 +9,14 @@ import { ZoomService } from "@/services/zoom.service";
 
 // onEventAdded is an optional prop
 export default function CalendarOverlay() {
-    const { user, availability, updateAvailability } = useUser();
-    const { setShowCalendarOverlay } = useOverlay();
-
-
+  const { user, availability, updateAvailability } = useUser();
+  const { setShowCalendarOverlay } = useOverlay();
   const [date, setDate] = useState(null);
   const [start, setStart] = useState("");
-  const {error, setError} = useError();
+  const { error, showError } = useError();
 
   const [end, setEnd] = useState("");
   const [isRepeating, setiIsRepeating] = useState(false);
-  
-
-  const handleCancel = () => {
-    setShowCalendarOverlay(false);
-  };
-  const handleDate = (e) => {
-    setDate(e);
-  };
-  const handleStart = (e) => {
-    setStart(e.target.value);
-  };
-  const handleEnd = (e) => {
-    setEnd(e.target.value);
-  };
-  const handleRepeating = (e) => {
-    setiIsRepeating((prev) => !prev);
-  };
 
   const checkOverlap = (availability, newEvent) => {
     for (let i = 0; i < availability.length; i++) {
@@ -47,12 +28,9 @@ export default function CalendarOverlay() {
         curEvent.date.day === newEvent.date.day
       ) {
         if (
-          (newEvent.startTime >= curEvent.startTime &&
-            newEvent.startTime < curEvent.endTime) ||
-          (newEvent.endTime > curEvent.startTime &&
-            newEvent.endTime <= curEvent.endTime) ||
-          (newEvent.startTime <= curEvent.startTime &&
-            newEvent.endTime >= curEvent.endTime)
+          (newEvent.startTime >= curEvent.startTime && newEvent.startTime < curEvent.endTime) ||
+          (newEvent.endTime > curEvent.startTime && newEvent.endTime <= curEvent.endTime) ||
+          (newEvent.startTime <= curEvent.startTime && newEvent.endTime >= curEvent.endTime)
         ) {
           return true;
         }
@@ -63,16 +41,16 @@ export default function CalendarOverlay() {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    
+
     const startDecimal = timeToDecimal(start);
     const endDecimal = timeToDecimal(end);
-    
+
     // Field validations
     if (!date || !start || !end) {
-      setError("Please fill in all fields");
+      showError("Please fill in all fields");
       return;
     } else if (startDecimal >= endDecimal) {
-      setError("End time must be later than start time");
+      showError("End time must be later than start time");
       return;
     }
 
@@ -81,57 +59,57 @@ export default function CalendarOverlay() {
 
     try {
       // Create Zoom meetings for each event
-      const newEvents = await Promise.all(dates.map(async (eventDate, index) => {
-        try {
-          const meetingRequest = {
-            teacherId: user.uid,
-            date: eventDate,
-            startTime: startDecimal,
-            endTime: endDecimal
-          };
-          
-          const meeting = await ZoomService.createMeeting(meetingRequest);
-          console.log("Created Zoom meeting with link:", meeting.link);
-          
-          return {
-            date: eventDate,
-            startTime: startDecimal,
-            endTime: endDecimal,
-            isRepeating,
-            repeatGroupId,
-            repeatIndex: isRepeating ? index : null,
-            totalClasses: isRepeating ? dates.length : null,
-            link: meeting.link
-          };
-        } catch (error) {
-          console.error("Failed to create Zoom meeting:", error);
-          // If Zoom meeting creation fails, continue without the link
-          return {
-            date: eventDate,
-            startTime: startDecimal,
-            endTime: endDecimal,
-            isRepeating,
-            repeatGroupId,
-            repeatIndex: isRepeating ? index : null,
-            totalClasses: isRepeating ? dates.length : null,
-            link: null
-          };
-        }
-      }));
+      const newEvents = await Promise.all(
+        dates.map(async (eventDate, index) => {
+          try {
+            const meetingRequest = {
+              teacherId: user.uid,
+              date: eventDate,
+              startTime: startDecimal,
+              endTime: endDecimal,
+            };
 
+            const meeting = await ZoomService.createMeeting(meetingRequest);
+            console.log("Created Zoom meeting with link:", meeting.link);
+
+            return {
+              date: eventDate,
+              startTime: startDecimal,
+              endTime: endDecimal,
+              isRepeating,
+              repeatGroupId,
+              repeatIndex: isRepeating ? index : null,
+              totalClasses: isRepeating ? dates.length : null,
+              link: meeting.link,
+            };
+          } catch (error) {
+            console.error("Failed to create Zoom meeting:", error);
+            // If Zoom meeting creation fails, continue without the link
+            return {
+              date: eventDate,
+              startTime: startDecimal,
+              endTime: endDecimal,
+              isRepeating,
+              repeatGroupId,
+              repeatIndex: isRepeating ? index : null,
+              totalClasses: isRepeating ? dates.length : null,
+              link: null,
+            };
+          }
+        })
+      );
 
       // Overlap check
-      const hasOverlap = newEvents.some(event => checkOverlap(availability, event));
+      const hasOverlap = newEvents.some((event) => checkOverlap(availability, event));
       if (hasOverlap) {
-        setError("One or more time slots overlap with existing events");
+        showError("One or more time slots overlap with existing events");
         return;
       }
 
       await updateAvailability([...availability, ...newEvents]);
       setShowCalendarOverlay(false);
     } catch (error) {
-      console.error("Error saving events:", error);
-      setError(`Error saving events: ${error.message}`);
+      showError(`Error saving events: ${error.message}`);
     }
   };
 
@@ -139,12 +117,7 @@ export default function CalendarOverlay() {
     <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity">
       {error && <ErrorMessage message={error} />}
       <div>
-        <div
-          className="relative z-10"
-          aria-labelledby="slide-over-title"
-          role="dialog"
-          aria-modal="true"
-        >
+        <div className="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
           <div className="fixed inset-0"></div>
 
           <div className="fixed inset-0 overflow-hidden">
@@ -154,15 +127,12 @@ export default function CalendarOverlay() {
                   <form className="flex h-full flex-col divide-y divide-gray-200 bg-white shadow-xl">
                     <div className="h-0 flex-1 overflow-y-auto">
                       <div className="bg-grren-700 px-4 py-6 sm:px-6 flex items-center justify-between">
-                        <h2
-                          className="text-base font-semibold leading-6 text-white"
-                          id="slide-over-title"
-                        >
+                        <h2 className="text-base font-semibold leading-6 text-white" id="slide-over-title">
                           New Event
                         </h2>
                         <div className="ml-3 flex h-7 items-center">
                           <button
-                            onClick={handleCancel}
+                            onClick={() => setShowCalendarOverlay(false)}
                             type="button"
                             className="rounded-md bg-grren-700 text-grren-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
                           >
@@ -175,11 +145,7 @@ export default function CalendarOverlay() {
                               stroke="currentColor"
                               aria-hidden="true"
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M6 18L18 6M6 6l12 12"
-                              />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                           </button>
                         </div>
@@ -188,19 +154,28 @@ export default function CalendarOverlay() {
                       <div className="flex flex-1 flex-col justify-between">
                         <div className="divide-y divide-gray-200 px-4 sm:px-6">
                           <div className="space-y-6 pb-5 pt-6">
-                            <DayField onChange={handleDate} value={date} />
+                            <DayField
+                              onChange={(e) => {
+                                setDate(e);
+                              }}
+                              value={date}
+                            />
                             <InputField
-                              onChange={handleStart}
+                              onChange={(e) => {
+                                setStart(e.target.value);
+                              }}
                               name="Start Time"
                               value={start}
                             />
                             <InputField
-                              onChange={handleEnd}
+                              onChange={(e) => {
+                                setEnd(e.target.value);
+                              }}
                               name="End Time"
                               value={end}
                             />
                             <ToggleField
-                              onChange={handleRepeating}
+                              onChange={(e) => setiIsRepeating((prev) => !prev)}
                               name="Repeating"
                               value={isRepeating}
                             />
@@ -211,17 +186,13 @@ export default function CalendarOverlay() {
 
                     <div className="flex flex-shrink-0 justify-end px-4 py-4">
                       <button
-                        onClick={handleCancel}
+                        onClick={() => setShowCalendarOverlay(false)}
                         type="button"
                         className="overlay-button-secondary"
                       >
                         Cancel
                       </button>
-                      <button
-                        onClick={handleSave}
-                        type="submit"
-                        className="ml-4 overlay-button-primary"
-                      >
+                      <button onClick={handleSave} type="submit" className="ml-4 overlay-button-primary">
                         Save
                       </button>
                     </div>
