@@ -27,13 +27,7 @@ export default function TeacherAccount() {
 
   const Header = () => {
     return (
-      <header className="flex flex-none items-center justify-between border-b border-gray-200 px-6 py-4">
-        <h1 className="text-base font-semibold leading-6 text-gray-900">
-          <time dateTime="2022-01">
-            {new Date().toLocaleString("default", { month: "long" })} {new Date().getFullYear()}
-          </time>
-        </h1>
-
+      <header className="flex flex-none justify-end border-b border-gray-200 px-6 py-4">
         <div className="flex items-center gap-4">
           <LanguageSwitcher />
           <button
@@ -44,11 +38,11 @@ export default function TeacherAccount() {
           >
             {t("teacher.add")}
           </button>
-          <button 
+          <button
             onClick={() => {
               setShowTeacherProfileOverlay(true);
-              console.log('TeacherProfile button clicked, showTeacherProfileOverlay:', showTeacherProfileOverlay);
-            }} 
+              console.log("TeacherProfile button clicked, showTeacherProfileOverlay:", showTeacherProfileOverlay);
+            }}
             className="standard-button mr-4"
           >
             {t("teacher.profile")}
@@ -99,8 +93,10 @@ export default function TeacherAccount() {
     <>
       <div>
         {error && <ErrorMessage message={error} />}
-        <h2>{t('teacher.greeting')}, {user.nickname}</h2>
-        <h1>{t('teacher.welcome')}</h1>
+        <h2>
+          {t("teacher.greeting")}, {user.nickname}
+        </h2>
+        <h1>{t("teacher.welcome")}</h1>
         <div className="flex h-full flex-col">
           <Header />
           <Calendar />

@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@google-apps/meet": "^0.3.0",
@@ -37,5 +40,8 @@
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "webpack": "^5.96.1"
+  },
+  "jest": {
+    "testEnvironment": "jsdom"
   }
 }

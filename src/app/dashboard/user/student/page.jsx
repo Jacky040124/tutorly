@@ -1,52 +1,35 @@
 "use client";
 import { useEffect } from "react";
-import { useUser } from "@/components/providers/UserContext";
-import { useLoading } from "@/components/providers/LoadingContext";
-import { useError } from "@/components/providers/ErrorContext";
-import { useBooking } from "@/components/providers/BookingContext";
-import { 
-  fetchFutureStudentBookings, 
-  getStudentBookings,
-} from "@/services/booking.service";
-import Calendar from "@/components/calendar/Calendar";
-import ErrorMessage from "@/components/common/ErrorMessage";
-import BookingList from "@/components/calendar/BookingList";
-import StudentProfileOverlay from "@/components/overlays/StudentProfileOverlay";
-import { useOverlay } from "@/components/providers/OverlayContext";
-import { useTranslation } from 'react-i18next';
-import LanguageSwitcher from "@/components/common/LanguageSwitcher";
+import { useUser, useLoading, useError, useBooking, useOverlay } from "@/components/providers/index";
+import { fetchFutureStudentBookings, getStudentBookings } from "@/services/booking.service";
+import { Calendar, BookingList } from "@/components/calendar/index";
+import { StudentProfileOverlay } from "@/components/overlays/index";
+import { LanguageSwitcher, ErrorMessage } from "@/components/common/index";
+import { useTranslation } from "react-i18next";
 
 export default function StudentAccount() {
   const { user, teacherList, fetchTeachers, selectedTeacher, setSelectedTeacher } = useUser();
-  const {setIsLoading} = useLoading();
-  const {error, showError} = useError();
-  const {setFutureBookings, setBookings} = useBooking();
+  const { setIsLoading } = useLoading();
+  const { error, showError } = useError();
+  const { setFutureBookings, setBookings } = useBooking();
   const { showStudentProfileOverlay, setShowStudentProfileOverlay } = useOverlay();
-  const { i18n, t } = useTranslation('dashboard');
+  const { t } = useTranslation("dashboard");
 
   const Header = () => {
     return (
       <header className="flex flex-none items-center justify-between border-b border-gray-200 px-6 py-4">
-        <h1 className="text-base font-semibold leading-6 text-gray-900">
-          <time dateTime="2022-01">
-            {new Date().toLocaleString("default", { month: "long" })} {new Date().getFullYear()}
-          </time>
-        </h1>
 
         <div className="flex items-center gap-4">
           <LanguageSwitcher />
-          <button
-            onClick={() => setShowStudentProfileOverlay(true)}
-            className="standard-button mr-4"
-          >
-            {t('student.profile')}
+          <button onClick={() => setShowStudentProfileOverlay(true)} className="standard-button mr-4">
+            {t("student.profile")}
           </button>
           <select
             onChange={(e) => setSelectedTeacher(e.target.value)}
             value={selectedTeacher}
             className="rounded-md border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
           >
-            <option value="">{t('student.selectTeacher')}</option>
+            <option value="">{t("student.selectTeacher")}</option>
             {teacherList &&
               Object.entries(teacherList).map(([id, teacher]) => (
                 <option key={id} value={id}>
@@ -82,15 +65,15 @@ export default function StudentAccount() {
   useEffect(() => {
     const fetchBookings = async () => {
       if (!user?.uid || !selectedTeacher) return;
-      
+
       try {
         setIsLoading(true);
         const allBookings = await getStudentBookings(user.uid);
-        const futureBookings = allBookings.filter(booking => {
+        const futureBookings = allBookings.filter((booking) => {
           const bookingDate = new Date(booking.date.year, booking.date.month - 1, booking.date.day);
           return bookingDate >= new Date();
         });
-        
+
         setFutureBookings(futureBookings);
         setBookings(allBookings);
       } catch (error) {
@@ -114,11 +97,15 @@ export default function StudentAccount() {
   return (
     <div>
       {error && <ErrorMessage message={error} />}
-      <h2>{t('student.greeting')}, {user.nickname}</h2>
+      <h2>
+        {t("student.greeting")}, {user.nickname}
+      </h2>
       <h1>
         {selectedTeacher && teacherList[selectedTeacher]
-          ? `${teacherList[selectedTeacher].nickname}${t('student.teacherRate', { price: teacherList[selectedTeacher].pricing })}`
-          : t('student.selectTeacherPrompt')}
+          ? `${teacherList[selectedTeacher].nickname}${t("student.teacherRate", {
+              price: teacherList[selectedTeacher].pricing,
+            })}`
+          : t("student.selectTeacherPrompt")}
       </h1>
       <Header />
       <div className="flex h-full flex-col">

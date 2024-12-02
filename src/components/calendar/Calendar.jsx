@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react";
 import { useUser, useBooking, useError } from "@/components/providers";
@@ -23,8 +23,7 @@ const VerticalGrid = () => {
   );
 };
 
-// TODO: Consider Seperate Student Calendar and Teacher Calendar
-// TODO: Consider Seperating Event Rendering Component from Calendar Component
+// TODO: Breaks down Calendar component, ensure Single Responsibility, cut down to display only [no more than 200 lines]
 export default function Calendar() {
   const { user, selectedTeacher, teacherList, updateAvailability, userLoading } = useUser();
   const {
@@ -36,13 +35,17 @@ export default function Calendar() {
     setBookings,
     bookingConfirmed,
   } = useBooking();
-  const { showError } = useError();
 
+  // TODO: Improve state management by moving calendar specific state in a calendarContext
   const [weekOffset, setWeekOffset] = useState(0);
+
+  const { showError } = useError();
+  const { monday } = getWeekBounds(weekOffset);
+  const mondayDate = new Date(monday.year, monday.month - 1, monday.day);
+
   const userType = user.type;
   const teacherData = userType === "teacher" ? user : teacherList[selectedTeacher];
   const currentAvailability = userType === "teacher" ? user.availability : teacherList[selectedTeacher]?.availability;
-
   useEffect(() => {
     const fetchBookings = async () => {
       if (userType === "teacher" && user?.uid) {
@@ -115,6 +118,7 @@ export default function Calendar() {
     }
   };
 
+  // TODO: refactor Events into seperate classes
   const Events = () => {
     if (!Array.isArray(currentAvailability)) {
       return null;
@@ -196,6 +200,7 @@ export default function Calendar() {
     );
   };
 
+  // TODO: resolve prop drilling in event display
   const EventDisplay = ({
     day,
     startTime,
@@ -258,8 +263,6 @@ export default function Calendar() {
   };
 
   const WeekdayHeader = () => {
-    const { monday } = getWeekBounds(weekOffset);
-    const mondayDate = new Date(monday.year, monday.month - 1, monday.day);
     const weekDates = generateWeekDates(mondayDate);
 
     return (
@@ -339,15 +342,19 @@ export default function Calendar() {
               >
                 Previous Week
               </button>
+              <h1 className="text-base font-semibold leading-6 text-gray-900">
+                <time dateTime={mondayDate.toISOString().slice(0, 7)}>
+                  {mondayDate.toLocaleString("default", { month: "long" })} {mondayDate.getFullYear()}
+                </time>
+              </h1>
               <button
                 onClick={() => setWeekOffset((prev) => prev + 1)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 Next Week
               </button>
-            </div>
+            </div>{" "}
             <WeekdayHeader />
-
             <div className="flex flex-auto">
               <div className="sticky left-0 z-10 w-14 flex-none bg-white ring-1 ring-gray-100"></div>
               <div className="grid flex-auto grid-cols-1 grid-rows-1">
