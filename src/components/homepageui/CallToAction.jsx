@@ -1,9 +1,12 @@
 'use client'
 
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button'
 import { Container } from '@/components/common/Container'
 
 export function CallToAction() {
+  const { t } = useTranslation('landing');
+
   return (
     <section
       id="get-started-today"
@@ -16,13 +19,13 @@ export function CallToAction() {
       <Container className="relative">
         <div className="mx-auto max-w-lg text-center">
           <h2 className="font-display text-3xl tracking-tight text-white sm:text-4xl">
-            Start your learning journey today
+            {t('callToAction.title')}
           </h2>
           <p className="mt-4 text-lg tracking-tight text-white">
-            Join thousands of students who have already transformed their academic performance with our expert tutors.
+            {t('callToAction.subtitle')}
           </p>
           <Button href="/auth/signup" color="white" className="mt-10">
-            Get started
+            {t('callToAction.button')}
           </Button>
         </div>
       </Container>

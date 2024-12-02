@@ -13,6 +13,8 @@ import { useError } from "@/components/providers/ErrorContext";
 import { useOverlay } from "@/components/providers/OverlayContext";
 import { useLoading } from "@/components/providers/LoadingContext";
 import { useBooking } from "@/components/providers/BookingContext";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useTranslation } from 'react-i18next';
 
 
 export default function TeacherAccount() {
@@ -22,6 +24,7 @@ export default function TeacherAccount() {
     useOverlay();
   const {setFutureBookings, setBookings} = useBooking();
   const {isLoading, setIsLoading} = useLoading();
+  const { i18n, t } = useTranslation('dashboard');
 
   const Header = () => {
     return (
@@ -32,13 +35,13 @@ export default function TeacherAccount() {
           </time>
         </h1>
 
-        <div>
-          <button onClick={() => setShowTeacherProfileOverlay(true)} type="button" className="standard-button">
-            Profile
-          </button>
-
-          <button onClick={() => setShowCalendarOverlay(true)} type="button" className="standard-button">
-            Add event
+        <div className="flex items-center gap-4">
+          <LanguageSwitcher />
+          <button
+            onClick={() => setShowTeacherProfileOverlay(true)}
+            className="standard-button mr-4"
+          >
+            {t('teacher.profile')}
           </button>
         </div>
       </header>
@@ -93,8 +96,8 @@ export default function TeacherAccount() {
   return (
     <div>
       {error && <ErrorMessage message={error} />}
-      <h2>Hi, {user.nickname}</h2>
-      <h1>Who&apos;s ready to maximise shareholder value?</h1>
+      <h2>{t('teacher.greeting')}, {user.nickname}</h2>
+      <h1>{t('teacher.welcome')}</h1>
       <div className="flex h-full flex-col">
         <Header />
         <Calendar />

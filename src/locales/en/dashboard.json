@@ -1,0 +1,14 @@
+{
+  "student": {
+    "greeting": "Welcome",
+    "selectTeacherPrompt": "Please select a teacher",
+    "profile": "Profile Settings",
+    "selectTeacher": "Select a teacher",
+    "teacherRate": "'s rate is ${{price}} per hour"
+  },
+  "teacher": {
+    "profile": "Profile Settings",
+    "greeting": "Hi",
+    "welcome": "Welcome to your teaching dashboard"
+  }
+} 

@@ -1,7 +1,8 @@
+// Keep this as a server component
 import { Inter, Lexend } from 'next/font/google'
-import { UserProvider, BookingProvider, ErrorProvider, LoadingProvider, OverlayProvider } from '@/components/providers'
 import clsx from 'clsx'
 import "@/app/globals.css"
+import ClientLayout from '@/components/layouts/ClientLayout'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -28,16 +29,8 @@ export default function RootLayout({ children }) {
       lexend.variable,
     )}>
       <body className="flex h-full flex-col">
-        <LoadingProvider>
-          <OverlayProvider>
-            <BookingProvider>
-              <ErrorProvider>
-                <UserProvider>{children}</UserProvider>
-              </ErrorProvider>
-            </BookingProvider>
-          </OverlayProvider>
-        </LoadingProvider>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
-  )
+  );
 }

@@ -13,6 +13,8 @@ import ErrorMessage from "@/components/common/ErrorMessage";
 import BookingList from "@/components/calendar/BookingList";
 import StudentProfileOverlay from "@/components/overlays/StudentProfileOverlay";
 import { useOverlay } from "@/components/providers/OverlayContext";
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from "@/components/common/LanguageSwitcher";
 
 export default function StudentAccount() {
   const { user, teacherList, fetchTeachers, selectedTeacher, setSelectedTeacher } = useUser();
@@ -20,6 +22,7 @@ export default function StudentAccount() {
   const {error, showError} = useError();
   const {setFutureBookings, setBookings} = useBooking();
   const { showStudentProfileOverlay, setShowStudentProfileOverlay } = useOverlay();
+  const { i18n, t } = useTranslation('dashboard');
 
   const Header = () => {
     return (
@@ -30,19 +33,20 @@ export default function StudentAccount() {
           </time>
         </h1>
 
-        <div>
+        <div className="flex items-center gap-4">
+          <LanguageSwitcher />
           <button
             onClick={() => setShowStudentProfileOverlay(true)}
             className="standard-button mr-4"
           >
-            Academic Profile
+            {t('student.profile')}
           </button>
           <select
             onChange={(e) => setSelectedTeacher(e.target.value)}
             value={selectedTeacher}
             className="rounded-md border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
           >
-            <option value="">Select a Teacher</option>
+            <option value="">{t('student.selectTeacher')}</option>
             {teacherList &&
               Object.entries(teacherList).map(([id, teacher]) => (
                 <option key={id} value={id}>
@@ -110,11 +114,11 @@ export default function StudentAccount() {
   return (
     <div>
       {error && <ErrorMessage message={error} />}
-      <h2>Hi, {user.nickname}</h2>
+      <h2>{t('student.greeting')}, {user.nickname}</h2>
       <h1>
         {selectedTeacher && teacherList[selectedTeacher]
-          ? `${teacherList[selectedTeacher].nickname}'s rate is ${teacherList[selectedTeacher].pricing} dollars per hour`
-          : "Select a teacher"}
+          ? `${teacherList[selectedTeacher].nickname}${t('student.teacherRate', { price: teacherList[selectedTeacher].pricing })}`
+          : t('student.selectTeacherPrompt')}
       </h1>
       <Header />
       <div className="flex h-full flex-col">

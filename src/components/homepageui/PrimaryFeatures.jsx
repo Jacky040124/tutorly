@@ -4,35 +4,33 @@ import { useEffect, useState } from "react";
 import { Tab } from "@headlessui/react";
 import clsx from "clsx";
 import { Container } from "@/components/common/Container";
+import { useTranslation } from 'react-i18next';
 
 const features = [
   {
-    title: "Find Your Perfect Tutor",
-    description:
-      "Browse through our extensive network of qualified tutors. Filter by subject, experience level, and availability to find your ideal match.",
+    title: 'primaryFeatures.features.findTutor.title',
+    description: 'primaryFeatures.features.findTutor.description',
     image: "https://placehold.co/600x400",
   },
   {
-    title: "Schedule Sessions",
-    description:
-      "Book sessions that fit your schedule. Our flexible booking system lets you plan ahead or schedule last-minute sessions when you need them.",
+    title: 'primaryFeatures.features.schedule.title',
+    description: 'primaryFeatures.features.schedule.description',
     image: "https://placehold.co/600x400",
   },
   {
-    title: "Interactive Learning",
-    description:
-      "Engage in real-time virtual sessions with screen sharing, whiteboard tools, and document collaboration features.",
+    title: 'primaryFeatures.features.interactive.title',
+    description: 'primaryFeatures.features.interactive.description',
     image: "https://placehold.co/600x400",
   },
   {
-    title: "Track Progress",
-    description:
-      "Monitor your learning journey with detailed progress reports, session history, and achievement milestones.",
+    title: 'primaryFeatures.features.progress.title',
+    description: 'primaryFeatures.features.progress.description',
     image: "https://placehold.co/600x400",
   },
 ];
 
 export function PrimaryFeatures() {
+  const { t } = useTranslation('landing');
   let [tabOrientation, setTabOrientation] = useState("horizontal");
 
   useEffect(() => {
@@ -59,10 +57,10 @@ export function PrimaryFeatures() {
       <Container className="relative">
         <div className="max-w-2xl md:mx-auto md:text-center xl:max-w-none">
           <h2 className="font-display text-3xl tracking-tight text-white sm:text-4xl md:text-5xl">
-            Everything you need to excel in your studies.
+            {t('primaryFeatures.title')}
           </h2>
           <p className="mt-6 text-lg tracking-tight text-green-100">
-            Our platform provides all the tools and features you need to connect with expert tutors and achieve your academic goals.
+            {t('primaryFeatures.subtitle')}
           </p>
         </div>
         <Tab.Group
@@ -92,7 +90,7 @@ export function PrimaryFeatures() {
                             : 'text-green-100 hover:text-white lg:text-white'
                         )}>
                           <span className="absolute inset-0 rounded-full lg:rounded-l-xl lg:rounded-r-none" />
-                          {feature.title}
+                          {t(feature.title)}
                         </Tab>
                       </h3>
                       <p className={clsx(
@@ -101,7 +99,7 @@ export function PrimaryFeatures() {
                           ? 'text-white'
                           : 'text-green-100 group-hover:text-white'
                       )}>
-                        {feature.description}
+                        {t(feature.description)}
                       </p>
                     </div>
                   ))}
@@ -113,7 +111,7 @@ export function PrimaryFeatures() {
                     <div className="relative sm:px-6 lg:hidden">
                       <div className="absolute -inset-x-4 bottom-[-4.25rem] top-[-6.5rem] bg-white/10 ring-1 ring-inset ring-white/10 sm:inset-x-0 sm:rounded-t-xl" />
                       <p className="relative mx-auto max-w-2xl text-base text-white sm:text-center">
-                        {feature.description}
+                        {t(feature.description)}
                       </p>
                     </div>
                     <div className="relative mt-10 aspect-[1085/730] w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-xl shadow-green-900/20 sm:w-auto lg:mt-0 lg:w-[67.8125rem]">

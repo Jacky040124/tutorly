@@ -7,8 +7,11 @@ import { TextField } from "@/components/common/Fields";
 import { useError } from "@/components/providers/ErrorContext";
 import { signUpStudent } from "@/services/auth.service";
 import { useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from "@/components/common/LanguageSwitcher";
 
 export default function SignUp() {
+  const { t } = useTranslation('auth');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
@@ -42,36 +45,34 @@ export default function SignUp() {
   return (
     <div className="auth-container">
       <div className="auth-form-container">
-        <div className="absolute top-4 left-4">
+        <div className="flex justify-between items-center absolute top-4 left-4 right-4">
           <Link href="/" aria-label="Home">
-            <Button variant="outline" color="slate" className="overlay-button-secondary">
-              ← Back to home
+            <Button variant="outline" color="slate">
+              {t('signin.backToHome')}
             </Button>
           </Link>
+          <LanguageSwitcher />
         </div>
 
         <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
-          <div>
-            <h2 className="text-3xl font-bold">Create your account</h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Already have an account?{" "}
-              <Link href="/auth/signin" className="font-medium text-green-600 hover:text-green-500">
-                Sign in
-              </Link>
-            </p>
-          </div>
+          <h2 className="text-3xl font-bold">
+            {t('signup.student.title')}
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">
+            {t('signup.student.subtitle')}
+          </p>
 
           <div className="mt-8">
             <form onSubmit={handleSignup} className="space-y-6">
               <TextField
-                label="Nickname"
+                label={t('signup.student.nickname')}
                 name="nickname"
                 type="text"
                 onChange={(e) => setNickname(e.target.value)}
                 required
               />
               <TextField
-                label="Email address"
+                label={t('signup.student.email')}
                 name="email"
                 type="email"
                 autoComplete="email"
@@ -79,7 +80,7 @@ export default function SignUp() {
                 required
               />
               <TextField
-                label="Password"
+                label={t('signup.student.password')}
                 name="password"
                 type="password"
                 autoComplete="new-password"
@@ -92,15 +93,15 @@ export default function SignUp() {
                   type="submit"
                   variant="solid"
                   color="blue"
-                  className="w-full flex justify-center bg-green-600 hover:bg-green-700"
+                  className="w-full"
                 >
-                  Sign up
+                  {t('signup.student.button')}
                 </Button>
                 <Link
                   href="/auth/signupteacher"
                   className="block text-center text-sm text-gray-600 hover:text-gray-900"
                 >
-                  Sign up as a teacher instead
+                  {t('signup.student.teacherLink')}
                 </Link>
               </div>
             </form>

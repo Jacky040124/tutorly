@@ -10,8 +10,11 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/common/Button';
 import { TextField } from '@/components/common/Fields';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from "@/components/common/LanguageSwitcher";
 
-export default function Login() {
+export default function SignIn() {
+    const { t } = useTranslation('auth');
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const router = useRouter();
@@ -95,58 +98,56 @@ export default function Login() {
     return (
         <div className="auth-container">
             <div className="auth-form-container">
-                <div className="auth-form">
-                    <div className="absolute top-4 left-4">
-                        <Link href="/" aria-label="Home">
-                            <Button variant="outline" color="slate" className="overlay-button-secondary">
-                                ← Back to home
-                            </Button>
+                <div className="flex justify-between items-center absolute top-4 left-4 right-4">
+                    <Link href="/" aria-label="Home">
+                        <Button variant="outline" color="slate">
+                            {t('signin.backToHome')}
+                        </Button>
+                    </Link>
+                    <LanguageSwitcher />
+                </div>
+
+                <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
+                    <h2 className="text-3xl font-bold">
+                        {t('signin.title')}
+                    </h2>
+                    <p className="mt-2 text-sm text-gray-600">
+                        {t('signin.subtitle')}{' '}
+                        <Link href="/auth/signup" className="font-medium text-green-600 hover:text-green-500">
+                            {t('signin.signupLink')}
                         </Link>
-                    </div>
+                    </p>
 
-                    <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
-                        <div>
-                            <h2 className="text-3xl font-bold">Sign in to your account</h2>
-                            <p className="mt-2 text-sm text-gray-600">
-                                Don&apos;t have an account?{' '}
-                                <Link href="/auth/signup" className="font-medium text-green-600 hover:text-green-500">
-                                    Sign up
-                                </Link>{' '}
-                                for a free trial.
-                            </p>
-                        </div>
-
-                        <div className="mt-8">
-                            <form onSubmit={handleSignIn} className="space-y-6">
-                                <TextField
-                                    label="Email address"
-                                    name="email"
-                                    type="email"
-                                    autoComplete="email"
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
-                                <TextField
-                                    label="Password"
-                                    name="password"
-                                    type="password"
-                                    autoComplete="current-password"
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                />
-                                
-                                <div>
-                                    <Button
-                                        type="submit"
-                                        variant="solid"
-                                        color="blue"
-                                        className="w-full flex justify-center bg-green-600 hover:bg-green-700"
-                                    >
-                                        Sign in →
-                                    </Button>
-                                </div>
-                            </form>
-                        </div>
+                    <div className="mt-8">
+                        <form onSubmit={handleSignIn} className="space-y-6">
+                            <TextField
+                                label={t('signin.email')}
+                                name="email"
+                                type="email"
+                                autoComplete="email"
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                            <TextField
+                                label={t('signin.password')}
+                                name="password"
+                                type="password"
+                                autoComplete="current-password"
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                            
+                            <div>
+                                <Button
+                                    type="submit"
+                                    variant="solid"
+                                    color="blue"
+                                    className="w-full"
+                                >
+                                    {t('signin.button')}
+                                </Button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

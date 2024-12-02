@@ -5,13 +5,13 @@ import Image from 'next/image'
 import { Tab } from '@headlessui/react'
 import clsx from 'clsx'
 import { Container } from '@/components/common/Container'
+import { useTranslation } from 'react-i18next'
 
 const features = [
   {
-    name: 'Smart Matching',
-    summary: 'Our AI-powered system matches you with the perfect tutor for your needs.',
-    description:
-      'Using advanced algorithms, we analyze learning styles, academic goals, and scheduling preferences to connect you with tutors who best fit your requirements.',
+    name: 'secondaryFeatures.features.matching.name',
+    summary: 'secondaryFeatures.features.matching.summary',
+    description: 'secondaryFeatures.features.matching.description',
     image: 'https://placehold.co/800x600',
     icon: function MatchingIcon() {
       let id = useId()
@@ -39,10 +39,9 @@ const features = [
     },
   },
   {
-    name: 'Virtual Classroom',
-    summary: 'Interactive online learning environment with powerful collaboration tools.',
-    description:
-      'Our virtual classroom comes equipped with whiteboard, screen sharing, and real-time document collaboration to make remote learning as effective as in-person sessions.',
+    name: 'secondaryFeatures.features.classroom.name',
+    summary: 'secondaryFeatures.features.classroom.summary',
+    description: 'secondaryFeatures.features.classroom.description',
     image: '/images/screenshots/classroom.png',
     icon: function ClassroomIcon() {
       return (
@@ -61,10 +60,9 @@ const features = [
     },
   },
   {
-    name: 'Progress Tracking',
-    summary: 'Monitor your learning journey with detailed analytics and insights.',
-    description:
-      'Track your progress with comprehensive reports, achievement milestones, and personalized learning recommendations to help you reach your academic goals.',
+    name: 'secondaryFeatures.features.progress.name',
+    summary: 'secondaryFeatures.features.progress.summary',
+    description: 'secondaryFeatures.features.progress.description',
     image: '/images/screenshots/progress.png',
     icon: function ProgressIcon() {
       return (
@@ -83,6 +81,7 @@ const features = [
 ] 
 
 function Feature({ feature, isActive, className, ...props }) {
+  const { t } = useTranslation('landing');
   return (
     <div
       className={clsx(className, !isActive && 'opacity-75 hover:opacity-100')}
@@ -104,12 +103,12 @@ function Feature({ feature, isActive, className, ...props }) {
           isActive ? 'text-green-600' : 'text-slate-600',
         )}
       >
-        {feature.name}
+        {typeof feature.name === 'string' ? t(feature.name) : feature.name}
       </h3>
       <p className="mt-2 font-display text-xl text-slate-900">
-        {feature.summary}
+        {t(feature.summary)}
       </p>
-      <p className="mt-4 text-sm text-slate-600">{feature.description}</p>
+      <p className="mt-4 text-sm text-slate-600">{t(feature.description)}</p>
     </div>
   )
 }
@@ -197,6 +196,8 @@ function FeaturesDesktop() {
 }
 
 export function SecondaryFeatures() {
+  const { t } = useTranslation('landing');
+  
   return (
     <section
       id="secondary-features"
@@ -206,10 +207,10 @@ export function SecondaryFeatures() {
       <Container>
         <div className="mx-auto max-w-2xl md:text-center">
           <h2 className="font-display text-3xl tracking-tight text-slate-900 sm:text-4xl">
-            Everything you need for effective learning.
+            {t('secondaryFeatures.title')}
           </h2>
           <p className="mt-4 text-lg tracking-tight text-slate-700">
-            Our platform provides all the tools and features you need to make your learning journey successful and enjoyable.
+            {t('secondaryFeatures.subtitle')}
           </p>
         </div>
         <FeaturesMobile />

@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslation } from 'react-i18next';
 import Image from 'next/image'
 import { Container } from '@/components/common/Container'
 
@@ -51,6 +52,8 @@ const testimonials = [
 ]
 
 export function Testimonials() {
+  const { t } = useTranslation('landing');
+
   return (
     <section
       id="testimonials"
@@ -60,10 +63,10 @@ export function Testimonials() {
       <Container>
         <div className="mx-auto max-w-2xl md:text-center">
           <h2 className="font-display text-3xl tracking-tight text-slate-900 sm:text-4xl">
-            Trusted by students worldwide
+            {t('testimonials.title')}
           </h2>
           <p className="mt-4 text-lg tracking-tight text-slate-700">
-            Our platform has helped thousands of students achieve their academic goals through personalized tutoring and expert guidance.
+            {t('testimonials.subtitle')}
           </p>
         </div>
         <ul

@@ -1,7 +1,5 @@
 import { Suspense } from 'react'
 import { CallToAction } from '@/components/homepageui/CallToAction'
-import { Faqs } from '@/components/homepageui/Faqs'
-import { Footer } from '@/components/homepageui/Footer'
 import { Header } from '@/components/homepageui/Header'
 import { Hero } from '@/components/homepageui/Hero'
 import { PrimaryFeatures } from '@/components/homepageui/PrimaryFeatures'
@@ -19,9 +17,7 @@ export default function HomePage() {
           <SecondaryFeatures />
           <CallToAction />
           <Testimonials />
-          <Faqs />
         </main>
-        <Footer />
       </div>
     </Suspense>
   )
