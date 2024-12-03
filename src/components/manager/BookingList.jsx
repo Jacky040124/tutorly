@@ -20,9 +20,9 @@ export default function BookingList() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="p-4 md:p-6 space-y-4" data-testid="bookings-container">
       {futureBookings.map((booking, index) => (
-        <div key={index} className="bg-white rounded-lg shadow p-4 md:p-6">
+        <div key={index} className="bg-white rounded-lg shadow p-4 md:p-6" data-testid="booking-card">
           <div className="flex flex-col md:flex-row justify-between gap-4">
             <div>
               <p className="font-medium text-lg">

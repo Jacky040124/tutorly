@@ -82,8 +82,11 @@ export default function FeedbackOverlay({ booking, onClose, onFeedbackSubmitted 
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Comment</label>
+                                <label htmlFor="feedback-comment" className="block text-sm font-medium text-gray-700">
+                                    Comment
+                                </label>
                                 <textarea
+                                    id="feedback-comment"
                                     value={comment}
                                     onChange={(e) => setComment(e.target.value)}
                                     rows={4}

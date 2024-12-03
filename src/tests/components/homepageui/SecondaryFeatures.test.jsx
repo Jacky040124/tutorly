@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, test, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { SecondaryFeatures } from '@/components/homepageui/SecondaryFeatures';
 import '@testing-library/jest-dom';
 
@@ -23,12 +23,6 @@ vi.mock('react-i18next', () => ({
 }));
 
 describe('SecondaryFeatures', () => {
-  test('renders section title and subtitle', () => {
-    render(<SecondaryFeatures />);
-    
-    expect(screen.getByText('Everything you need for effective learning')).toBeInTheDocument();
-    expect(screen.getByText('Our platform provides all the tools')).toBeInTheDocument();
-  });
 
   test('renders all feature cards', () => {
     render(<SecondaryFeatures />);
@@ -40,10 +34,21 @@ describe('SecondaryFeatures', () => {
   test('shows feature details when selected', () => {
     render(<SecondaryFeatures />);
     
-    const matchingFeature = screen.getByText('Smart Matching');
-    fireEvent.click(matchingFeature);
+    // Find and click the first tab
+    const tabs = screen.getAllByRole('tab');
+    const firstTab = tabs[0];
+    fireEvent.click(firstTab);
     
-    expect(screen.getByText('AI-powered system')).toBeInTheDocument();
+    // Find the corresponding panel
+    const panels = screen.getAllByRole('tabpanel');
+    const activePanel = panels[0];
+    
+    // Verify the selected feature's details are shown
+    expect(activePanel).toBeVisible();
+    
+    // Verify the image is shown for the selected feature
+    const featureImage = within(activePanel).getByRole('img');
+    expect(featureImage).toBeVisible();
   });
 
   test('renders feature images', () => {

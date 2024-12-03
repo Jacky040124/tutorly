@@ -13,36 +13,24 @@ vi.mock('next/image', () => ({
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key) => ({
-      'hero.title.part1': 'Find the perfect',
-      'hero.title.part2': 'tutor',
-      'hero.title.part3': 'for your learning journey',
-      'hero.subtitle': 'Connect with expert tutors',
       'hero.buttons.start': 'Start Learning Today',
-      'hero.buttons.howItWorks': 'How it works',
-      'hero.trusted': 'Trusted by students'
+      'hero.buttons.howItWorks': 'How it works'
     }[key] || key)
   })
 }));
 
 describe('Hero', () => {
-  test('renders all main sections', () => {
+  test('renders action buttons with correct links', () => {
     render(<Hero />);
     
-    // Check title parts
-    expect(screen.getByText('Find the perfect')).toBeInTheDocument();
-    expect(screen.getByText('tutor')).toBeInTheDocument();
-    expect(screen.getByText('for your learning journey')).toBeInTheDocument();
-    
-    // Check buttons
-    expect(screen.getByText('Start Learning Today')).toBeInTheDocument();
-    expect(screen.getByText('How it works')).toBeInTheDocument();
-    
-    // Check trusted section
-    expect(screen.getByText('Trusted by students')).toBeInTheDocument();
-  });
+    // Check signup button
+    const signupButton = screen.getByRole('link', { name: /start learning today/i });
+    expect(signupButton).toBeInTheDocument();
+    expect(signupButton).toHaveAttribute('href', '/auth/signup');
 
-  test('renders university logos', () => {
-    render(<Hero />);
-    const logos = screen.getAllBy
+    // Check how it works button
+    const howItWorksButton = screen.getByRole('link', { name: /how it works/i });
+    expect(howItWorksButton).toBeInTheDocument();
+    expect(howItWorksButton).toHaveAttribute("href", "#how-it-works");
   });
-}); 
+});

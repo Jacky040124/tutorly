@@ -10,6 +10,7 @@ export default defineConfig({
     coverage: {
       enabled: true,
     },
+    setupFiles: ['./src/tests/setup.js'],
   },
   resolve: {
     alias: {
