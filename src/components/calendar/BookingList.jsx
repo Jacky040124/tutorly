@@ -1,15 +1,37 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUser, useBooking } from "@/components/providers";
 import { formatTime } from "@/lib/utils/timeUtils";
 import FeedbackOverlay from '../overlays/FeedbackOverlay';
 import { getStudentBookings, fetchFutureBookings } from '@/services/booking.service';
+import { Button } from '../common/Button';
 
 export default function BookingList() {
-  const { teacherList, user } = useUser();
+  const { teacherList, user, fetchStudentData } = useUser();
   const { bookings, setBookings } = useBooking();
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [showFeedbackOverlay, setShowFeedbackOverlay] = useState(false);
+  const [studentNames, setStudentNames] = useState({});
   const userType = user.type;
+
+  useEffect(() => {
+    const fetchStudentNames = async () => {
+      const names = {};
+      for (const booking of bookings) {
+        try {
+          const { data: studentData } = await fetchStudentData(booking.studentId);
+          names[booking.studentId] = studentData.nickname;
+        } catch (error) {
+          console.error(`Error fetching student data for ${booking.studentId}: ${error.message}`);
+          names[booking.studentId] = booking.studentId;
+        }
+      }
+      setStudentNames(names);
+    };
+
+    if (userType === 'teacher') {
+      fetchStudentNames();
+    }
+  }, [bookings]);
 
   const isPastBooking = (booking) => {
     const bookingDate = new Date(booking.date.year, booking.date.month - 1, booking.date.day);
@@ -71,10 +93,12 @@ export default function BookingList() {
                 </div>
                 <div className="text-right flex flex-col items-end gap-2">
                   <p className="text-sm text-gray-500">
-                    {userType === "teacher"
-                      ? `Student: ${booking.studentNickname || booking.studentId}`
+                    {userType === 'teacher' 
+                      ? `Student: ${studentNames[booking.studentId] || booking.studentId}`
                       : `Teacher: ${teacherList[booking.teacherId]?.nickname || booking.teacherId}`}
                   </p>
+
+                  <Button onClick={() => window.open(booking.link, '_blank')}> Meet </Button>
 
                   {past && userType === "student" && (
                     <button

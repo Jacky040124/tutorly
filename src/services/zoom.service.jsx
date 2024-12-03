@@ -1,4 +1,4 @@
-import { withRetry } from "@/utils/retry";
+import { withRetry } from "@/lib/utils/retryUtil";
 
 export class ZoomService {
   static tokenCache = {

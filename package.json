@@ -6,9 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test": "vitest",
+    "test:ui": "vitest --ui"
   },
   "dependencies": {
     "@google-apps/meet": "^0.3.0",
@@ -32,16 +31,16 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
+    "@vitest/ui": "^2.1.8",
     "eslint": "^8.57.1",
     "eslint-config-next": "14.2.15",
     "eslint-plugin-react": "^7.37.2",
     "globals": "^15.12.0",
+    "jsdom": "^25.0.1",
     "node-polyfill-webpack-plugin": "^4.0.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
+    "vitest": "^2.1.8",
     "webpack": "^5.96.1"
-  },
-  "jest": {
-    "testEnvironment": "jsdom"
   }
 }

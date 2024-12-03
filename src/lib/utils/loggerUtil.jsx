@@ -1,4 +1,5 @@
 export class Logger {
+
   constructor(componentName) {
     this.componentName = componentName;
   }
@@ -14,9 +15,7 @@ export class Logger {
   }
 
   debug(message, data) {
-    if (process.env.NODE_ENV === 'development') {
-      console.debug(this.formatMessage('DEBUG', message, data));
-    }
+    console.debug(this.formatMessage('DEBUG', message, data));
   }
 
   info(message, data) {

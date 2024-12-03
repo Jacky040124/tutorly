@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from 'react';
-import { getWeekBounds } from '@/lib/Utils/timeUtils';
+import { getWeekBounds } from '@/lib/utils/timeUtils';
 
 const CalendarContext = createContext();
 

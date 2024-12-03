@@ -198,6 +198,42 @@ export function UserProvider({ children }) {
         return teachers;
     };
 
+    const fetchStudentData = async (studentId) => {
+        if (!studentId) {
+            throw new Error('Student ID is required');
+        }
+
+        try {
+            const docRef = doc(db, "users", studentId);
+            const docSnap = await getDoc(docRef);
+            
+            if (!docSnap.exists()) {
+                throw new Error('Student not found');
+            }
+
+            const userData = docSnap.data();
+            if (userData.type !== "student") {
+                throw new Error('User is not a student');
+            }
+
+            const data = {
+              email: userData.email,
+              uid: studentId,
+              type: userData.type,
+              nickname: userData.nickname,
+              balance: userData.balance,
+              bookingHistory: userData.bookingHistory,
+              academicDetails: userData.academicDetails || {},
+            };
+
+            return { data };
+            
+        } catch (error) {
+            console.error("Error fetching student data:", error);
+            throw error;
+        }
+    };
+
     const value = {
         user,
         setUser,
@@ -206,6 +242,7 @@ export function UserProvider({ children }) {
         updateAvailability,
         teacherList,
         fetchTeachers,
+        fetchStudentData,
         updatePrice,
         updateNickname,
         updateDescription,
