@@ -19,7 +19,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function TeacherAccount() {
   const { user, updateAvailability, loading: userLoading } = useUser();
-  const { error, setError} = useError();
+  const { error, showError} = useError();
   const { showCalendarOverlay, setShowCalendarOverlay, showTeacherProfileOverlay, setShowTeacherProfileOverlay } = useOverlay();
   const {setFutureBookings, setBookings} = useBooking();
   const {setIsLoading} = useLoading();
@@ -70,7 +70,7 @@ export default function TeacherAccount() {
         setBookings(bookings);
       } catch (error) {
         console.error("Error fetching data:", error);
-        setError(error.message);
+        showError(error.message);
       } finally {
         setIsLoading("teacherData", false);
       }

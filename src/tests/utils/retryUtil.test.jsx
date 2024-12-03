@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { withRetry } from "../src/lib/utils/retryUtil"
+import { withRetry } from "../../lib/utils/retryUtil"
 
 describe('retryUtil', () => {
   test('should resolve on successful operation', async () => {

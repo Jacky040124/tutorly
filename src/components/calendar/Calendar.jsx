@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useUser, useBooking, useError } from "@/components/providers";
 import { normalizeToMidnight, getWeekBounds, calculateSelectedDate, formatTime } from "@/lib/utils/timeUtils";
 import { generateWeekDates, WEEKDAY_LABELS } from "@/lib/utils/dateUtils";
-import { getTeacherBookings } from "@/services/booking.service";
+import { getTeacherBookings, getStudentBookings } from "@/services/booking.service";
 import BookingOverlay from "./BookingOverlay";
 import { CALENDAR_CONFIG, TOTAL_INTERVALS, calculateGridPosition } from "@/lib/utils/calendarUtil";
 
@@ -26,6 +26,13 @@ const VerticalGrid = () => {
 // TODO: Breaks down Calendar component, ensure Single Responsibility, cut down to display only [no more than 200 lines]
 export default function Calendar() {
   const { user, selectedTeacher, teacherList, updateAvailability, userLoading } = useUser();
+  console.log('Calendar mounted with:', { 
+    userType: user?.type, 
+    userId: user?.uid,
+    selectedTeacher,
+    teacherData: teacherList[selectedTeacher]
+  });
+
   const {
     setSelectedSlot,
     showBookingOverlay,
@@ -38,6 +45,7 @@ export default function Calendar() {
 
   // TODO: Improve state management by moving calendar specific state in a calendarContext
   const [weekOffset, setWeekOffset] = useState(0);
+  const [events, setEvents] = useState([]);
 
   const { showError } = useError();
   const { monday } = getWeekBounds(weekOffset);
@@ -46,37 +54,44 @@ export default function Calendar() {
   const userType = user.type;
   const teacherData = userType === "teacher" ? user : teacherList[selectedTeacher];
   const currentAvailability = userType === "teacher" ? user.availability : teacherList[selectedTeacher]?.availability;
+
+  //TODO: try to combine them
+  useEffect(() => {
+    if (currentAvailability) {
+      // Force re-render when availability changes
+      const updatedEvents = currentAvailability.map((event, index) => ({
+        ...event,
+        key: `avail_${index}_${event.startTime}_${event.endTime}`
+      }));
+      setEvents(updatedEvents);
+    }
+  }, [currentAvailability, bookingConfirmed]);
+
   useEffect(() => {
     const fetchBookings = async () => {
-      if (userType === "teacher" && user?.uid) {
-        try {
-          const fetchedBookings = await getTeacherBookings(user.uid);
-          setBookings(fetchedBookings);
+      if (!user?.uid || userLoading) return;
 
-          const currentDate = new Date();
-          const future = fetchedBookings.filter((booking) => {
-            const bookingDate = new Date(booking.date.year, booking.date.month - 1, booking.date.day);
-            return bookingDate >= currentDate;
-          });
-          setFutureBookings(future);
-        } catch (error) {
-          console.error("Error fetching bookings:", error);
-          showError("Failed to fetch bookings");
+      try {
+        let fetchedBookings;
+        if (user.type === 'teacher') {
+          fetchedBookings = await getTeacherBookings(user.uid);
+        } else if (user.type === 'student' && selectedTeacher) {
+          fetchedBookings = await getStudentBookings(user.uid);
         }
-      } else if (userType === "student" && teacherData?.uid) {
-        try {
-          const fetchedBookings = await getTeacherBookings(teacherData.uid);
-          console.log("Fetched bookings:", fetchedBookings);
+        
+        if (fetchedBookings) {
           setBookings(fetchedBookings);
-        } catch (error) {
-          console.error("Error fetching bookings:", error);
-          showError("Failed to fetch bookings");
         }
+      } catch (error) {
+        showError('Failed to fetch bookings');
+        throw error;
       }
     };
 
-    fetchBookings();
-  }, [user, bookingConfirmed, currentAvailability, userLoading]);
+    fetchBookings().catch(error => {
+      console.error('Error in fetchBookings:', error);
+    });
+  }, [user, selectedTeacher, userLoading]);
 
   const handleRemove = async (day, startTime, endTime) => {
     const confirmDelete = window.confirm("Do you want to remove this time slot?");
@@ -92,6 +107,11 @@ export default function Calendar() {
         });
 
         await updateAvailability(updatedAvailability);
+        // Force immediate UI update
+        setEvents(updatedAvailability.map((event, index) => ({
+          ...event,
+          key: `avail_${index}_${event.startTime}_${event.endTime}`
+        })));
       } catch (error) {
         console.error("Error removing event:", error);
         showError(`Failed to remove event: ${error.message}`);
@@ -118,6 +138,22 @@ export default function Calendar() {
     }
   };
 
+  const handleAddEvent = async (newEvent) => {
+    try {
+      // Create a new array with the updated availability
+      const updatedAvailability = [...currentAvailability, newEvent];
+      
+      // Update the database first
+      await updateAvailability(updatedAvailability);
+      
+      // No need to manually set events - let the useEffect handle it
+      // The useEffect will trigger when currentAvailability updates
+    } catch (error) {
+      console.error("Error adding event:", error);
+      showError(`Failed to add event: ${error.message}`);
+    }
+  };
+
   // TODO: refactor Events into seperate classes
   const Events = () => {
     if (!Array.isArray(currentAvailability)) {
@@ -128,7 +164,7 @@ export default function Calendar() {
     const mondayBound = normalizeToMidnight(monday);
     const sundayBound = normalizeToMidnight(sunday);
 
-    const availabilityEvents = currentAvailability.map((event, index) => {
+    const availabilityEvents = events.map((event) => {
       if (!event?.date?.year || !event?.date?.month || !event?.date?.day) {
         return null;
       }
@@ -142,7 +178,7 @@ export default function Calendar() {
 
           return (
             <EventDisplay
-              key={`avail_${index}`}
+              key={event.key}
               day={adjustedWeekday}
               endTime={event.endTime}
               startTime={event.startTime}
@@ -229,6 +265,7 @@ export default function Calendar() {
       <li
         className={`relative mt-px hidden ${WEEKDAY_COLUMN_MAPPING[day]} sm:flex`}
         style={{ gridRow: `${startRow} / span ${rowSpan}` }}
+        data-testid={`time-slot-${startTime}`}
       >
         <a
           onClick={() => !isBooking && handleTimeSlotClick(day, startTime, endTime, isRepeating, totalClasses, link)}
@@ -320,15 +357,6 @@ export default function Calendar() {
     }
     return timeSlots;
   };
-
-  // Loading States
-  if (userType === "teacher" && !user?.uid) {
-    return <div>Loading user data...</div>;
-  }
-
-  if (userType === "student" && !teacherData?.uid) {
-    return <div>Please select a teacher</div>;
-  }
 
   return (
     <>

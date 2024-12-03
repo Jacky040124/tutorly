@@ -3,7 +3,7 @@ import {
   WEEKDAY_LABELS, 
   generateWeekDates, 
   getRepeatingDates 
-} from "../src/lib/utils/dateUtils"
+} from "@/lib/utils/dateUtils"
 
 describe('dateUtils', () => {
   // Test WEEKDAY_LABELS constants

@@ -20,18 +20,18 @@ export default function ClientLayout({ children }) {
   }, []);
 
   return (
-    <LoadingProvider>
-      <OverlayProvider>
-        <BookingProvider>
-          <ErrorProvider>
-            <UserProvider>
-              <I18nextProvider i18n={i18n}>
+    <I18nextProvider i18n={i18n}>
+      <ErrorProvider>
+        <LoadingProvider>
+          <UserProvider>
+            <BookingProvider>
+              <OverlayProvider>
                 {children}
-              </I18nextProvider>
-            </UserProvider>
-          </ErrorProvider>
-        </BookingProvider>
-      </OverlayProvider>
-    </LoadingProvider>
+              </OverlayProvider>
+            </BookingProvider>
+          </UserProvider>
+        </LoadingProvider>
+      </ErrorProvider>
+    </I18nextProvider>
   );
 } 

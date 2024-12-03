@@ -1,5 +1,6 @@
 export async function withRetry(operation, maxAttempts = 3, delay = 1000) {
-  let lastError;
+  
+    let lastError;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
@@ -7,17 +8,18 @@ export async function withRetry(operation, maxAttempts = 3, delay = 1000) {
     } catch (error) {
       lastError = error;
 
+      if (error.status && error.status >= 400 && error.status < 500) {
+        throw error;
+      }
+
       if (attempt === maxAttempts) {
         break;
       }
 
-      // Check if error is retryable
-      if (!isRetryableError(error)) {
-        throw error;
-      }
-
-      // Exponential backoff
-      await new Promise((resolve) => setTimeout(resolve, delay * Math.pow(2, attempt - 1)));
+      // Wait before retrying with exponential backoff
+      await new Promise(resolve => 
+        setTimeout(resolve, delay * Math.pow(2, attempt - 1))
+      );
     }
   }
 
@@ -26,11 +28,10 @@ export async function withRetry(operation, maxAttempts = 3, delay = 1000) {
 
 // helper
 function isRetryableError(error) {
-  // Define retryable error conditions
   const retryableStatusCodes = [408, 429, 500, 502, 503, 504];
   return (
     (error.status && retryableStatusCodes.includes(error.status)) ||
-    error.message.includes("network") ||
-    error.message.includes("timeout")
+    error.message?.includes("network") ||
+    error.code === 'ECONNRESET'
   );
 }

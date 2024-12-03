@@ -4,7 +4,7 @@ import {
   getWeekBounds, 
   calculateSelectedDate,
   formatTime 
-} from "../src/lib/utils/timeUtils"
+} from "../../lib/utils/timeUtils"
 
 describe('timeUtils', () => {
   test('normalizeToMidnight should set time to midnight', () => {
@@ -38,15 +38,15 @@ describe('timeUtils', () => {
   })
 
   test('formatTime should format hour correctly', () => {
-    expect(formatTime(9)).toBe('9:00 AM')
-    expect(formatTime(13)).toBe('1:00 PM')
-    expect(formatTime(0)).toBe('12:00 AM')
-    expect(formatTime(12)).toBe('12:00 PM')
+    expect(formatTime(9)).toBe('9:00')
+    expect(formatTime(13)).toBe('13:00')
+    expect(formatTime(0)).toBe('0:00')
+    expect(formatTime(12)).toBe('12:00')
   })
 
   test('formatTime should handle decimal hours', () => {
-    expect(formatTime(9.5)).toBe('9:30 AM')
-    expect(formatTime(13.5)).toBe('1:30 PM')
+    expect(formatTime(9.5)).toBe('9:30')
+    expect(formatTime(13.5)).toBe('13:30')
   })
 
   test('getWeekBounds should handle different week offsets', () => {
