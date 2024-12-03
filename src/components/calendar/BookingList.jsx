@@ -3,7 +3,7 @@ import { useUser, useBooking } from "@/components/providers";
 import { formatTime } from "@/lib/utils/timeUtils";
 import FeedbackOverlay from '../overlays/FeedbackOverlay';
 import { getStudentBookings, fetchFutureBookings } from '@/services/booking.service';
-import { Button } from '../common/Button';
+import HomeworkLinkOverlay from '../overlays/HomeworkLinkOverlay';
 
 export default function BookingList() {
   const { teacherList, user, fetchStudentData } = useUser();
@@ -12,6 +12,7 @@ export default function BookingList() {
   const [showFeedbackOverlay, setShowFeedbackOverlay] = useState(false);
   const [studentNames, setStudentNames] = useState({});
   const userType = user.type;
+  const [showHomeworkOverlay, setShowHomeworkOverlay] = useState(false);
 
   useEffect(() => {
     const fetchStudentNames = async () => {
@@ -57,6 +58,20 @@ export default function BookingList() {
     }
   };
 
+  const handleUploadHomework = (booking) => {
+    setSelectedBooking(booking);
+    setShowHomeworkOverlay(true);
+  };
+
+  const handleHomeworkSuccess = async () => {
+    try {
+      const teacherBookings = await fetchFutureBookings(user.uid);
+      setBookings(teacherBookings);
+    } catch (error) {
+      console.error("Error refreshing bookings:", error);
+    }
+  };
+
   const sortedBookings = [...bookings]
     .sort((a, b) => {
       const dateA = new Date(a.date.year, a.date.month - 1, a.date.day);
@@ -93,12 +108,37 @@ export default function BookingList() {
                 </div>
                 <div className="text-right flex flex-col items-end gap-2">
                   <p className="text-sm text-gray-500">
-                    {userType === 'teacher' 
+                    {userType === "teacher"
                       ? `Student: ${studentNames[booking.studentId] || booking.studentId}`
                       : `Teacher: ${teacherList[booking.teacherId]?.nickname || booking.teacherId}`}
                   </p>
 
-                  <Button onClick={() => window.open(booking.link, '_blank')}> Meet </Button>
+                  <div>
+                    <button
+                      onClick={() => window.open(booking.link, "_blank")}
+                      className="inline-flex items-center justify-center rounded-md py-2 px-4 text-sm font-semibold text-white shadow-sm bg-green-600 hover:bg-green-500 active:bg-green-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+                    >
+                      Meet
+                    </button>
+
+                    {userType === "teacher" ? (
+                      <button
+                        onClick={() => handleUploadHomework(booking)}
+                        className="inline-flex items-center justify-center rounded-md py-2 px-4 text-sm font-semibold text-white shadow-sm bg-green-600 hover:bg-green-500 active:bg-green-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+                      >
+                        {booking.homeworkLink ? "Update Homework" : "Upload Homework"}
+                      </button>
+                    ) : (
+                      booking.homeworkLink && (
+                        <button
+                          onClick={() => window.open(booking.homeworkLink, "_blank")}
+                          className="inline-flex items-center justify-center rounded-md py-2 px-4 text-sm font-semibold text-white shadow-sm bg-green-600 hover:bg-green-500 active:bg-green-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+                        >
+                          View Homework
+                        </button>
+                      )
+                    )}
+                  </div>
 
                   {past && userType === "student" && (
                     <button
@@ -129,6 +169,14 @@ export default function BookingList() {
           booking={selectedBooking}
           onClose={() => setShowFeedbackOverlay(false)}
           onFeedbackSubmitted={handleFeedbackSubmitted}
+        />
+      )}
+
+      {showHomeworkOverlay && selectedBooking && (
+        <HomeworkLinkOverlay
+          booking={selectedBooking}
+          onClose={() => setShowHomeworkOverlay(false)}
+          onSuccess={handleHomeworkSuccess}
         />
       )}
     </div>

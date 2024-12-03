@@ -1,10 +1,13 @@
 "use client";
+
 import { useEffect } from "react";
 import { useUser, useLoading, useError, useBooking, useOverlay } from "@/components/providers/index";
 import { fetchFutureStudentBookings, getStudentBookings } from "@/services/booking.service";
-import { Calendar, BookingList } from "@/components/calendar/index";
-import { StudentProfileOverlay } from "@/components/overlays/index";
-import { LanguageSwitcher, ErrorMessage } from "@/components/common/index";
+import BookingList from "@/components/calendar/BookingList";
+import Calendar from "@/components/calendar/Calendar";
+import StudentProfileOverlay from "@/components/overlays/StudentProfileOverlay";
+import LanguageSwitcher from "@/components/common/LanguageSwitcher";
+import ErrorMessage  from "@/components/common/ErrorMessage";
 import { useTranslation } from "react-i18next";
 
 export default function StudentAccount() {
@@ -14,33 +17,6 @@ export default function StudentAccount() {
   const { setFutureBookings, setBookings } = useBooking();
   const { showStudentProfileOverlay, setShowStudentProfileOverlay } = useOverlay();
   const { t } = useTranslation("dashboard");
-
-  const Header = () => {
-    return (
-      <header className="flex flex-none items-center justify-between border-b border-gray-200 px-6 py-4">
-
-        <div className="flex items-center gap-4">
-          <LanguageSwitcher />
-          <button onClick={() => setShowStudentProfileOverlay(true)} className="standard-button mr-4">
-            {t("student.profile")}
-          </button>
-          <select
-            onChange={(e) => setSelectedTeacher(e.target.value)}
-            value={selectedTeacher}
-            className="rounded-md border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
-          >
-            <option value="">{t("student.selectTeacher")}</option>
-            {teacherList &&
-              Object.entries(teacherList).map(([id, teacher]) => (
-                <option key={id} value={id}>
-                  {teacher.nickname}
-                </option>
-              ))}
-          </select>
-        </div>
-      </header>
-    );
-  };
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -107,7 +83,27 @@ export default function StudentAccount() {
             })}`
           : t("student.selectTeacherPrompt")}
       </h1>
-      <Header />
+      <header className="flex flex-none items-center justify-between border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center gap-4">
+          <LanguageSwitcher />
+          <button onClick={() => setShowStudentProfileOverlay(true)} className="standard-button mr-4">
+            {t("student.profile")}
+          </button>
+          <select
+            onChange={(e) => setSelectedTeacher(e.target.value)}
+            value={selectedTeacher}
+            className="rounded-md border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
+          >
+            <option value="">{t("student.selectTeacher")}</option>
+            {teacherList &&
+              Object.entries(teacherList).map(([id, teacher]) => (
+                <option key={id} value={id}>
+                  {teacher.nickname}
+                </option>
+              ))}
+          </select>
+        </div>
+      </header>
       <div className="flex h-full flex-col">
         <Calendar />
         <BookingList />
