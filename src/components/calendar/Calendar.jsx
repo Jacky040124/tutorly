@@ -7,6 +7,7 @@ import { generateWeekDates, WEEKDAY_LABELS } from "@/lib/utils/dateUtils";
 import { getTeacherBookings, getStudentBookings } from "@/services/booking.service";
 import BookingOverlay from "./BookingOverlay";
 import { CALENDAR_CONFIG, TOTAL_INTERVALS, calculateGridPosition } from "@/lib/utils/calendarUtil";
+import { useTranslation } from 'react-i18next';
 
 const VerticalGrid = () => {
   return (
@@ -358,6 +359,8 @@ export default function Calendar() {
     return timeSlots;
   };
 
+  const { t } = useTranslation('common');
+
   return (
     <>
       <div className="flex h-full flex-col">
@@ -368,18 +371,18 @@ export default function Calendar() {
                 onClick={() => setWeekOffset((prev) => prev - 1)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
-                Previous Week
+                {t('calendar.navigation.previousWeek')}
               </button>
               <h1 className="text-base font-semibold leading-6 text-gray-900">
                 <time dateTime={mondayDate.toISOString().slice(0, 7)}>
-                  {mondayDate.toLocaleString("default", { month: "long" })} {mondayDate.getFullYear()}
+                  {t(`calendar.months.${mondayDate.toLocaleString("default", { month: "long" }).toLowerCase()}`)} {mondayDate.getFullYear()}
                 </time>
               </h1>
               <button
                 onClick={() => setWeekOffset((prev) => prev + 1)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
-                Next Week
+                {t('calendar.navigation.nextWeek')}
               </button>
             </div>{" "}
             <WeekdayHeader />

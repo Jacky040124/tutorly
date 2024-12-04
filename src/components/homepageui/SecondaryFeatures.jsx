@@ -7,25 +7,17 @@ import clsx from 'clsx'
 import { Container } from '@/components/common/Container'
 import { useTranslation } from 'react-i18next'
 
-const features = [
-  {
-    name: 'secondaryFeatures.features.matching.name',
-    summary: 'secondaryFeatures.features.matching.summary',
-    description: 'secondaryFeatures.features.matching.description',
-    image: 'https://placehold.co/800x600',
+const features = [  {
+    name: "secondaryFeatures.features.matching.name",
+    summary: "secondaryFeatures.features.matching.summary",
+    description: "secondaryFeatures.features.matching.description",
+    image: "https://placehold.co/800x600",
     icon: function MatchingIcon() {
-      let id = useId()
+      let id = useId();
       return (
         <>
           <defs>
-            <linearGradient
-              id={id}
-              x1="11.5"
-              y1={18}
-              x2={36}
-              y2="15.5"
-              gradientUnits="userSpaceOnUse"
-            >
+            <linearGradient id={id} x1="11.5" y1={18} x2={36} y2="15.5" gradientUnits="userSpaceOnUse">
               <stop offset=".194" stopColor="#fff" />
               <stop offset={1} stopColor="#22C55E" />
             </linearGradient>
@@ -35,35 +27,28 @@ const features = [
             fill="#fff"
           />
         </>
-      )
+      );
     },
   },
   {
-    name: 'secondaryFeatures.features.classroom.name',
-    summary: 'secondaryFeatures.features.classroom.summary',
-    description: 'secondaryFeatures.features.classroom.description',
-    image: '/images/screenshots/classroom.png',
+    name: "secondaryFeatures.features.classroom.name",
+    summary: "secondaryFeatures.features.classroom.summary",
+    description: "secondaryFeatures.features.classroom.description",
+    image: "/images/screenshots/classroom.png",
     icon: function ClassroomIcon() {
       return (
         <>
-          <path
-            opacity=".5"
-            d="M8 17a1 1 0 0 1 1-1h18a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2Z"
-            fill="#fff"
-          />
-          <path
-            d="M8 10a1 1 0 0 1 1-1h18a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2Z"
-            fill="#fff"
-          />
+          <path opacity=".5" d="M8 17a1 1 0 0 1 1-1h18a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2Z" fill="#fff" />
+          <path d="M8 10a1 1 0 0 1 1-1h18a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2Z" fill="#fff" />
         </>
-      )
+      );
     },
   },
   {
-    name: 'secondaryFeatures.features.progress.name',
-    summary: 'secondaryFeatures.features.progress.summary',
-    description: 'secondaryFeatures.features.progress.description',
-    image: '/images/screenshots/progress.png',
+    name: "secondaryFeatures.features.progress.name",
+    summary: "secondaryFeatures.features.progress.summary",
+    description: "secondaryFeatures.features.progress.description",
+    image: "/images/screenshots/progress.png",
     icon: function ProgressIcon() {
       return (
         <>
@@ -75,13 +60,19 @@ const features = [
             strokeLinejoin="round"
           />
         </>
-      )
+      );
     },
   },
-] 
+]; 
 
 function Feature({ feature, isActive, className, ...props }) {
   const { t } = useTranslation('landing');
+  
+  // If feature.name is a React element (Tab), render it directly
+  const nameContent = typeof feature.name === 'object' ? 
+    feature.name : 
+    t(feature.name);
+
   return (
     <div
       className={clsx(className, !isActive && 'opacity-75 hover:opacity-100')}
@@ -103,21 +94,24 @@ function Feature({ feature, isActive, className, ...props }) {
           isActive ? 'text-green-600' : 'text-slate-600',
         )}
       >
-        {typeof feature.name === 'string' ? t(feature.name) : feature.name}
+        {nameContent}
       </h3>
       <p className="mt-2 font-display text-xl text-slate-900">
         {t(feature.summary)}
       </p>
-      <p className="mt-4 text-sm text-slate-600">{t(feature.description)}</p>
+      <p className="mt-4 text-sm text-slate-600">
+        {t(feature.description)}
+      </p>
     </div>
   )
 }
 
 function FeaturesMobile() {
+  const { t } = useTranslation('landing');
   return (
     <div className="-mx-4 mt-20 flex flex-col gap-y-10 overflow-hidden px-4 sm:-mx-6 sm:px-6 lg:hidden">
       {features.map((feature) => (
-        <div key={feature.summary}>
+        <div key={t(feature.summary)}>
           <Feature feature={feature} className="mx-auto max-w-2xl" isActive />
           <div className="relative mt-10 pb-10">
             <div className="absolute -inset-x-4 bottom-0 top-8 bg-slate-200 sm:-inset-x-6" />
@@ -125,7 +119,7 @@ function FeaturesMobile() {
               <Image
                 className="w-full"
                 src={feature.image}
-                alt=""
+                alt={t(feature.name)}
                 sizes="52.75rem"
                 width={2174}
                 height={1464}
@@ -139,6 +133,7 @@ function FeaturesMobile() {
 }
 
 function FeaturesDesktop() {
+  const { t } = useTranslation('landing');
   return (
     <Tab.Group as="div" className="hidden lg:mt-20 lg:block">
       {({ selectedIndex }) => (
@@ -152,7 +147,7 @@ function FeaturesDesktop() {
                   name: (
                     <Tab className="ui-not-focus-visible:outline-none">
                       <span className="absolute inset-0" />
-                      {feature.name}
+                      {t(feature.name)}
                     </Tab>
                   ),
                 }}

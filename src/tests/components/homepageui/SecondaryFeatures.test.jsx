@@ -16,8 +16,13 @@ vi.mock('react-i18next', () => ({
       'secondaryFeatures.subtitle': 'Our platform provides all the tools',
       'secondaryFeatures.features.matching.name': 'Smart Matching',
       'secondaryFeatures.features.matching.summary': 'AI-powered system',
+      'secondaryFeatures.features.matching.description': 'Our AI-driven system matches you with the perfect tutor',
       'secondaryFeatures.features.classroom.name': 'Virtual Classroom',
-      'secondaryFeatures.features.classroom.summary': 'Interactive online learning'
+      'secondaryFeatures.features.classroom.summary': 'Interactive online learning',
+      'secondaryFeatures.features.classroom.description': 'Engage in real-time virtual sessions',
+      'secondaryFeatures.features.progress.name': 'Progress Tracking',
+      'secondaryFeatures.features.progress.summary': 'Monitor your learning journey',
+      'secondaryFeatures.features.progress.description': 'Track your progress with detailed analytics'
     }[key] || key)
   })
 }));

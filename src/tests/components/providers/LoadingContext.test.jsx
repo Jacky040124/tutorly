@@ -19,6 +19,28 @@ const TestComponent = () => {
   );
 };
 
+const TestComponentMultiple = () => {
+  const { isLoading, setIsLoading } = useLoading();
+  
+  const setMultipleLoadingStates = () => {
+    setIsLoading('test1', true);
+    setIsLoading('test2', true);
+    setIsLoading('test3', false);
+  };
+
+  return (
+    <div>
+      <div data-testid="loading-state">{JSON.stringify(isLoading())}</div>
+      <button 
+        onClick={setMultipleLoadingStates} 
+        data-testid="set-multiple-loading"
+      >
+        Set Multiple Loading
+      </button>
+    </div>
+  );
+};
+
 describe('LoadingProvider', () => {
   test('initializes with no loading states', () => {
     const { getByTestId } = render(
@@ -47,15 +69,12 @@ describe('LoadingProvider', () => {
   test('handles multiple loading states', () => {
     const { getByTestId } = render(
       <LoadingProvider>
-        <TestComponent />
+        <TestComponentMultiple />
       </LoadingProvider>
     );
 
     act(() => {
-      const { setIsLoading } = useLoading();
-      setIsLoading('test1', true);
-      setIsLoading('test2', true);
-      setIsLoading('test3', false);
+      getByTestId('set-multiple-loading').click();
     });
 
     expect(getByTestId('loading-state')).toHaveTextContent('true');

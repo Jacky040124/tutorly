@@ -41,7 +41,29 @@
   },
   "testimonials": {
     "title": "Trusted by students worldwide",
-    "subtitle": "Our platform has helped thousands of students achieve their academic goals through personalized tutoring and expert guidance."
+    "subtitle": "Our platform has helped thousands of students achieve their academic goals",
+    "quotes": {
+      "sarah": {
+        "content": "The tutoring platform helped me improve my grades significantly. The personalized attention from expert tutors made all the difference.",
+        "name": "Sarah Chen",
+        "role": "Computer Science Student"
+      },
+      "michael": {
+        "content": "As a working professional trying to learn new skills, the flexible scheduling and quality of tutors has been invaluable.",
+        "name": "Michael Rodriguez",
+        "role": "Software Engineer"
+      },
+      "emily": {
+        "content": "The interactive learning tools and patient tutors helped me finally understand calculus. I went from struggling to excelling.",
+        "name": "Emily Watson",
+        "role": "Engineering Student"
+      },
+      "david": {
+        "content": "Finding a qualified tutor used to be difficult, but this platform made it easy to connect with experts in my field.",
+        "name": "David Kim",
+        "role": "Graduate Student"
+      }
+    }
   },
   "faqs": {
     "title": "Frequently asked questions",
@@ -89,5 +111,13 @@
         "description": "Track your progress with comprehensive reports, achievement milestones, and personalized learning recommendations to help you reach your academic goals."
       }
     }
+  },
+  "nav": {
+    "features": "Features",
+    "testimonials": "Testimonials",
+    "pricing": "Pricing",
+    "signin": "Sign in",
+    "getStarted": "Get started",
+    "today": "today"
   }
 } 

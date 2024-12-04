@@ -15,36 +15,36 @@ function QuoteIcon(props) {
 const testimonials = [
   [
     {
-      content: 'The tutoring platform helped me improve my grades significantly. The personalized attention from expert tutors made all the difference.',
+      content: 'testimonials.quotes.sarah.content',
       author: {
-        name: 'Sarah Chen',
-        role: 'Computer Science Student',
+        name: 'testimonials.quotes.sarah.name',
+        role: 'testimonials.quotes.sarah.role',
         image: 'https://placehold.co/56x56',
       },
     },
     {
-      content: 'As a working professional trying to learn new skills, the flexible scheduling and quality of tutors has been invaluable.',
+      content: 'testimonials.quotes.michael.content',
       author: {
-        name: 'Michael Rodriguez',
-        role: 'Software Engineer',
+        name: 'testimonials.quotes.michael.name',
+        role: 'testimonials.quotes.michael.role',
         image: 'https://placehold.co/56x56',
       },
     },
   ],
   [
     {
-      content: 'The interactive learning tools and patient tutors helped me finally understand calculus. I went from struggling to excelling.',
+      content: 'testimonials.quotes.emily.content',
       author: {
-        name: 'Emily Watson',
-        role: 'Engineering Student',
+        name: 'testimonials.quotes.emily.name',
+        role: 'testimonials.quotes.emily.role',
         image: 'https://placehold.co/56x56',
       },
     },
     {
-      content: 'Finding a qualified tutor used to be difficult, but this platform made it easy to connect with experts in my field.',
+      content: 'testimonials.quotes.david.content',
       author: {
-        name: 'David Kim',
-        role: 'Graduate Student',
+        name: 'testimonials.quotes.david.name',
+        role: 'testimonials.quotes.david.role',
         image: 'https://placehold.co/56x56',
       },
     },
@@ -82,16 +82,16 @@ export function Testimonials() {
                       <QuoteIcon className="absolute left-6 top-6 fill-slate-100" />
                       <blockquote className="relative">
                         <p className="text-lg tracking-tight text-slate-900">
-                          {testimonial.content}
+                          {t(testimonial.content)}
                         </p>
                       </blockquote>
                       <figcaption className="relative mt-6 flex items-center justify-between border-t border-slate-100 pt-6">
                         <div>
                           <div className="font-display text-base text-slate-900">
-                            {testimonial.author.name}
+                            {t(testimonial.author.name)}
                           </div>
                           <div className="mt-1 text-sm text-slate-500">
-                            {testimonial.author.role}
+                            {t(testimonial.author.role)}
                           </div>
                         </div>
                         <div className="overflow-hidden rounded-full bg-slate-50">

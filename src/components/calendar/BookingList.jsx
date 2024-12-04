@@ -4,6 +4,7 @@ import { formatTime } from "@/lib/utils/timeUtils";
 import FeedbackOverlay from '../overlays/FeedbackOverlay';
 import { getStudentBookings, fetchFutureBookings } from '@/services/booking.service';
 import HomeworkLinkOverlay from '../overlays/HomeworkLinkOverlay';
+import { useTranslation } from 'react-i18next';
 
 export default function BookingList() {
   const { teacherList, user, fetchStudentData } = useUser();
@@ -13,6 +14,7 @@ export default function BookingList() {
   const [studentNames, setStudentNames] = useState({});
   const userType = user.type;
   const [showHomeworkOverlay, setShowHomeworkOverlay] = useState(false);
+  const { t } = useTranslation('common');
 
   useEffect(() => {
     const fetchStudentNames = async () => {
@@ -82,16 +84,13 @@ export default function BookingList() {
 
   return (
     <div className="mt-8 p-6 bg-white rounded-lg shadow">
-      <h2 className="text-xl font-semibold mb-4">Your Bookings</h2>
+      <h2 className="text-xl font-semibold mb-4">{t('bookings.title')}</h2>
       <div className="space-y-4">
         {sortedBookings.map((booking) => {
           const past = isPastBooking(booking);
           
           return (
-            <div
-              key={booking.id}
-              className={`p-4 border rounded-lg transition-colors ${past ? "bg-gray-50" : "hover:bg-gray-50"}`}
-            >
+            <div key={booking.id} className="p-4 border rounded-lg">
               <div className="flex justify-between items-start">
                 <div>
                   <p className="font-medium">
@@ -102,15 +101,22 @@ export default function BookingList() {
                   </p>
                   {booking.bulkId && (
                     <p className="text-sm text-green-600">
-                      Lesson {booking.lessonNumber} of {booking.totalLessons}
+                      {t('bookings.lessonCount', {
+                        number: booking.lessonNumber,
+                        total: booking.totalLessons
+                      })}
                     </p>
                   )}
                 </div>
                 <div className="text-right flex flex-col items-end gap-2">
                   <p className="text-sm text-gray-500">
                     {userType === "teacher"
-                      ? `Student: ${studentNames[booking.studentId] || booking.studentId}`
-                      : `Teacher: ${teacherList[booking.teacherId]?.nickname || booking.teacherId}`}
+                      ? t('bookings.student', {
+                          name: studentNames[booking.studentId] || booking.studentId
+                        })
+                      : t('bookings.teacher', {
+                          name: teacherList[booking.teacherId]?.nickname || booking.teacherId
+                        })}
                   </p>
 
                   <div>
@@ -118,7 +124,7 @@ export default function BookingList() {
                       onClick={() => window.open(booking.link, "_blank")}
                       className="inline-flex items-center justify-center rounded-md py-2 px-4 text-sm font-semibold text-white shadow-sm bg-green-600 hover:bg-green-500 active:bg-green-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
                     >
-                      Meet
+                      {t('bookings.buttons.meet')}
                     </button>
 
                     {userType === "teacher" ? (
@@ -126,7 +132,7 @@ export default function BookingList() {
                         onClick={() => handleUploadHomework(booking)}
                         className="inline-flex items-center justify-center rounded-md py-2 px-4 text-sm font-semibold text-white shadow-sm bg-green-600 hover:bg-green-500 active:bg-green-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
                       >
-                        {booking.homeworkLink ? "Update Homework" : "Upload Homework"}
+                        {t(booking.homeworkLink ? 'bookings.buttons.updateHomework' : 'bookings.buttons.uploadHomework')}
                       </button>
                     ) : (
                       booking.homeworkLink && (
@@ -134,7 +140,7 @@ export default function BookingList() {
                           onClick={() => window.open(booking.homeworkLink, "_blank")}
                           className="inline-flex items-center justify-center rounded-md py-2 px-4 text-sm font-semibold text-white shadow-sm bg-green-600 hover:bg-green-500 active:bg-green-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
                         >
-                          View Homework
+                          {t('bookings.buttons.viewHomework')}
                         </button>
                       )
                     )}
@@ -145,17 +151,8 @@ export default function BookingList() {
                       onClick={() => handleFeedback(booking)}
                       className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
                     >
-                      {booking.feedback ? "Edit Feedback" : "Add Feedback"}
+                      {t(booking.feedback ? 'bookings.buttons.editFeedback' : 'bookings.buttons.addFeedback')}
                     </button>
-                  )}
-                  {past && userType === "teacher" && booking.feedback && (
-                    <div className="text-sm">
-                      <div className="text-yellow-400">
-                        {"★".repeat(booking.feedback.rating)}
-                        {"☆".repeat(5 - booking.feedback.rating)}
-                      </div>
-                      <p className="text-gray-600 mt-1">{booking.feedback.comment}</p>
-                    </div>
                   )}
                 </div>
               </div>

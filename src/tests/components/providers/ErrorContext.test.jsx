@@ -55,13 +55,11 @@ describe('ErrorProvider', () => {
 
     expect(getByTestId('error-message')).toHaveTextContent('Test error');
 
-    act(() => {
+    await act(async () => {
       vi.advanceTimersByTime(5000);
     });
 
-    await waitFor(() => {
-      expect(getByTestId('error-message')).toHaveTextContent('');
-    });
+    expect(getByTestId('error-message')).toHaveTextContent('');
   });
 
   test('clears error message manually', () => {

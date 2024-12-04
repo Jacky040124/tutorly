@@ -8,6 +8,7 @@ import { Container } from "@/components/common/Container";
 import { Logo } from "@/components/common/Logo";
 import { NavLink } from "@/components/common/NavLink";
 import LanguageSwitcher from "@/components/common/LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 function MobileNavLink({ href, children }) {
   return (
@@ -34,6 +35,7 @@ function MobileNavIcon({ open }) {
 
 function MobileNavigation() {
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useTranslation("landing");
 
   return (
     <div className="relative">
@@ -47,11 +49,11 @@ function MobileNavigation() {
 
       {isOpen && (
         <div className="absolute right-0 top-full mt-4 w-screen max-w-md rounded-2xl bg-white p-4 text-lg tracking-tight text-slate-900 shadow-xl ring-1 ring-slate-900/5">
-          <MobileNavLink href="#features">Features</MobileNavLink>
-          <MobileNavLink href="#testimonials">Testimonials</MobileNavLink>
-          <MobileNavLink href="#pricing">Pricing</MobileNavLink>
+          <MobileNavLink href="#features">{t('nav.features')}</MobileNavLink>
+          <MobileNavLink href="#testimonials">{t('nav.testimonials')}</MobileNavLink>
+          <MobileNavLink href="#pricing">{t('nav.pricing')}</MobileNavLink>
           <hr className="m-2 border-slate-300/40" />
-          <MobileNavLink href="/auth/signin">Sign in</MobileNavLink>
+          <MobileNavLink href="/auth/signin">{t('nav.signin')}</MobileNavLink>
           <div className="mt-2 flex justify-center">
             <LanguageSwitcher />
           </div>
@@ -62,6 +64,8 @@ function MobileNavigation() {
 }
 
 export function Header() {
+  const { t } = useTranslation("landing");
+
   return (
     <header className="py-10">
       <Container>
@@ -71,9 +75,9 @@ export function Header() {
               <Logo className="h-10 w-auto" />
             </Link>
             <div className="hidden md:flex md:gap-x-6">
-              <NavLink href="#features">Features</NavLink>
-              <NavLink href="#testimonials">Testimonials</NavLink>
-              <NavLink href="#pricing">Pricing</NavLink>
+              <NavLink href="#features">{t('nav.features')}</NavLink>
+              <NavLink href="#testimonials">{t('nav.testimonials')}</NavLink>
+              <NavLink href="#pricing">{t('nav.pricing')}</NavLink>
             </div>
           </div>
           <div className="flex items-center gap-x-5 md:gap-x-8">
@@ -81,11 +85,11 @@ export function Header() {
               <LanguageSwitcher />
             </div>
             <div className="hidden md:block">
-              <NavLink href="/auth/signin">Sign in</NavLink>
+              <NavLink href="/auth/signin">{t('nav.signin')}</NavLink>
             </div>
             <Button href="/auth/signup" color="blue">
               <span>
-                Get started <span className="hidden lg:inline">today</span>
+                {t('nav.getStarted')} <span className="hidden lg:inline">{t('nav.today')}</span>
               </span>
             </Button>
             <div className="-mr-1 md:hidden">

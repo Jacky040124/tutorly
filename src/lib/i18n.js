@@ -18,12 +18,14 @@ i18n
       en: {
         landing: require('../locales/en/landing.json'),
         auth: require('../locales/en/auth.json'),
-        dashboard: require('../locales/en/dashboard.json')
+        dashboard: require('../locales/en/dashboard.json'),
+        common: require('../locales/en/common.json')
       },
       zh: {
         landing: require('../locales/zh/landing.json'),
         auth: require('../locales/zh/auth.json'),
-        dashboard: require('../locales/zh/dashboard.json')
+        dashboard: require('../locales/zh/dashboard.json'),
+        common: require('../locales/zh/common.json')
       },
     },
   });
