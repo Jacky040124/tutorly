@@ -4,7 +4,6 @@ import { db } from "@/lib/firebase";
 import { useEffect } from "react";
 import { useUser } from "@/components/providers/UserContext";
 import Calendar from "@/components/calendar/Calendar";
-import CalendarOverlay from "@/components/calendar/CalendarOverlay";
 import TeacherProfileOverlay from "@/components/overlays/TeacherProfileOverlay";
 import ErrorMessage from "@/components/common/ErrorMessage";
 import BookingList from "@/components/calendar/BookingList";
@@ -41,7 +40,6 @@ export default function TeacherAccount() {
           <button
             onClick={() => {
               setShowTeacherProfileOverlay(true);
-              console.log("TeacherProfile button clicked, showTeacherProfileOverlay:", showTeacherProfileOverlay);
             }}
             className="standard-button mr-4"
           >
@@ -93,17 +91,20 @@ export default function TeacherAccount() {
     <>
       <div>
         {error && <ErrorMessage message={error} />}
-        <h2>
-          {t("teacher.greeting")}, {user.nickname}
-        </h2>
-        <h1>{t("teacher.welcome")}</h1>
+        <div className="px-6 py-4 space-y-1">
+          <h1 className="text-3xl font-semibold text-gray-900">
+            {t("teacher.welcome")}
+          </h1>
+          <h2 className="text-lg text-gray-600">
+            {t("teacher.greeting")}, {user.nickname}
+          </h2>
+        </div>
         <div className="flex h-full flex-col">
           <Header />
           <Calendar />
         </div>
         <BookingList />
       </div>
-      {showCalendarOverlay && <CalendarOverlay />}
       {showTeacherProfileOverlay && <TeacherProfileOverlay />}
     </>
   );

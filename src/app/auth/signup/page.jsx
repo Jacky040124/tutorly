@@ -9,6 +9,7 @@ import { signUpStudent } from "@/services/auth.service";
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from "@/components/common/LanguageSwitcher";
+import { useNotification } from "@/components/providers/NotificationContext";
 
 export default function SignUp() {
   const { t } = useTranslation('auth');
@@ -16,6 +17,7 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
   const { showError } = useError();
+  const { showSuccess } = useNotification();
   const router = useRouter();
 
   const handleSignup = async (e) => {
@@ -27,7 +29,7 @@ export default function SignUp() {
       }
 
       await signUpStudent(email, password, nickname);
-      showError("Sign Up Successful! Please sign in.");
+      showSuccess("Sign Up Successful! Please sign in.");
       setTimeout(() => router.push('/auth/signin'), 2000);
       
     } catch (error) {

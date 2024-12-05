@@ -4,7 +4,7 @@
     "selectTeacherPrompt": "请选择老师",
     "profile": "个人设置",
     "selectTeacher": "选择老师",
-    "teacherRate": "的课时费是 {{price}} 美元"
+    "teacherRate": "的课时费是 {{price}} 加币"
   },
   "teacher": {
     "profile": "个人设置",

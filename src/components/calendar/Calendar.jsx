@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser, useBooking, useError } from "@/components/providers";
+import { useUser, useBooking, useError, useOverlay } from "@/components/providers";
 import { normalizeToMidnight, getWeekBounds, calculateSelectedDate, formatTime } from "@/lib/utils/timeUtils";
 import { generateWeekDates, WEEKDAY_LABELS } from "@/lib/utils/dateUtils";
 import { getTeacherBookings, getStudentBookings } from "@/services/booking.service";
 import BookingOverlay from "./BookingOverlay";
 import { CALENDAR_CONFIG, TOTAL_INTERVALS, calculateGridPosition } from "@/lib/utils/calendarUtil";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
+import CalendarOverlay from "./CalendarOverlay";
 
 const VerticalGrid = () => {
   return (
@@ -27,22 +28,9 @@ const VerticalGrid = () => {
 // TODO: Breaks down Calendar component, ensure Single Responsibility, cut down to display only [no more than 200 lines]
 export default function Calendar() {
   const { user, selectedTeacher, teacherList, updateAvailability, userLoading } = useUser();
-  console.log('Calendar mounted with:', { 
-    userType: user?.type, 
-    userId: user?.uid,
-    selectedTeacher,
-    teacherData: teacherList[selectedTeacher]
-  });
-
-  const {
-    setSelectedSlot,
-    showBookingOverlay,
-    setShowBookingOverlay,
-    setFutureBookings,
-    bookings,
-    setBookings,
-    bookingConfirmed,
-  } = useBooking();
+  const { setSelectedSlot, showBookingOverlay, setShowBookingOverlay, bookings, setBookings, bookingConfirmed } =
+    useBooking();
+  const { showCalendarOverlay } = useOverlay();
 
   // TODO: Improve state management by moving calendar specific state in a calendarContext
   const [weekOffset, setWeekOffset] = useState(0);
@@ -62,11 +50,11 @@ export default function Calendar() {
       // Force re-render when availability changes
       const updatedEvents = currentAvailability.map((event, index) => ({
         ...event,
-        key: `avail_${index}_${event.startTime}_${event.endTime}`
+        key: `avail_${index}_${event.startTime}_${event.endTime}`,
       }));
       setEvents(updatedEvents);
     }
-  }, [currentAvailability, bookingConfirmed]);
+  }, [currentAvailability]);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -74,23 +62,29 @@ export default function Calendar() {
 
       try {
         let fetchedBookings;
-        if (user.type === 'teacher') {
+        if (user.type === "teacher") {
           fetchedBookings = await getTeacherBookings(user.uid);
-        } else if (user.type === 'student' && selectedTeacher) {
+        } else if (user.type === "student" && selectedTeacher) {
           fetchedBookings = await getStudentBookings(user.uid);
         }
-        
+
         if (fetchedBookings) {
-          setBookings(fetchedBookings);
+          const validatedBookings = fetchedBookings.map(booking => ({
+            date: booking.date,
+            startTime: booking.startTime,
+            endTime: booking.endTime,
+            studentId: booking.studentId
+          }));
+          setBookings(validatedBookings);
         }
       } catch (error) {
-        showError('Failed to fetch bookings');
+        showError("Failed to fetch bookings");
         throw error;
       }
     };
 
-    fetchBookings().catch(error => {
-      console.error('Error in fetchBookings:', error);
+    fetchBookings().catch((error) => {
+      console.error("Error in fetchBookings:", error);
     });
   }, [user, selectedTeacher, userLoading]);
 
@@ -109,12 +103,13 @@ export default function Calendar() {
 
         await updateAvailability(updatedAvailability);
         // Force immediate UI update
-        setEvents(updatedAvailability.map((event, index) => ({
-          ...event,
-          key: `avail_${index}_${event.startTime}_${event.endTime}`
-        })));
+        setEvents(
+          updatedAvailability.map((event, index) => ({
+            ...event,
+            key: `avail_${index}_${event.startTime}_${event.endTime}`,
+          }))
+        );
       } catch (error) {
-        console.error("Error removing event:", error);
         showError(`Failed to remove event: ${error.message}`);
       }
     }
@@ -139,18 +134,22 @@ export default function Calendar() {
     }
   };
 
-  const handleAddEvent = async (newEvent) => {
+  const handleAddEvent = async (newEvents) => {
     try {
-      // Create a new array with the updated availability
-      const updatedAvailability = [...currentAvailability, newEvent];
+      // Handle both single events and arrays of events
+      const eventsToAdd = Array.isArray(newEvents) ? newEvents : [newEvents];
+      const updatedAvailability = [...currentAvailability, ...eventsToAdd];
       
-      // Update the database first
       await updateAvailability(updatedAvailability);
       
-      // No need to manually set events - let the useEffect handle it
-      // The useEffect will trigger when currentAvailability updates
+      // Force immediate UI update
+      setEvents(
+        updatedAvailability.map((event, index) => ({
+          ...event,
+          key: `avail_${index}_${event.startTime}_${event.endTime}`,
+        }))
+      );
     } catch (error) {
-      console.error("Error adding event:", error);
       showError(`Failed to add event: ${error.message}`);
     }
   };
@@ -197,7 +196,6 @@ export default function Calendar() {
         return null;
       }
     });
-
     const bookingEvents = bookings.map((booking, index) => {
       try {
         const bookingDate = normalizeToMidnight(booking.date);
@@ -311,7 +309,7 @@ export default function Calendar() {
               {day}
               <span
                 className={`mt-1 flex h-8 w-8 items-center justify-center font-semibold ${
-                  weekDates[i].isToday ? "rounded-full bg-indigo-600 text-white" : "text-gray-900"
+                  weekDates[i].isToday ? "rounded-full bg-green-600 text-white" : "text-gray-900"
                 }`}
               >
                 {weekDates[i].date}
@@ -329,7 +327,7 @@ export default function Calendar() {
                 <span
                   className={`ml-1.5 ${
                     weekDates[i].isToday
-                      ? "flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 font-semibold text-white"
+                      ? "flex h-8 w-8 items-center justify-center rounded-full bg-green-600 font-semibold text-white"
                       : "items-center justify-center font-semibold text-gray-900"
                   }`}
                 >
@@ -359,7 +357,7 @@ export default function Calendar() {
     return timeSlots;
   };
 
-  const { t } = useTranslation('common');
+  const { t } = useTranslation("common");
 
   return (
     <>
@@ -371,18 +369,19 @@ export default function Calendar() {
                 onClick={() => setWeekOffset((prev) => prev - 1)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
-                {t('calendar.navigation.previousWeek')}
+                {t("calendar.navigation.previousWeek")}
               </button>
               <h1 className="text-base font-semibold leading-6 text-gray-900">
                 <time dateTime={mondayDate.toISOString().slice(0, 7)}>
-                  {t(`calendar.months.${mondayDate.toLocaleString("default", { month: "long" }).toLowerCase()}`)} {mondayDate.getFullYear()}
+                  {t(`calendar.months.${mondayDate.toLocaleString("default", { month: "long" }).toLowerCase()}`)}{" "}
+                  {mondayDate.getFullYear()}
                 </time>
               </h1>
               <button
                 onClick={() => setWeekOffset((prev) => prev + 1)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
-                {t('calendar.navigation.nextWeek')}
+                {t("calendar.navigation.nextWeek")}
               </button>
             </div>{" "}
             <WeekdayHeader />
@@ -408,6 +407,7 @@ export default function Calendar() {
         </div>
       </div>
       {showBookingOverlay && <BookingOverlay />}
+      {showCalendarOverlay && <CalendarOverlay onEventAdded={handleAddEvent} />}
     </>
   );
 }

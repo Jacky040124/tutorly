@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { useUser } from '../providers/UserContext';
 import ErrorMessage from '../common/ErrorMessage';
 import { useOverlay } from '@/components/providers/index';
+import { useTranslation } from 'react-i18next';
 
 export default function TeacherProfileOverlay() {
     const { user, updatePrice, updateNickname, updateDescription } = useUser();
     const { setShowTeacherProfileOverlay } = useOverlay();
-
-
+    const { t } = useTranslation('common');
     
     const [nickname, setNickname] = useState(user.nickname);
     const [description, setDescription] = useState(user.description);
@@ -41,12 +41,12 @@ export default function TeacherProfileOverlay() {
             <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold leading-6 text-gray-900">
-                  Edit Profile
+                  {t('teacherProfile.title')}
                 </h3>
 
                 <div>
                   <label className="form-label">
-                    Nickname
+                    {t('teacherProfile.nickname')}
                   </label>
                   <input
                     type="text"
@@ -58,7 +58,7 @@ export default function TeacherProfileOverlay() {
 
                 <div>
                   <label className="form-label">
-                    Description
+                    {t('teacherProfile.description')}
                   </label>
                   <textarea
                     value={description}
@@ -70,7 +70,7 @@ export default function TeacherProfileOverlay() {
 
                 <div>
                   <label className="form-label">
-                    Pricing ($ per hour)
+                    {t('teacherProfile.pricing')}
                   </label>
                   <input
                     type="number"
@@ -87,14 +87,14 @@ export default function TeacherProfileOverlay() {
                   onClick={handleSave}
                   className="overlay-button-primary sm:col-start-2"
                 >
-                  Save
+                  {t('teacherProfile.buttons.save')}
                 </button>
                 <button
                   type="button"
                   onClick={handleCancel}
                   className="overlay-button-secondary sm:col-start-1 sm:mt-0 mt-3"
                 >
-                  Cancel
+                  {t('teacherProfile.buttons.cancel')}
                 </button>
               </div>
             </div>

@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { useId } from "react";
+import { useTranslation } from 'react-i18next';
 
 const formClasses =
   "block w-full appearance-none rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-blue-500 sm:text-sm";
@@ -16,22 +17,23 @@ function Label({ id, children }) {
 }
 
 export const InputField = ({ name, onChange, value }) => {
-    const generateTimeOptions = () => {
-      const options = [];
-      options.push(<option key="default">Select Time</option>);
+  const { t } = useTranslation('common');
+  
+  const generateTimeOptions = () => {
+    const options = [];
+    options.push(<option key="default">{t('fields.selectTime')}</option>);
 
-      for (let hour = 6; hour < 24; hour++) {
-        const hourStr = hour.toString().padStart(2, "0");
+    for (let hour = 6; hour < 24; hour++) {
+      const hourStr = hour.toString().padStart(2, "0");
+      // Add hour:00
+      options.push(<option key={`${hourStr}:00`}>{hourStr}:00</option>);
+      // Add hour:30
+      options.push(<option key={`${hourStr}:30`}>{hourStr}:30</option>);
+    }
 
-        // Add hour:00
-        options.push(<option key={`${hourStr}:00`}>{hourStr}:00</option>);
+    return options;
+  };
 
-        // Add hour:30
-        options.push(<option key={`${hourStr}:30`}>{hourStr}:30</option>);
-      }
-
-      return options;
-    };
   return (
     <div>
       <label
@@ -54,6 +56,8 @@ export const InputField = ({ name, onChange, value }) => {
 };
 
 export const ToggleField = ({ name, onChange, value }) => {
+  const { t } = useTranslation('common');
+  
   return (
     <div className="flex items-center justify-between">
       <label
@@ -67,6 +71,7 @@ export const ToggleField = ({ name, onChange, value }) => {
         role="switch"
         aria-checked={value}
         onClick={onChange}
+        aria-label={t('fields.toggle.ariaLabel')}
         className={`${
           value ? "bg-green-600" : "bg-gray-200"
         } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2`}

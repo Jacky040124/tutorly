@@ -6,17 +6,18 @@ import { timeToDecimal } from "@/lib/utils/timeUtils";
 import { InputField, ToggleField } from "@/components/common/Fields";
 import { getRepeatingDates } from "@/lib/utils/dateUtils";
 import { ZoomService } from "@/services/zoom.service";
+import { useTranslation } from 'react-i18next';
 
-// onEventAdded is an optional prop
-export default function CalendarOverlay() {
+export default function CalendarOverlay({ onEventAdded }) {
   const { user, availability, updateAvailability } = useUser();
   const { setShowCalendarOverlay } = useOverlay();
   const [date, setDate] = useState(null);
   const [start, setStart] = useState("");
   const { error, showError } = useError();
+  const { t } = useTranslation('common');
 
   const [end, setEnd] = useState("");
-  const [isRepeating, setiIsRepeating] = useState(false);
+  const [isRepeating, setIsRepeating] = useState(false);
 
   const checkOverlap = (availability, newEvent) => {
     for (let i = 0; i < availability.length; i++) {
@@ -47,10 +48,10 @@ export default function CalendarOverlay() {
 
     // Field validations
     if (!date || !start || !end) {
-      showError("Please fill in all fields");
+      showError(t('calendarOverlay.errors.fillAllFields'));
       return;
     } else if (startDecimal >= endDecimal) {
-      showError("End time must be later than start time");
+      showError(t('calendarOverlay.errors.endTimeLater'));
       return;
     }
 
@@ -58,7 +59,6 @@ export default function CalendarOverlay() {
     const dates = isRepeating ? getRepeatingDates(date) : [date];
 
     try {
-      // Create Zoom meetings for each event
       const newEvents = await Promise.all(
         dates.map(async (eventDate, index) => {
           try {
@@ -70,7 +70,6 @@ export default function CalendarOverlay() {
             };
 
             const meeting = await ZoomService.createMeeting(meetingRequest);
-            console.log("Created Zoom meeting with link:", meeting.link);
 
             return {
               date: eventDate,
@@ -84,29 +83,20 @@ export default function CalendarOverlay() {
             };
           } catch (error) {
             console.error("Failed to create Zoom meeting:", error);
-            // If Zoom meeting creation fails, continue without the link
-            return {
-              date: eventDate,
-              startTime: startDecimal,
-              endTime: endDecimal,
-              isRepeating,
-              repeatGroupId,
-              repeatIndex: isRepeating ? index : null,
-              totalClasses: isRepeating ? dates.length : null,
-              link: null,
-            };
+            return null;
           }
         })
       );
 
-      // Overlap check
-      const hasOverlap = newEvents.some((event) => checkOverlap(availability, event));
+      const validEvents = newEvents.filter(event => event !== null);
+
+      const hasOverlap = validEvents.some((event) => checkOverlap(availability, event));
       if (hasOverlap) {
-        showError("One or more time slots overlap with existing events");
+        showError(t('calendarOverlay.errors.overlap'));
         return;
       }
 
-      await updateAvailability([...availability, ...newEvents]);
+      await onEventAdded(validEvents);
       setShowCalendarOverlay(false);
     } catch (error) {
       showError(`Error saving events: ${error.message}`);
@@ -175,7 +165,7 @@ export default function CalendarOverlay() {
                               value={end}
                             />
                             <ToggleField
-                              onChange={(e) => setiIsRepeating((prev) => !prev)}
+                              onChange={(e) => setIsRepeating((prev) => !prev)}
                               name="Repeating"
                               value={isRepeating}
                             />

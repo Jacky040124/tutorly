@@ -108,16 +108,18 @@ export default function StudentAccount() {
   return (
     <div>
       {error && <ErrorMessage message={error} />}
-      <h2>
-        {t("student.greeting")}, {user.nickname}
-      </h2>
-      <h1>
-        {selectedTeacher && teacherList[selectedTeacher]
-          ? `${teacherList[selectedTeacher].nickname}${t("student.teacherRate", {
-              price: teacherList[selectedTeacher].pricing,
-            })}`
-          : t("student.selectTeacherPrompt")}
-      </h1>
+      <div className="px-6 py-4 space-y-1">
+        <h1 className="text-3xl font-semibold text-gray-900">
+          {selectedTeacher && teacherList[selectedTeacher]
+            ? `${teacherList[selectedTeacher].nickname}${t("student.teacherRate", {
+                price: teacherList[selectedTeacher].pricing,
+              })}`
+            : t("student.selectTeacherPrompt")}
+        </h1>
+        <h2 className="text-lg text-gray-600">
+          {t("student.greeting")}, {user.nickname}
+        </h2>
+      </div>
       <Header />
       <div className="flex h-full flex-col">
         <Calendar />

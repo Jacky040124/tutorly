@@ -32,5 +32,47 @@
       "november": "November",
       "december": "December"
     }
+  },
+  "teacherProfile": {
+    "title": "Edit Profile",
+    "nickname": "Nickname",
+    "description": "Description",
+    "pricing": "Pricing ($ per hour)",
+    "buttons": {
+      "save": "Save",
+      "cancel": "Cancel"
+    }
+  },
+  "calendarOverlay": {
+    "title": "New Event",
+    "fields": {
+      "date": "Select Day",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "repeating": "Repeating"
+    },
+    "buttons": {
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "fillAllFields": "Please fill in all fields",
+      "endTimeLater": "End time must be later than start time",
+      "overlap": "One or more time slots overlap with existing events"
+    }
+  },
+  "fields": {
+    "selectTime": "Select Time",
+    "toggle": {
+      "ariaLabel": "Toggle setting",
+      "on": "On",
+      "off": "Off"
+    },
+    "required": "Required",
+    "optional": "Optional",
+    "placeholder": {
+      "select": "Please select...",
+      "enter": "Please enter..."
+    }
   }
-} 
+}

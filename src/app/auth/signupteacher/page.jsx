@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/common/Button";
 import { TextField } from "@/components/common/Fields";
 import { useError } from "@/components/providers/ErrorContext";
+import { useNotification } from "@/components/providers/NotificationContext";
 import { signUpTeacher } from "@/services/auth.service";
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
@@ -17,6 +18,7 @@ export default function SignUpTeacher() {
   const [nickname, setNickname] = useState("");
   const [description, setDescription] = useState("");
   const { showError } = useError();
+  const { showSuccess } = useNotification();
   const router = useRouter();
 
   const handleSignup = async (e) => {e.preventDefault();
@@ -27,7 +29,7 @@ export default function SignUpTeacher() {
       }
 
       await signUpTeacher(email, password, nickname, description);
-      showError("Sign Up Successful! Please sign in.");
+      showSuccess("Sign Up Successful! Please sign in.");
       setTimeout(() => router.push('/auth/signin'), 2000);
       
     } catch (error) {

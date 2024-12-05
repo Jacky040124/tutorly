@@ -12,39 +12,21 @@ import { db } from "@/lib/firebase";
 import { sendMail, generateBookingConfirmationEmail } from "@/services/mail.service";
 
 export async function confirmBooking(bookings, availability) {
-  console.log("confirmBooking received bookings:", {
-    bookings,
-    hasLink: Array.isArray(bookings) ? 
-      bookings.map(b => !!b.link) : 
-      !!bookings.link,
-    actualLinks: Array.isArray(bookings) ?
-      bookings.map(b => b.link) :
-      bookings.link
-  });
-
   try {
     const bookingsArray = Array.isArray(bookings) ? bookings : [bookings];
 
     return await runTransaction(db, async (transaction) => {
       let updatedAvailability = availability;
+      const createdBookings = [];
 
       for (const booking of bookingsArray) {
-        console.log("Processing booking in transaction:", {
-          bookingId: booking.studentId,
-          hasLink: !!booking.link,
-          link: booking.link
-        });
-
         try {
           const enrichedBooking = {
             ...booking,
-            link: booking.link || null
+            link: booking.link || null,
+            status: "confirmed",
+            createdAt: new Date().toISOString()
           };
-
-          console.log("Created enriched booking:", {
-            hasLink: !!enrichedBooking.link,
-            link: enrichedBooking.link
-          });
 
           const bookingRef = doc(
             db,
@@ -55,10 +37,7 @@ export async function confirmBooking(bookings, availability) {
           );
 
           transaction.set(bookingRef, enrichedBooking);
-          console.log("Saved booking to Firestore:", {
-            ref: bookingRef.path,
-            hasLink: !!enrichedBooking.link
-          });
+          createdBookings.push({ id: bookingRef.id, ...enrichedBooking });
 
           updatedAvailability = filterOutBookedSlot(
             updatedAvailability,
@@ -80,6 +59,7 @@ export async function confirmBooking(bookings, availability) {
       return {
         message: "Booking(s) confirmed successfully!",
         updatedAvailability,
+        bookings: createdBookings
       };
     });
   } catch (error) {
@@ -292,6 +272,7 @@ export async function handleBookingConfirmed(
 ) {
   try {
     const result = await confirmBooking(booking, teacherAvailability);
+    console.log("booking result",result);
     
     try {
       const emailContent = generateBookingConfirmationEmail(booking, teacherData);
@@ -357,7 +338,6 @@ export async function addFeedback(bookingId, feedback) {
 }
 
 export async function updateFeedback(bookingId, feedback) {
-  console.log("Updating feedback:", { bookingId, feedback });
   
   try {
     const bookingRef = doc(db, "bookings", bookingId);

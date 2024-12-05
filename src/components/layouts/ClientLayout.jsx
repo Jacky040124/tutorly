@@ -6,7 +6,8 @@ import i18n from '@/lib/i18n';
 import { 
   UserProvider, 
   BookingProvider, 
-  ErrorProvider, 
+  ErrorProvider,
+  NotificationProvider, 
   LoadingProvider, 
   OverlayProvider 
 } from '@/components/providers';
@@ -22,15 +23,17 @@ export default function ClientLayout({ children }) {
   return (
     <I18nextProvider i18n={i18n}>
       <ErrorProvider>
-        <LoadingProvider>
-          <UserProvider>
-            <BookingProvider>
-              <OverlayProvider>
-                {children}
-              </OverlayProvider>
-            </BookingProvider>
-          </UserProvider>
-        </LoadingProvider>
+        <NotificationProvider>
+          <LoadingProvider>
+            <UserProvider>
+              <BookingProvider>
+                <OverlayProvider>
+                  {children}
+                </OverlayProvider>
+              </BookingProvider>
+            </UserProvider>
+          </LoadingProvider>
+        </NotificationProvider>
       </ErrorProvider>
     </I18nextProvider>
   );

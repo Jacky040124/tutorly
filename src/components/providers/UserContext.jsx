@@ -24,46 +24,44 @@ export function UserProvider({ children }) {
 
     //TODO: figure out what this useEffect do and whather it is necessary
     useEffect(() => {
-        console.log("UserContext mount");
-        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-            console.log("Auth state changed:", firebaseUser?.uid);
-            
-            if (firebaseUser) {
-                try {
-                    const docRef = doc(db, "users", firebaseUser.uid);
-                    const docSnap = await getDoc(docRef);
-                    const userData = docSnap.data();
+      const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
 
-                    if (userData.type === "teacher") {
-                        setUser({
-                            email: firebaseUser.email,
-                            uid: firebaseUser.uid,
-                            type: userData.type,
-                            nickname: userData.nickname,
-                            description: userData.description,
-                            availability: userData.availability,
-                            pricing: userData.pricing
-                        });
-                    } else if (userData.type === "student") {
-                        setUser({
-                            email: firebaseUser.email,
-                            uid: firebaseUser.uid,
-                            type: userData.type,
-                            nickname: userData.nickname,
-                            balance: userData.balance,
-                            bookingHistory: userData.bookingHistory
-                        });
-                    }
-                } catch (error) {
-                    console.error("Error fetching user data:", error);
-                }
-            } else {
-                setUser(null);
+        if (firebaseUser) {
+          try {
+            const docRef = doc(db, "users", firebaseUser.uid);
+            const docSnap = await getDoc(docRef);
+            const userData = docSnap.data();
+
+            if (userData.type === "teacher") {
+              setUser({
+                email: firebaseUser.email,
+                uid: firebaseUser.uid,
+                type: userData.type,
+                nickname: userData.nickname,
+                description: userData.description,
+                availability: userData.availability,
+                pricing: userData.pricing,
+              });
+            } else if (userData.type === "student") {
+              setUser({
+                email: firebaseUser.email,
+                uid: firebaseUser.uid,
+                type: userData.type,
+                nickname: userData.nickname,
+                balance: userData.balance,
+                bookingHistory: userData.bookingHistory,
+              });
             }
-            setLoading(false);
-        });
+          } catch (error) {
+            console.error("Error fetching user data:", error);
+          }
+        } else {
+          setUser(null);
+        }
+        setLoading(false);
+      });
 
-        return () => unsubscribe();
+      return () => unsubscribe();
     }, []);
 
     const updateAvailability = async (newAvailability) => {
@@ -227,7 +225,7 @@ export function UserProvider({ children }) {
             };
 
             return { data };
-            
+
         } catch (error) {
             console.error("Error fetching student data:", error);
             throw error;
