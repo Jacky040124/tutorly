@@ -10,7 +10,13 @@
       "start": "Start Learning Today",
       "howItWorks": "How it works"
     },
-    "trusted": "Trusted by students from leading institutions"
+    "trusted": "Trusted by students from leading institutions",
+    "universities": {
+      "ubc": "University of British Columbia",
+      "bcit": "British Columbia Institute of Technology",
+      "sfu": "Simon Fraser University",
+      "uvic": "University of Victoria"
+    }
   },
   "features": {
     "title": "Everything you need to excel in your studies.",
