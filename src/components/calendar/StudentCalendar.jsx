@@ -70,10 +70,6 @@ export default function Calendar() {
     return <AvailabilityEvent key={eventKey} event={event} onRemove={handleTimeSlotClick} />;
   });
 
-  const bookingEvents = bookings.map((booking) => {
-    const bookingKey = `booking_${booking.date.year}_${booking.date.month}_${booking.date.day}_${booking.startTime}`;
-    return <BookingEvent key={bookingKey} booking={booking} onRemove={handleTimeSlotClick} />;
-  });
 
   const TimeLabels = () => {
     const timeSlots = [];
@@ -182,7 +178,6 @@ export default function Calendar() {
                   }}
                 >
                   {availabilityEvents}
-                  {bookingEvents}
                 </ol>
               </div>
             </div>

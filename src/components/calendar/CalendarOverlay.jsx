@@ -6,8 +6,9 @@ import { timeToDecimal } from "@/lib/utils/timeUtils";
 import { InputField, ToggleField } from "@/components/common/Fields";
 import { getRepeatingDates } from "@/lib/utils/dateUtils";
 import { ZoomService } from "@/services/zoom.service";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 import { checkOverlap } from "@/lib/utils/calendarUtil";
+import { useBooking } from "@/components/providers";
 
 export default function CalendarOverlay({ onEventAdded }) {
   const { user, availability, updateAvailability } = useUser();
@@ -15,7 +16,8 @@ export default function CalendarOverlay({ onEventAdded }) {
   const [date, setDate] = useState(null);
   const [start, setStart] = useState("");
   const { error, showError } = useError();
-  const { t } = useTranslation('common');
+  const { t } = useTranslation("common");
+  const { bookings } = useBooking();
 
   const [end, setEnd] = useState("");
   const [isRepeating, setIsRepeating] = useState(false);
@@ -30,10 +32,10 @@ export default function CalendarOverlay({ onEventAdded }) {
 
     // Field validations
     if (!date || !start || !end) {
-      showError(t('calendarOverlay.errors.fillAllFields'));
+      showError(t("calendarOverlay.errors.fillAllFields"));
       return;
     } else if (startDecimal >= endDecimal) {
-      showError(t('calendarOverlay.errors.endTimeLater'));
+      showError(t("calendarOverlay.errors.endTimeLater"));
       return;
     }
 
@@ -70,12 +72,21 @@ export default function CalendarOverlay({ onEventAdded }) {
         })
       );
 
-      const validEvents = newEvents.filter(event => event !== null);
+      const validEvents = newEvents.filter((event) => event !== null);
 
-      const hasOverlap = validEvents.some((event) => checkOverlap(availability, event));
-      if (hasOverlap) {
-        showError(t('calendarOverlay.errors.overlap'));
-        return;
+      const existingEvents = [...availability, ...bookings];
+
+      for (const event of validEvents) {
+        const { hasOverlap, type } = checkOverlap(existingEvents, event);
+        
+        if (hasOverlap) {
+          const errorKey = type === 'booking' 
+            ? 'calendarOverlay.errors.bookingOverlap'
+            : 'calendarOverlay.errors.availabilityOverlap';
+          
+          showError(t(errorKey));
+          return;
+        }
       }
 
       await onEventAdded(validEvents);

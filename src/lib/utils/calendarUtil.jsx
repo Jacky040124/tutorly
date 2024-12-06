@@ -51,23 +51,37 @@ export const TimeLabels = () => {
     .flat();
 };
 
-  export const checkOverlap = (availability, newEvent) => {
-    for (let i = 0; i < availability.length; i++) {
-      const curEvent = availability[i];
+export const checkOverlap = (existingEvents, newEvent) => {
+  // Combine both availability and bookings into one array if they're passed separately
+  const allEvents = Array.isArray(existingEvents) ? existingEvents : [];
 
-      if (
-        curEvent.date.year === newEvent.date.year &&
-        curEvent.date.month === newEvent.date.month &&
-        curEvent.date.day === newEvent.date.day
-      ) {
-        if (
-          (newEvent.startTime >= curEvent.startTime && newEvent.startTime < curEvent.endTime) ||
-          (newEvent.endTime > curEvent.startTime && newEvent.endTime <= curEvent.endTime) ||
-          (newEvent.startTime <= curEvent.startTime && newEvent.endTime >= curEvent.endTime)
-        ) {
-          return true;
-        }
-      }
+  for (let i = 0; i < allEvents.length; i++) {
+    const curEvent = allEvents[i];
+
+    // Skip if dates don't match
+    if (
+      curEvent.date.year !== newEvent.date.year ||
+      curEvent.date.month !== newEvent.date.month ||
+      curEvent.date.day !== newEvent.date.day
+    ) {
+      continue;
     }
-    return false;
+
+    // Check for time overlap
+    if (
+      (newEvent.startTime >= curEvent.startTime && newEvent.startTime < curEvent.endTime) ||
+      (newEvent.endTime > curEvent.startTime && newEvent.endTime <= curEvent.endTime) ||
+      (newEvent.startTime <= curEvent.startTime && newEvent.endTime >= curEvent.endTime)
+    ) {
+      return {
+        hasOverlap: true,
+        type: curEvent.studentId ? 'booking' : 'availability'
+      };
+    }
+  }
+
+  return {
+    hasOverlap: false,
+    type: null
   };
+};
