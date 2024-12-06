@@ -6,9 +6,13 @@ import { formatTime } from "@/lib/utils/timeUtils";
 import { calculateGridPosition } from "@/lib/utils/calendarUtil";
 
 export function AvailabilityEvent({ event, onRemove }) {
-    console.log("event", event);
+  const { weekOffset } = useCalendar();
+
   try {
-    const { weekOffset } = useCalendar();
+    if (!event?.date) {
+      return null;
+    }
+
     const { monday, sunday } = getWeekBounds(weekOffset);
     const eventDate = normalizeToMidnight(event.date);
     
@@ -69,8 +73,7 @@ export function AvailabilityEvent({ event, onRemove }) {
       );
     }
   } catch (error) {
-    console.error("Error processing event:", error);
+    console.error("Error processing availability event:", error);
     return null;
   }
-  return null;
 }

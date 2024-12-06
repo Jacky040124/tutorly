@@ -6,17 +6,22 @@ import { useUser } from "@/components/providers/UserContext";
 import { useTranslation } from "react-i18next";
 
 export function BookingEvent({ booking }) {
+  const { weekOffset } = useCalendar();
+  const { user } = useUser();
+  const { t } = useTranslation();
+
   try {
-    const { weekOffset } = useCalendar();
-    const { user } = useUser();
-    const { t } = useTranslation('common');
-    const bookingDate = normalizeToMidnight(booking.date);
+    if (!booking?.date) {
+      return null;
+    }
+
+    const bookingDate = new Date(booking.date.year, booking.date.month - 1, booking.date.day);
+    const weekDay = bookingDate.getDay();
+    const adjustedWeekday = weekDay === 0 ? 7 : weekDay;
+
     const { monday, sunday } = getWeekBounds(weekOffset);
 
     if (isWithinWeek(bookingDate, monday, sunday)) {
-      const bookingDay = new Date(booking.date.year, booking.date.month - 1, booking.date.day).getDay();
-      const adjustedWeekday = bookingDay === 0 ? 7 : bookingDay;
-      
       const startRow = calculateGridPosition.startRow(booking.startTime);
       const rowSpan = calculateGridPosition.duration(booking.startTime, booking.endTime);
 
