@@ -61,7 +61,10 @@ export default function SignUpTeacher() {
             {t('signup.teacher.title')}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            {t('signup.teacher.subtitle')}
+            {t('signup.teacher.subtitle')}{' '}
+            <Link href="/auth/signin" className="font-medium text-green-600 hover:text-green-500">
+              {t('signin.button')}
+            </Link>
           </p>
 
           <div className="mt-8">
