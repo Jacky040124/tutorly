@@ -47,3 +47,10 @@ next-env.d.ts
 .firebase/
 **/firebase-debug.log
 **/service-account.json
+
+# Images
+*.png
+*.jpg
+*.jpeg
+*.gif
+src/lib/img/*
