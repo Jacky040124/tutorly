@@ -49,7 +49,10 @@
       "date": "选择日期",
       "startTime": "开始时间",
       "endTime": "结束时间",
-      "repeating": "重复"
+      "repeating": "重复",
+      "meetLink": "会议链接",
+      "meetLinkPlaceholder": "请输入Google Meet链接",
+      "session": "课程"
     },
     "buttons": {
       "save": "保存",

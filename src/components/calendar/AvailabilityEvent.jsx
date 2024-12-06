@@ -6,6 +6,7 @@ import { formatTime } from "@/lib/utils/timeUtils";
 import { calculateGridPosition } from "@/lib/utils/calendarUtil";
 
 export function AvailabilityEvent({ event, onRemove }) {
+    console.log("event", event);
   try {
     const { weekOffset } = useCalendar();
     const { monday, sunday } = getWeekBounds(weekOffset);
@@ -35,7 +36,14 @@ export function AvailabilityEvent({ event, onRemove }) {
           data-testid={`time-slot-${event.startTime}`}
         >
           <a
-            onClick={() => onRemove && onRemove(adjustedWeekday, event.startTime, event.endTime,event.isRepeating)}
+            onClick={() => onRemove && onRemove(
+              adjustedWeekday, 
+              event.startTime, 
+              event.endTime, 
+              event.isRepeating, 
+              event.totalClasses,
+              event.link
+            )}
             className={`group absolute inset-1 flex flex-col overflow-y-auto rounded-lg 
               ${event.endTime - event.startTime >= 1 ? "bg-green-50 hover:bg-green-100" : "bg-gray-50"}
               ${event.isRepeating ? "border-l-4 border-green-500" : ""}

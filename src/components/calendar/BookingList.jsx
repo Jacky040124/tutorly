@@ -121,7 +121,11 @@ export default function BookingList() {
 
                   <div>
                     <button
-                      onClick={() => window.open(booking.link, "_blank")}
+                      
+                      onClick={() => {window.open(booking.link)
+                        console.log(booking);
+                        console.log(booking.link);
+                      }}
                       className="inline-flex items-center justify-center rounded-md py-2 px-4 text-sm font-semibold text-white shadow-sm bg-green-600 hover:bg-green-500 active:bg-green-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
                     >
                       {t('bookings.buttons.meet')}

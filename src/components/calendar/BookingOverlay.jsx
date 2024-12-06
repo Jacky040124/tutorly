@@ -31,6 +31,8 @@ export default function BookingOverlay() {
 
   // helper
   const createBookingObject = () => {
+    console.log("Selected slot with link:", selectedSlot);
+    
     const baseBooking = {
       studentId: user.uid,
       teacherId: teacherData.uid,
@@ -39,8 +41,10 @@ export default function BookingOverlay() {
       status: "confirmed",
       createdAt: new Date().toISOString(),
       price: teacherData.pricing,
-      link: selectedSlot.link || null,
+      link: selectedSlot.link,
     };
+
+    console.log("Created booking object:", baseBooking);
 
     // Single booking
     if (!selectedSlot.totalClasses) {

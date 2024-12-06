@@ -49,7 +49,10 @@
       "date": "Select Day",
       "startTime": "Start Time",
       "endTime": "End Time",
-      "repeating": "Repeating"
+      "repeating": "Repeating",
+      "meetLink": "Meeting Link",
+      "meetLinkPlaceholder": "Enter Google Meet link",
+      "session": "Session"
     },
     "buttons": {
       "save": "Save",

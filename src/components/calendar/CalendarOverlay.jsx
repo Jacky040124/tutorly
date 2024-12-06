@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUser, useError, useOverlay } from "@/components/providers";
 import DayField from "@/components/calendar/DayField";
 import ErrorMessage from "@/components/common/ErrorMessage";
@@ -21,6 +21,29 @@ export default function CalendarOverlay({ onEventAdded }) {
 
   const [end, setEnd] = useState("");
   const [isRepeating, setIsRepeating] = useState(false);
+  const [meetLinks, setMeetLinks] = useState(['']);
+
+  useEffect(() => {
+    if (isRepeating && date) {
+      const dates = getRepeatingDates(date);
+      setMeetLinks(prev => {
+        const newLinks = new Array(dates.length).fill('');
+        return prev.length > newLinks.length ? 
+          prev.slice(0, dates.length) : 
+          newLinks.map((link, i) => prev[i] || '');
+      });
+    } else {
+      setMeetLinks(['']);
+    }
+  }, [isRepeating, date]);
+
+  const handleMeetLinkChange = (index, value) => {
+    setMeetLinks(prev => {
+      const newLinks = [...prev];
+      newLinks[index] = value;
+      return newLinks;
+    });
+  };
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -52,9 +75,7 @@ export default function CalendarOverlay({ onEventAdded }) {
               startTime: startDecimal,
               endTime: endDecimal,
             };
-
-            const meeting = await ZoomService.createMeeting(meetingRequest);
-
+            
             return {
               date: eventDate,
               startTime: startDecimal,
@@ -63,7 +84,7 @@ export default function CalendarOverlay({ onEventAdded }) {
               repeatGroupId,
               repeatIndex: isRepeating ? index : null,
               totalClasses: isRepeating ? dates.length : null,
-              link: meeting.link,
+              link: meetLinks[index],
             };
           } catch (error) {
             console.error("Failed to create Zoom meeting:", error);
@@ -162,6 +183,30 @@ export default function CalendarOverlay({ onEventAdded }) {
                               name="Repeating"
                               value={isRepeating}
                             />
+                            <div className="space-y-4">
+                              <label className="form-label">
+                                {t('calendarOverlay.fields.meetLink')}
+                                {isRepeating && date && ` (${meetLinks.length} sessions)`}
+                              </label>
+                              {meetLinks.map((link, index) => (
+                                <div key={index} className="mt-2">
+                                  {isRepeating && (
+                                    <div className="text-sm text-gray-500 mb-1">
+                                      {t('calendarOverlay.fields.session')} {index + 1}
+                                    </div>
+                                  )}
+                                  <input
+                                    type="url"
+                                    name={`meetLink-${index}`}
+                                    id={`meetLink-${index}`}
+                                    value={link}
+                                    onChange={(e) => handleMeetLinkChange(index, e.target.value)}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 sm:text-sm"
+                                    placeholder={t('calendarOverlay.fields.meetLinkPlaceholder')}
+                                  />
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       </div>

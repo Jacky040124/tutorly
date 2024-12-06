@@ -61,6 +61,7 @@ export default function Calendar() {
       totalClasses: totalClasses,
       link: link,
     };
+    console.log("link:", slot.link);
     setSelectedSlot(slot);
     setShowBookingOverlay(true);
   };
