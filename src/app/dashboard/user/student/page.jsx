@@ -17,10 +17,11 @@ export default function StudentAccount() {
   const { user, teacherList, fetchTeachers, selectedTeacher, setSelectedTeacher } = useUser();
   const { setIsLoading } = useLoading();
   const { error, showError } = useError();
-  const { setFutureBookings, setBookings } = useBooking();
+  const { setFutureBookings, setBookings, showBookingOverlay } = useBooking();
   const { showStudentProfileOverlay, setShowStudentProfileOverlay } = useOverlay();
   const { t } = useTranslation("dashboard");
 
+  // initialization
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -63,7 +64,7 @@ export default function StudentAccount() {
     };
 
     fetchBookings();
-  }, [selectedTeacher, user]);
+  }, [selectedTeacher, user, showBookingOverlay]);
 
   if (!user) {
     return (
@@ -72,6 +73,8 @@ export default function StudentAccount() {
       </div>
     );
   }
+  
+
 
   return (
     <div>

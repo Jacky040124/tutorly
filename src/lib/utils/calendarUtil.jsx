@@ -1,3 +1,5 @@
+import { normalizeToMidnight } from "./timeUtils";
+
 export const CALENDAR_CONFIG = {
   START_HOUR: 6, // Calendar starts at 6 AM
   END_HOUR: 24, // Calendar ends at 12 AM

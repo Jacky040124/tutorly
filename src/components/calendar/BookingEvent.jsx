@@ -2,10 +2,14 @@ import React from "react";
 import { normalizeToMidnight, formatTime, getWeekBounds } from "@/lib/utils/timeUtils";
 import { WEEKDAY_COLUMN_MAPPING, calculateGridPosition, isWithinWeek } from "@/lib/utils/calendarUtil";
 import { useCalendar } from "@/components/providers/CalendarContext";
+import { useUser } from "@/components/providers/UserContext";
+import { useTranslation } from "react-i18next";
 
 export function BookingEvent({ booking }) {
   try {
     const { weekOffset } = useCalendar();
+    const { user } = useUser();
+    const { t } = useTranslation('common');
     const bookingDate = normalizeToMidnight(booking.date);
     const { monday, sunday } = getWeekBounds(weekOffset);
 
@@ -38,11 +42,9 @@ export function BookingEvent({ booking }) {
                   </span>
                 )}
               </div>
-              {booking.studentId && (
-                <span className="text-red-600 text-[10px] mt-0.5">
-                  Booked by {booking.studentNickname || booking.studentId}
-                </span>
-              )}
+              <span className="text-red-600 text-[10px] mt-0.5">
+                YOUR BOOKING
+              </span>
               {booking.link && (
                 <a 
                   href={booking.link} 

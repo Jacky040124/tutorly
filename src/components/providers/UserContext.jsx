@@ -278,6 +278,26 @@ export function UserProvider({ children }) {
         }
     };
 
+    const fetchUserNickname = async (userId) => {
+        if (!userId) return null;
+        
+        try {
+            const docRef = doc(db, "users", userId);
+            const docSnap = await getDoc(docRef);
+            
+            if (!docSnap.exists()) {
+                console.error('User not found:', userId);
+                return null;
+            }
+
+            const userData = docSnap.data();
+            return userData.nickname || userId;
+        } catch (error) {
+            console.error("Error fetching user nickname:", error);
+            return userId;
+        }
+    };
+
     const value = {
         user,
         setUser,
@@ -296,6 +316,7 @@ export function UserProvider({ children }) {
         updateGradeLevel,
         updateStudentDescription,
         removeAvailability,
+        fetchUserNickname,
     };
 
     return (
