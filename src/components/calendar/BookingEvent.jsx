@@ -1,6 +1,6 @@
 import React from "react";
 import { normalizeToMidnight, formatTime, getWeekBounds } from "@/lib/utils/timeUtils";
-import { WEEKDAY_COLUMN_MAPPING, calculateGridPosition, isWithinWeek } from "@/lib/utils/calendarUtil";
+import { calculateGridPosition, isWithinWeek } from "@/lib/utils/calendarUtil";
 import { useCalendar } from "@/components/providers/CalendarContext";
 import { useUser } from "@/components/providers/UserContext";
 import { useTranslation } from "react-i18next";
@@ -19,6 +19,16 @@ export function BookingEvent({ booking }) {
       
       const startRow = calculateGridPosition.startRow(booking.startTime);
       const rowSpan = calculateGridPosition.duration(booking.startTime, booking.endTime);
+
+      const WEEKDAY_COLUMN_MAPPING = {
+        1: "sm:col-start-1", // Monday
+        2: "sm:col-start-2", // Tuesday
+        3: "sm:col-start-3", // Wednesday
+        4: "sm:col-start-4", // Thursday
+        5: "sm:col-start-5", // Friday
+        6: "sm:col-start-6", // Saturday
+        7: "sm:col-start-7", // Sunday
+      };
 
       return (
         <li

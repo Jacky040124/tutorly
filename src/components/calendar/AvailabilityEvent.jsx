@@ -3,7 +3,7 @@ import { normalizeToMidnight } from '@/lib/utils/timeUtils';
 import { getWeekBounds } from "@/lib/utils/timeUtils"; 
 import { useCalendar } from "@/components/providers/CalendarContext";
 import { formatTime } from "@/lib/utils/timeUtils";
-import { WEEKDAY_COLUMN_MAPPING, calculateGridPosition } from "@/lib/utils/calendarUtil";
+import { calculateGridPosition } from "@/lib/utils/calendarUtil";
 
 export function AvailabilityEvent({ event, onRemove }) {
   try {
@@ -17,6 +17,16 @@ export function AvailabilityEvent({ event, onRemove }) {
       
       const startRow = calculateGridPosition.startRow(event.startTime);
       const rowSpan = calculateGridPosition.duration(event.startTime, event.endTime);
+
+      const WEEKDAY_COLUMN_MAPPING = {
+        1: "sm:col-start-1", // Monday
+        2: "sm:col-start-2", // Tuesday
+        3: "sm:col-start-3", // Wednesday
+        4: "sm:col-start-4", // Thursday
+        5: "sm:col-start-5", // Friday
+        6: "sm:col-start-6", // Saturday
+        7: "sm:col-start-7", // Sunday
+      };
 
       return (
         <li
