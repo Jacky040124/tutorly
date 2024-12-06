@@ -35,7 +35,6 @@ export const signIn = async (email, password) => {
             type: userData.type,
             nickname: userData.nickname,
             balance: userData.balance,
-            bookingHistory: userData.bookingHistory
         };
     }
 
@@ -58,9 +57,8 @@ export const signUpStudent = async (email, password, nickname) => {
         createdAt: new Date().toISOString(),
         type: "student",
         nickname,
-        balance: 0,
-        bookingHistory: [],
-    };
+        balance: 0
+        };
 
     await setDoc(doc(db, "users", userCredential.user.uid), userData);
     

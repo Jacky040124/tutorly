@@ -52,7 +52,6 @@ export default function SignIn() {
             }
             : {
                 balance: userData.balance,
-                bookingHistory: userData.bookingHistory
             };
 
         setUser({ ...baseUserData, ...typeSpecificData });

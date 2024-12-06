@@ -49,7 +49,6 @@ export function UserProvider({ children }) {
                 type: userData.type,
                 nickname: userData.nickname,
                 balance: userData.balance,
-                bookingHistory: userData.bookingHistory,
               });
             }
           } catch (error) {
@@ -220,7 +219,6 @@ export function UserProvider({ children }) {
               type: userData.type,
               nickname: userData.nickname,
               balance: userData.balance,
-              bookingHistory: userData.bookingHistory,
               academicDetails: userData.academicDetails || {},
             };
 
