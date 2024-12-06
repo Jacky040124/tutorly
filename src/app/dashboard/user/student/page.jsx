@@ -5,7 +5,7 @@ import { useLoading } from "@/components/providers/LoadingContext";
 import { useError } from "@/components/providers/ErrorContext";
 import { useBooking } from "@/components/providers/BookingContext";
 import { fetchFutureStudentBookings, getStudentBookings } from "@/services/booking.service";
-import Calendar from "@/components/calendar/Calendar";
+import StudentCalendar from "@/components/calendar/StudentCalendar";
 import ErrorMessage from "@/components/common/ErrorMessage";
 import BookingList from "@/components/calendar/BookingList";
 import StudentProfileOverlay from "@/components/overlays/StudentProfileOverlay";
@@ -21,38 +21,6 @@ export default function StudentAccount() {
   const { showStudentProfileOverlay, setShowStudentProfileOverlay } = useOverlay();
   const { t } = useTranslation("dashboard");
 
-  const Header = () => {
-    return (
-      <header className="flex flex-none items-center justify-between border-b border-gray-200 px-6 py-4">
-        <h1 className="text-base font-semibold leading-6 text-gray-900">
-          <time dateTime="2022-01">
-            {new Date().toLocaleString("default", { month: "long" })} {new Date().getFullYear()}
-          </time>
-        </h1>
-
-        <div className="flex items-center gap-4">
-          <LanguageSwitcher />
-          <button onClick={() => setShowStudentProfileOverlay(true)} className="standard-button mr-4">
-            {t("student.profile")}
-          </button>
-          <select
-            onChange={(e) => setSelectedTeacher(e.target.value)}
-            value={selectedTeacher}
-            className="rounded-md border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
-          >
-            <option value="">{t("student.selectTeacher")}</option>
-            {teacherList &&
-              Object.entries(teacherList).map(([id, teacher]) => (
-                <option key={id} value={id}>
-                  {teacher.nickname}
-                </option>
-              ))}
-          </select>
-        </div>
-      </header>
-    );
-  };
-
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -64,7 +32,7 @@ export default function StudentAccount() {
           setBookings(bookings);
         }
       } catch (error) {
-        setError(`Error fetching data: ${error.message}`);
+        showError(`Error fetching data: ${error.message}`);
       } finally {
         setIsLoading(false);
       }
@@ -120,9 +88,35 @@ export default function StudentAccount() {
           {t("student.greeting")}, {user.nickname}
         </h2>
       </div>
-      <Header />
+      <header className="flex flex-none items-center justify-between border-b border-gray-200 px-6 py-4">
+        <h1 className="text-base font-semibold leading-6 text-gray-900">
+          <time dateTime="2022-01">
+            {new Date().toLocaleString("default", { month: "long" })} {new Date().getFullYear()}
+          </time>
+        </h1>
+
+        <div className="flex items-center gap-4">
+          <LanguageSwitcher />
+          <button onClick={() => setShowStudentProfileOverlay(true)} className="standard-button mr-4">
+            {t("student.profile")}
+          </button>
+          <select
+            onChange={(e) => setSelectedTeacher(e.target.value)}
+            value={selectedTeacher}
+            className="rounded-md border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
+          >
+            <option value="">{t("student.selectTeacher")}</option>
+            {teacherList &&
+              Object.entries(teacherList).map(([id, teacher]) => (
+                <option key={id} value={id}>
+                  {teacher.nickname}
+                </option>
+              ))}
+          </select>
+        </div>
+      </header>
       <div className="flex h-full flex-col">
-        <Calendar />
+        <StudentCalendar />
         <BookingList />
       </div>
       {showStudentProfileOverlay && <StudentProfileOverlay />}

@@ -3,56 +3,30 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useEffect } from "react";
 import { useUser } from "@/components/providers/UserContext";
-import Calendar from "@/components/calendar/Calendar";
+import TeacherCalendar from "@/components/calendar/TeacherCalendar";
 import TeacherProfileOverlay from "@/components/overlays/TeacherProfileOverlay";
 import ErrorMessage from "@/components/common/ErrorMessage";
 import BookingList from "@/components/calendar/BookingList";
-import { fetchAllTeacherBookings } from "@/services/booking.service";
+import { getTeacherBookings } from "@/services/booking.service";
 import { useError } from "@/components/providers/ErrorContext";
 import { useOverlay } from "@/components/providers/OverlayContext";
 import { useLoading } from "@/components/providers/LoadingContext";
 import { useBooking } from "@/components/providers/BookingContext";
 import LanguageSwitcher from "@/components/common/LanguageSwitcher";
-import { useTranslation } from 'react-i18next';
-
+import { useTranslation } from "react-i18next";
 
 export default function TeacherAccount() {
-  const { user, updateAvailability, loading: userLoading } = useUser();
-  const { error, showError} = useError();
-  const { showCalendarOverlay, setShowCalendarOverlay, showTeacherProfileOverlay, setShowTeacherProfileOverlay } = useOverlay();
-  const {setFutureBookings, setBookings} = useBooking();
-  const {setIsLoading} = useLoading();
-  const { i18n, t } = useTranslation('dashboard');
-
-  const Header = () => {
-    return (
-      <header className="flex flex-none justify-end border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center gap-4">
-          <LanguageSwitcher />
-          <button
-            onClick={() => {
-              setShowCalendarOverlay(true);
-            }}
-            className="standard-button mr-4"
-          >
-            {t("teacher.add")}
-          </button>
-          <button
-            onClick={() => {
-              setShowTeacherProfileOverlay(true);
-            }}
-            className="standard-button mr-4"
-          >
-            {t("teacher.profile")}
-          </button>
-        </div>
-      </header>
-    );
-  };
+  const { user, updateAvailability, loading: userLoading, availability } = useUser();
+  const { error, showError } = useError();
+  const { setShowCalendarOverlay, showCalendarOverlay, showTeacherProfileOverlay, setShowTeacherProfileOverlay } =
+    useOverlay();
+  const { setFutureBookings, setBookings } = useBooking();
+  const { setIsLoading } = useLoading();
+  const { t } = useTranslation("dashboard");
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user?.uid) return;
+      if (!user?.uid || userLoading) return;
 
       setIsLoading("teacherData", true);
       try {
@@ -61,11 +35,13 @@ export default function TeacherAccount() {
         const docSnap = await getDoc(docRef);
         const availabilityData = docSnap.data()?.availability || [];
         updateAvailability(availabilityData);
+        console.log("availabilityData :", availabilityData);
 
-        // Fetch all bookings instead of just future ones
-        const bookings = await fetchAllTeacherBookings(user.uid);
-        setFutureBookings(bookings);
+        // Fetch bookings
+        const bookings = await getTeacherBookings(user.uid);
         setBookings(bookings);
+        setFutureBookings(bookings);
+        console.log("bookings :", bookings);
       } catch (error) {
         console.error("Error fetching data:", error);
         showError(error.message);
@@ -77,7 +53,7 @@ export default function TeacherAccount() {
     if (!userLoading) {
       fetchData();
     }
-  }, [user, userLoading]);
+  }, [user, userLoading, showCalendarOverlay]);
 
   if (!user) {
     return (
@@ -92,16 +68,34 @@ export default function TeacherAccount() {
       <div>
         {error && <ErrorMessage message={error} />}
         <div className="px-6 py-4 space-y-1">
-          <h1 className="text-3xl font-semibold text-gray-900">
-            {t("teacher.welcome")}
-          </h1>
+          <h1 className="text-3xl font-semibold text-gray-900">{t("teacher.welcome")}</h1>
           <h2 className="text-lg text-gray-600">
             {t("teacher.greeting")}, {user.nickname}
           </h2>
         </div>
         <div className="flex h-full flex-col">
-          <Header />
-          <Calendar />
+          <header className="flex flex-none justify-end border-b border-gray-200 px-6 py-4">
+            <div className="flex items-center gap-4">
+              <LanguageSwitcher />
+              <button
+                onClick={() => {
+                  setShowCalendarOverlay(true);
+                }}
+                className="standard-button mr-4"
+              >
+                {t("teacher.add")}
+              </button>
+              <button
+                onClick={() => {
+                  setShowTeacherProfileOverlay(true);
+                }}
+                className="standard-button mr-4"
+              >
+                {t("teacher.profile")}
+              </button>
+            </div>
+          </header>
+          <TeacherCalendar />
         </div>
         <BookingList />
       </div>

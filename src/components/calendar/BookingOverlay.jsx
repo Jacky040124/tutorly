@@ -10,6 +10,7 @@ export default function BookingOverlay() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const teacherData = teacherList[selectedTeacher];
 
+
   const handleClose = () => {
     setShowBookingOverlay(false);
   };
@@ -114,7 +115,6 @@ export default function BookingOverlay() {
                     </>
                   )}
                 </p>
-
                 <div className="mt-4 p-3 bg-blue-50 rounded-md">
                   <p className="text-sm text-blue-800">
                     <span className="font-semibold">Payment Notice:</span> Online payment is currently under

@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { CALENDAR_CONFIG, calculateGridPosition } from "@/lib/utils/calendarUtil";
+import { CALENDAR_CONFIG, calculateGridPosition, generateTimeLabels } from "@/lib/utils/calendarUtil";
 
 describe('calendarUtil', () => {
   // Test CALENDAR_CONFIG constants
@@ -31,5 +31,25 @@ describe('calendarUtil', () => {
     // 2 hour duration (9AM to 11AM)
     const twoHourDuration = calculateGridPosition.duration(9, 11)
     expect(twoHourDuration).toBe(24) // 2 hours * 12 intervals
+  })
+
+  // Test generateTimeLabels
+  test('generateTimeLabels should generate correct time labels', () => {
+    const timeLabels = generateTimeLabels()
+    
+    // Check first label (6 AM)
+    expect(timeLabels[0]).toEqual({
+      hour: 6,
+      label: '6AM'
+    })
+    
+    // Check noon label
+    expect(timeLabels[6]).toEqual({
+      hour: 12,
+      label: '12PM'
+    })
+    
+    // Check length
+    expect(timeLabels.length).toBe(CALENDAR_CONFIG.HOURS_TO_DISPLAY)
   })
 })

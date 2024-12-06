@@ -277,6 +277,8 @@ export async function handleBookingConfirmed(
     try {
       const emailContent = generateBookingConfirmationEmail(booking, teacherData);
       await sendMail(userEmail, "Booking Confirmation - MeetYourTutor", emailContent);
+      console.log("teacherData.email:", teacherData.email);
+      await sendMail(teacherData.email, "Booking Confirmation - MeetYourTutor", emailContent);
     } catch (emailError) {
       console.error("Email sending failed:", emailError);
     }

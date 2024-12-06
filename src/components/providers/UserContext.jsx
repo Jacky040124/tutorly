@@ -232,6 +232,52 @@ export function UserProvider({ children }) {
         }
     };
 
+    // helper
+    const _removeSingleAvailability = async (availabilityToRemove) => {
+        try {
+            await runTransaction(db, async (transaction) => {
+                const docRef = doc(db, "users", user.uid);
+                const updatedAvailability = availability.filter((slot) => {
+                    return !(
+                        slot.date.year === availabilityToRemove.date.year &&
+                        slot.date.month === availabilityToRemove.date.month &&
+                        slot.date.day === availabilityToRemove.date.day &&
+                        slot.startTime === availabilityToRemove.startTime &&
+                        slot.endTime === availabilityToRemove.endTime
+                    );
+                });
+                transaction.set(docRef, { availability: updatedAvailability }, { merge: true });
+                setAvailability(updatedAvailability);
+            });
+        } catch (error) {
+            console.error("Error removing single availability:", error);
+            throw error;
+        }
+    };
+
+    const removeAvailability = async (availabilityToRemove) => {
+        if (!availabilityToRemove) return;
+
+        try {
+            if (availabilityToRemove.isRepeating && availabilityToRemove.repeatGroupId) {
+                // Remove all availability slots with the same repeatGroupId
+                await runTransaction(db, async (transaction) => {
+                    const docRef = doc(db, "users", user.uid);
+                    const updatedAvailability = availability.filter(
+                        (slot) => slot.repeatGroupId !== availabilityToRemove.repeatGroupId
+                    );
+                    transaction.set(docRef, { availability: updatedAvailability }, { merge: true });
+                    setAvailability(updatedAvailability);
+                });
+            } else {
+                await _removeSingleAvailability(availabilityToRemove);
+            }
+        } catch (error) {
+            console.error("Error removing availability:", error);
+            throw error;
+        }
+    };
+
     const value = {
         user,
         setUser,
@@ -249,6 +295,7 @@ export function UserProvider({ children }) {
         updateUserBalance,
         updateGradeLevel,
         updateStudentDescription,
+        removeAvailability,
     };
 
     return (

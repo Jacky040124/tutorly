@@ -7,6 +7,7 @@ import { InputField, ToggleField } from "@/components/common/Fields";
 import { getRepeatingDates } from "@/lib/utils/dateUtils";
 import { ZoomService } from "@/services/zoom.service";
 import { useTranslation } from 'react-i18next';
+import { checkOverlap } from "@/lib/utils/calendarUtil";
 
 export default function CalendarOverlay({ onEventAdded }) {
   const { user, availability, updateAvailability } = useUser();
@@ -19,29 +20,10 @@ export default function CalendarOverlay({ onEventAdded }) {
   const [end, setEnd] = useState("");
   const [isRepeating, setIsRepeating] = useState(false);
 
-  const checkOverlap = (availability, newEvent) => {
-    for (let i = 0; i < availability.length; i++) {
-      const curEvent = availability[i];
-
-      if (
-        curEvent.date.year === newEvent.date.year &&
-        curEvent.date.month === newEvent.date.month &&
-        curEvent.date.day === newEvent.date.day
-      ) {
-        if (
-          (newEvent.startTime >= curEvent.startTime && newEvent.startTime < curEvent.endTime) ||
-          (newEvent.endTime > curEvent.startTime && newEvent.endTime <= curEvent.endTime) ||
-          (newEvent.startTime <= curEvent.startTime && newEvent.endTime >= curEvent.endTime)
-        ) {
-          return true;
-        }
-      }
-    }
-    return false;
-  };
-
   const handleSave = async (e) => {
     e.preventDefault();
+
+    console.log("repeating:", isRepeating);
 
     const startDecimal = timeToDecimal(start);
     const endDecimal = timeToDecimal(end);

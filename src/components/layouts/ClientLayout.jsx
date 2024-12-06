@@ -9,8 +9,9 @@ import {
   ErrorProvider,
   NotificationProvider, 
   LoadingProvider, 
-  OverlayProvider 
+  OverlayProvider
 } from '@/components/providers';
+import { CalendarProvider } from '@/components/providers';
 
 export default function ClientLayout({ children }) {
   useEffect(() => {
@@ -22,19 +23,19 @@ export default function ClientLayout({ children }) {
 
   return (
     <I18nextProvider i18n={i18n}>
-      <ErrorProvider>
-        <NotificationProvider>
-          <LoadingProvider>
-            <UserProvider>
-              <BookingProvider>
-                <OverlayProvider>
-                  {children}
-                </OverlayProvider>
-              </BookingProvider>
-            </UserProvider>
-          </LoadingProvider>
-        </NotificationProvider>
-      </ErrorProvider>
+      <CalendarProvider>
+        <ErrorProvider>
+          <NotificationProvider>
+            <LoadingProvider>
+              <UserProvider>
+                <BookingProvider>
+                  <OverlayProvider>{children}</OverlayProvider>
+                </BookingProvider>
+              </UserProvider>
+            </LoadingProvider>
+          </NotificationProvider>
+        </ErrorProvider>
+      </CalendarProvider>
     </I18nextProvider>
   );
 } 

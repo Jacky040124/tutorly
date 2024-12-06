@@ -10,51 +10,21 @@ import { CALENDAR_CONFIG, TOTAL_INTERVALS, calculateGridPosition } from "@/lib/u
 import { useTranslation } from "react-i18next";
 import CalendarOverlay from "./CalendarOverlay";
 
-const VerticalGrid = () => {
-  return (
-    <div className="col-start-1 col-end-2 row-start-1 hidden grid-cols-7 grid-rows-1 divide-x divide-gray-100 sm:grid sm:grid-cols-7">
-      <div className="col-start-1 row-span-full" data-day="Monday"></div>
-      <div className="col-start-2 row-span-full" data-day="Tuesday"></div>
-      <div className="col-start-3 row-span-full" data-day="Wednesday"></div>
-      <div className="col-start-4 row-span-full" data-day="Thursday"></div>
-      <div className="col-start-5 row-span-full" data-day="Friday"></div>
-      <div className="col-start-6 row-span-full" data-day="Saturday"></div>
-      <div className="col-start-7 row-span-full" data-day="Sunday"></div>
-      <div className="col-start-8 row-span-full w-8"></div>
-    </div>
-  );
-};
-
 // TODO: Breaks down Calendar component, ensure Single Responsibility, cut down to display only [no more than 200 lines]
 export default function Calendar() {
   const { user, selectedTeacher, teacherList, updateAvailability, userLoading } = useUser();
-  const { setSelectedSlot, showBookingOverlay, setShowBookingOverlay, bookings, setBookings, bookingConfirmed } =
-    useBooking();
+  const { setSelectedSlot, showBookingOverlay, setShowBookingOverlay, bookings, setBookings } = useBooking();
   const { showCalendarOverlay } = useOverlay();
 
   // TODO: Improve state management by moving calendar specific state in a calendarContext
   const [weekOffset, setWeekOffset] = useState(0);
   const [events, setEvents] = useState([]);
-
   const { showError } = useError();
   const { monday } = getWeekBounds(weekOffset);
   const mondayDate = new Date(monday.year, monday.month - 1, monday.day);
 
-  const userType = user.type;
-  const teacherData = userType === "teacher" ? user : teacherList[selectedTeacher];
-  const currentAvailability = userType === "teacher" ? user.availability : teacherList[selectedTeacher]?.availability;
-
-  //TODO: try to combine them
-  useEffect(() => {
-    if (currentAvailability) {
-      // Force re-render when availability changes
-      const updatedEvents = currentAvailability.map((event, index) => ({
-        ...event,
-        key: `avail_${index}_${event.startTime}_${event.endTime}`,
-      }));
-      setEvents(updatedEvents);
-    }
-  }, [currentAvailability]);
+  const teacherData = user.type === "teacher" ? user : teacherList[selectedTeacher];
+  const availability = user.type === "teacher" ? user.availability : teacherList[selectedTeacher]?.availability;
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -62,20 +32,12 @@ export default function Calendar() {
 
       try {
         let fetchedBookings;
-        if (user.type === "teacher") {
-          fetchedBookings = await getTeacherBookings(user.uid);
-        } else if (user.type === "student" && selectedTeacher) {
+        if (selectedTeacher) {
           fetchedBookings = await getStudentBookings(user.uid);
         }
 
         if (fetchedBookings) {
-          const validatedBookings = fetchedBookings.map(booking => ({
-            date: booking.date,
-            startTime: booking.startTime,
-            endTime: booking.endTime,
-            studentId: booking.studentId
-          }));
-          setBookings(validatedBookings);
+          setBookings(fetchedBookings);
         }
       } catch (error) {
         showError("Failed to fetch bookings");
@@ -93,7 +55,7 @@ export default function Calendar() {
 
     if (confirmDelete) {
       try {
-        const updatedAvailability = currentAvailability.filter((event) => {
+        const updatedAvailability = availability.filter((event) => {
           const eventDate = new Date(event.date.year, event.date.month - 1, event.date.day);
           const eventDay = eventDate.getDay();
           const adjustedEventDay = eventDay === 0 ? 7 : eventDay;
@@ -102,13 +64,6 @@ export default function Calendar() {
         });
 
         await updateAvailability(updatedAvailability);
-        // Force immediate UI update
-        setEvents(
-          updatedAvailability.map((event, index) => ({
-            ...event,
-            key: `avail_${index}_${event.startTime}_${event.endTime}`,
-          }))
-        );
       } catch (error) {
         showError(`Failed to remove event: ${error.message}`);
       }
@@ -116,7 +71,7 @@ export default function Calendar() {
   };
 
   const handleTimeSlotClick = (day, startTime, endTime, isRepeating, totalClasses, link) => {
-    if (userType === "student") {
+    if (user.type === "student") {
       if (endTime - startTime >= 1) {
         const slot = {
           date: calculateSelectedDate(day, weekOffset),
@@ -136,19 +91,10 @@ export default function Calendar() {
 
   const handleAddEvent = async (newEvents) => {
     try {
-      // Handle both single events and arrays of events
       const eventsToAdd = Array.isArray(newEvents) ? newEvents : [newEvents];
-      const updatedAvailability = [...currentAvailability, ...eventsToAdd];
-      
+      const updatedAvailability = [...availability, ...eventsToAdd];
+
       await updateAvailability(updatedAvailability);
-      
-      // Force immediate UI update
-      setEvents(
-        updatedAvailability.map((event, index) => ({
-          ...event,
-          key: `avail_${index}_${event.startTime}_${event.endTime}`,
-        }))
-      );
     } catch (error) {
       showError(`Failed to add event: ${error.message}`);
     }
@@ -156,7 +102,7 @@ export default function Calendar() {
 
   // TODO: refactor Events into seperate classes
   const Events = () => {
-    if (!Array.isArray(currentAvailability)) {
+    if (!Array.isArray(availability)) {
       return null;
     }
 
@@ -398,7 +344,16 @@ export default function Calendar() {
                   <TimeLabels />
                 </div>
 
-                <VerticalGrid />
+                <div className="col-start-1 col-end-2 row-start-1 hidden grid-cols-7 grid-rows-1 divide-x divide-gray-100 sm:grid sm:grid-cols-7">
+                  <div className="col-start-1 row-span-full" data-day="Monday"></div>
+                  <div className="col-start-2 row-span-full" data-day="Tuesday"></div>
+                  <div className="col-start-3 row-span-full" data-day="Wednesday"></div>
+                  <div className="col-start-4 row-span-full" data-day="Thursday"></div>
+                  <div className="col-start-5 row-span-full" data-day="Friday"></div>
+                  <div className="col-start-6 row-span-full" data-day="Saturday"></div>
+                  <div className="col-start-7 row-span-full" data-day="Sunday"></div>
+                  <div className="col-start-8 row-span-full w-8"></div>
+                </div>
 
                 <Events />
               </div>
