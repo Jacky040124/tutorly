@@ -1,60 +1,80 @@
-# TaskFlow Calendar
+# Bamboo Academy Calendar
 
-A minimalist task management and calendar application that bridges the gap between simple to-do lists and complex productivity tools.
+A specialized online tutoring platform that facilitates seamless connections between teachers and students through integrated scheduling and virtual classroom capabilities.
+
+> Note: This project is uploaded to GitHub with explicit permission from my employer.
 
 ## Project Overview
 
-TaskFlow Calendar combines a task manager with a calendar interface, offering an intuitive way to manage both tasks and time. The application emphasizes simplicity while providing powerful time-blocking capabilities through drag-and-drop functionality.
+Bamboo Academy Calendar is a comprehensive tutoring management system that combines scheduling, virtual classroom integration, and student progress tracking. The platform emphasizes ease of use while providing robust features for both teachers and students.
 
 ## Key Features
 
-- **Smart Task Management**: Add tasks with required dates, ensuring daily task visibility
-- **Calendar Integration**: Full calendar view with drag-and-drop task scheduling
-- **Time Blocking**: Intuitive interface for planning your day
-- **Data Persistence**: Save and load your tasks across sessions
-- **Visual Timeline**: Clear overview of your schedule and tasks
+- **Smart Scheduling**: Flexible calendar system for trial and bulk class bookings
+- **Virtual Classroom**: Integrated Google Meet for seamless online lessons
+- **Multi-language Support**: Full Chinese and English language support
+- **Homework Management**: Upload and track assignments
+- **Payment Integration**: Secure payment processing via Stripe
+- **Feedback System**: Parent feedback and lesson rating capabilities
 
 ## Technical Features
 
-### Task Management
-- Task creation with name, duration, and timing
-- Task completion tracking
-- Task removal functionality
-- Date and time assignment
+### User Management
+- Role-based access (Teacher, Student, Manager)
+- Secure authentication with Firebase
+- Profile management and customization
+- PIN-protected teacher registration
 
-### Calendar View
-- Weekly/monthly view options
-- Drag-and-drop interface
-- Task visualization
-- Time block representation
+### Calendar System
+- Trial and bulk class scheduling
+- Recurring class support
+- Availability management for teachers
+- Real-time booking system
 
-### Data Persistence
-- Local storage integration
-- Task state management
-- User preferences saving
+### Virtual Classroom
+- Google Meet integration
+- Automated meeting link generation
+- Meeting artifact storage
+- Email notifications for class confirmations
+
+### Data Management
+- Firebase real-time database
+- Student progress tracking
+- Homework submission system
+- Lesson history and analytics
 
 ## Future Enhancements
 
-- Task categorization
-- Recurring tasks
-- Multiple calendar views
-- Task priority levels
-- Collaboration features
-- Mobile responsiveness
+- Advanced analytics dashboard
+- Resource sharing platform
+- Mobile application
+- Integrated assessment tools
+- Group class support
+- Video lesson recording
 
 ## Development Process
 
-1. Initial setup and basic UI
-2. Task management implementation
-3. Calendar view integration
-4. Drag-and-drop functionality
-5. Data persistence
-6. Testing and refinement
+1. Authentication and user management
+2. Calendar and scheduling system
+3. Virtual classroom integration
+4. Payment processing
+5. Homework and feedback system
+6. Internationalization
+7. Testing and optimization
+
+## Tech Stack
+
+- **Frontend**: React, TailwindCSS
+- **Backend**: Firebase (Serverless)
+- **APIs**: Google Meet, Stripe, Firebase Functions
+- **Testing**: Vitest
+- **Internationalization**: i18next
 
 ## Design Philosophy
 
 The application follows these core principles:
-- Simplicity over complexity
-- Intuitive user interface
-- Efficient task management
-- Seamless calendar integration
+- User-centric interface design
+- Seamless virtual learning experience
+- Robust scheduling capabilities
+- Secure payment processing
+- Multi-language accessibility
