@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# TaskFlow Calendar
 
-## Getting Started
+A minimalist task management and calendar application that bridges the gap between simple to-do lists and complex productivity tools.
 
-First, run the development server:
+## Project Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+TaskFlow Calendar combines a task manager with a calendar interface, offering an intuitive way to manage both tasks and time. The application emphasizes simplicity while providing powerful time-blocking capabilities through drag-and-drop functionality.
 
+## Key Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Smart Task Management**: Add tasks with required dates, ensuring daily task visibility
+- **Calendar Integration**: Full calendar view with drag-and-drop task scheduling
+- **Time Blocking**: Intuitive interface for planning your day
+- **Data Persistence**: Save and load your tasks across sessions
+- **Visual Timeline**: Clear overview of your schedule and tasks
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Technical Features
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### Task Management
+- Task creation with name, duration, and timing
+- Task completion tracking
+- Task removal functionality
+- Date and time assignment
 
-## Learn More
+### Calendar View
+- Weekly/monthly view options
+- Drag-and-drop interface
+- Task visualization
+- Time block representation
 
-To learn more about Next.js, take a look at the following resources:
+### Data Persistence
+- Local storage integration
+- Task state management
+- User preferences saving
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Future Enhancements
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+- Task categorization
+- Recurring tasks
+- Multiple calendar views
+- Task priority levels
+- Collaboration features
+- Mobile responsiveness
 
-## Deploy on Vercel
+## Development Process
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Initial setup and basic UI
+2. Task management implementation
+3. Calendar view integration
+4. Drag-and-drop functionality
+5. Data persistence
+6. Testing and refinement
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Design Philosophy
+
+The application follows these core principles:
+- Simplicity over complexity
+- Intuitive user interface
+- Efficient task management
+- Seamless calendar integration
