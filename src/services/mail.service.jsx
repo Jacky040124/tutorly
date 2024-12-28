@@ -1,47 +1,44 @@
 import { formatTime } from "@/lib/utils/timeUtils";
 
 /**
- * Sends an email using the SendGrid API
- * @param {string} to - Recipient email address
- * @param {string} subject - Email subject
- * @param {string} content - HTML content of the email
- * @param {Object} options - Additional options (template, attachments, etc)
- * @returns {Promise<{success: boolean, message: string}>}
+ * Sends an email using the Resend API
+ * @param {Object} params - Email parameters
+ * @param {string} params.content - The email content
+ * @param {string} params.from - Sender email address
+ * @param {string} params.to - Recipient email address
+ * @param {string} params.subject - Email subject line
+ * @returns {Promise} Response from the email API
  */
-export async function sendMail(to, subject, content, options = {}) {
-  console.log('Sending email:', { to, subject });
+export async function sendMail({ content, from, to, subject }) {
+    console.log('Attempting to send email:', { to, subject });
+    
+    try {
+        const response = await fetch("/api/send-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                content,
+                from: from || "onboarding@resend.dev",
+                to,
+                subject
+            }),
+        });
 
-  try {
-    const response = await fetch("/api/send-email", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        to,
-        subject,
-        html: content,
-        ...options
-      }),
-    });
+        const data = await response.json();
+        console.log('Email API response:', data);
+        
+        if (!response.ok) {
+            console.error('Email API error:', data);
+            throw new Error(data.error || 'Failed to send email');
+        }
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to send email');
+        console.log('Email sent successfully');
+        return data;
+
+    } catch (error) {
+        console.error("sendMail error:", error);
+        throw error;
     }
-
-    const result = await response.json();
-    console.log('Email sent successfully:', result);
-
-    return {
-      success: true,
-      message: 'Email sent successfully'
-    };
-
-  } catch (error) {
-    console.error('Failed to send email:', error);
-    throw new Error(`Failed to send email: ${error.message}`);
-  }
 }
 
 export function generateBookingConfirmationEmail(booking, teacherData) {

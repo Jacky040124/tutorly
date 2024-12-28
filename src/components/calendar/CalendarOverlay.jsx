@@ -5,7 +5,6 @@ import ErrorMessage from "@/components/common/ErrorMessage";
 import { timeToDecimal } from "@/lib/utils/timeUtils";
 import { InputField, ToggleField } from "@/components/common/Fields";
 import { getRepeatingDates } from "@/lib/utils/dateUtils";
-import { ZoomService } from "@/services/zoom.service";
 import { useTranslation } from "react-i18next";
 import { checkOverlap } from "@/lib/utils/calendarUtil";
 import { useBooking } from "@/components/providers";

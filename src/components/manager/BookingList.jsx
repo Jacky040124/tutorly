@@ -1,19 +1,8 @@
 import { useBooking } from "@/components/providers";
-import { ZoomService } from "@/services/zoom.service";
 import { formatTime } from "@/lib/utils/timeUtils";
 
 export default function BookingList() {
   const { futureBookings } = useBooking();
-
-  const handleFetchArtifacts = async (meetingId) => {
-    try {
-      const artifacts = await ZoomService.fetchArtifact(meetingId);
-      // Handle artifacts display (could add to state or show in modal)
-      console.log("Fetched artifacts:", artifacts);
-    } catch (error) {
-      console.error("Failed to fetch artifacts:", error);
-    }
-  };
 
   if (!futureBookings?.length) {
     return <div className="p-6 text-center text-gray-500">Select a teacher to view their bookings</div>;

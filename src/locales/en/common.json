@@ -1,17 +1,31 @@
 {
   "bookings": {
-    "title": "Your Bookings",
-    "lessonCount": "Lesson {{number}} of {{total}}",
-    "student": "Student: {{name}}",
-    "teacher": "Teacher: {{name}}",
+    "title": "Bookings",
+    "tabs": {
+      "upcoming": "Upcoming",
+      "past": "Past"
+    },
+    "status": {
+      "upcoming": "Upcoming",
+      "past": "Past"
+    },
+    "lessonCount": {
+      "lesson": "Lesson",
+      "of": "of"
+    },
+    "student": "Student",
+    "teacher": "Teacher",
     "buttons": {
-      "meet": "Meet",
+      "meet": "Join Meeting",
       "uploadHomework": "Upload Homework",
       "updateHomework": "Update Homework",
       "viewHomework": "View Homework",
       "addFeedback": "Add Feedback",
       "editFeedback": "Edit Feedback"
-    }
+    },
+    "noUpcoming": "No upcoming bookings",
+    "noPast": "No past bookings",
+    "noBookings": "No bookings available"
   },
   "calendar": {
     "navigation": {
