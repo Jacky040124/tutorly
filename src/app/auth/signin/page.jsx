@@ -8,7 +8,7 @@ import { useError } from '@/components/providers/ErrorContext';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Button } from '@/components/common/Button';
+import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/common/Fields';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from "@/components/common/LanguageSwitcher";
@@ -140,7 +140,7 @@ export default function SignIn() {
                                 <Button
                                     type="submit"
                                     variant="solid"
-                                    color="blue"
+                                    color="slate"
                                     className="w-full"
                                 >
                                     {t('signin.button')}

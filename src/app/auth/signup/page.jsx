@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/common/Button";
+import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/common/Fields";
 import { useError } from "@/components/providers/ErrorContext";
 import { signUpStudent } from "@/services/auth.service";
@@ -16,6 +16,7 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
+  const [signupCode, setSignupCode] = useState("");
   const { showError } = useError();
   const { showSuccess } = useNotification();
   const router = useRouter();
@@ -24,8 +25,12 @@ export default function SignUp() {
     e.preventDefault();
 
     try {
-      if (!email || !password || !nickname) {
+      if (!email || !password || !nickname || !signupCode) {
         throw new Error("All fields are required");
+      }
+
+      if (signupCode !== 'david0324') {
+        throw new Error("Invalid sign-up code");
       }
 
       await signUpStudent(email, password, nickname);
@@ -90,6 +95,13 @@ export default function SignUp() {
                 type="password"
                 autoComplete="new-password"
                 onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <TextField
+                label="Sign-up Code"
+                name="signupCode"
+                type="text"
+                onChange={(e) => setSignupCode(e.target.value)}
                 required
               />
 

@@ -1,8 +1,8 @@
 'use client'
 
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/common/Button'
-import { Container } from '@/components/common/Container'
+import { Button } from '@/components/common/Button';
+import { Container } from '@/components/common/Container';
 
 export function CallToAction() {
   const { t } = useTranslation('landing');

@@ -1,131 +1,108 @@
-import { useState } from 'react';
-import { useUser } from '../providers/UserContext';
-import { useError } from '../providers/ErrorContext';
-import { addFeedback, updateFeedback, deleteFeedback } from '@/services/booking.service';
-
-const RATING_OPTIONS = [1, 2, 3, 4, 5];
+import { useState, useEffect } from 'react';
+import { useUser } from '@/components/providers/UserContext';
+import { Star } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { handleFeedbackSubmit } from "@/services/booking.service";
+import { useTranslation } from 'react-i18next';
 
 export default function FeedbackOverlay({ booking, onClose, onFeedbackSubmitted }) {
-    const { user } = useUser();
-    const { showError } = useError();
-    
-    const [rating, setRating] = useState(booking.feedback?.rating || 0);
-    const [comment, setComment] = useState(booking.feedback?.comment || '');
-    const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useUser();
+  const [feedbackText, setFeedbackText] = useState("");
+  const [rating, setRating] = useState(0);
+  const { t } = useTranslation();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsSubmitting(true);
+  // Reset feedback form when booking changes
+  useEffect(() => {
+    if (booking) {
+      setFeedbackText(booking.feedback?.comment || "");
+      setRating(booking.feedback?.rating || 0);
+    } else {
+      setFeedbackText("");
+      setRating(0);
+    }
+  }, [booking]);
 
-        try {
-            const feedbackData = {
-                rating,
-                comment,
-                studentId: user.uid,
-                meetingId: booking.id
-            };
+  const handleSaveFeedback = async () => {
+    // Validate required data before proceeding
+    if (!user) {
+      console.error("User is not authenticated");
+      alert(t("errors.not_authenticated"));
+      return;
+    }
 
-            if (booking.feedback) {
-                await updateFeedback(booking.id, feedbackData);
-            } else {
-                await addFeedback(booking.id, feedbackData);
-            }
+    if (!booking) {
+      console.error("Booking information is missing");
+      alert(t("errors.booking_missing"));
+      return;
+    }
 
-            onFeedbackSubmitted();
-            onClose();
-        } catch (error) {
-            showError(error.message);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+    if (!rating) {
+      console.error("Rating is required");
+      alert(t("errors.rating_required"));
+      return;
+    }
 
-    const handleDelete = async () => {
-        if (!window.confirm('Are you sure you want to delete this feedback?')) return;
-        
-        setIsSubmitting(true);
-        try {
-            await deleteFeedback(booking.id);
-            onFeedbackSubmitted();
-            onClose();
-        } catch (error) {
-            showError(error.message);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+    try {
+      await handleFeedbackSubmit(booking.id, {
+        rating,
+        comment: feedbackText?.trim() || "",
+        studentId: user.uid,
+      }, !!booking.feedback);
 
-    return (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity">
-            <div className="fixed inset-0 z-10 overflow-y-auto">
-                <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                    <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
-                        <h3 className="text-lg font-semibold mb-4">
-                            {booking.feedback ? 'Edit Feedback' : 'Add Feedback'}
-                        </h3>
+      onFeedbackSubmitted();
+      onClose();
+    } catch (error) {
+      console.error("Error saving feedback:", error);
+      alert(t("errors.feedback_save_failed"));
+    }
+  };
 
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Rating</label>
-                                <div className="flex gap-2 mt-1">
-                                    {RATING_OPTIONS.map((value) => (
-                                        <button
-                                            key={value}
-                                            type="button"
-                                            onClick={() => setRating(value)}
-                                            className={`p-2 ${rating >= value ? 'text-yellow-400' : 'text-gray-300'}`}
-                                        >
-                                            ★
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
+  if (!booking) return null;
 
-                            <div>
-                                <label htmlFor="feedback-comment" className="block text-sm font-medium text-gray-700">
-                                    Comment
-                                </label>
-                                <textarea
-                                    id="feedback-comment"
-                                    value={comment}
-                                    onChange={(e) => setComment(e.target.value)}
-                                    rows={4}
-                                    className="form-input mt-1"
-                                    placeholder="Share your thoughts about the session..."
-                                />
-                            </div>
-                        </div>
-
-                        <div className="mt-5 sm:mt-6 flex justify-end gap-2">
-                            {booking.feedback && (
-                                <button
-                                    type="button"
-                                    onClick={handleDelete}
-                                    disabled={isSubmitting}
-                                    className="overlay-button-secondary text-red-600"
-                                >
-                                    Delete
-                                </button>
-                            )}
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="overlay-button-secondary"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleSubmit}
-                                disabled={isSubmitting}
-                                className="overlay-button-primary"
-                            >
-                                {booking.feedback ? 'Save Changes' : 'Submit'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  return (
+    <Dialog open={true} onOpenChange={() => onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{booking.feedback ? 'Edit Feedback' : 'Add Feedback'}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-4">
+          <div className="flex items-center gap-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                onClick={() => setRating(star)}
+                className={`p-1 ${
+                  star <= rating ? "text-yellow-500" : "text-gray-300"
+                }`}
+              >
+                <Star className="h-5 w-5" fill={star <= rating ? "currentColor" : "none"} />
+              </button>
+            ))}
+          </div>
+          <Textarea
+            value={feedbackText}
+            onChange={(e) => setFeedbackText(e.target.value)}
+            placeholder="Write your feedback..."
+            className="min-h-[100px]"
+          />
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={onClose}
+            >
+              {t("profile.buttons.cancel")}
+            </Button>
+            <Button
+              onClick={handleSaveFeedback}
+              disabled={!rating}
+            >
+              Save
+            </Button>
+          </div>
         </div>
-    );
+      </DialogContent>
+    </Dialog>
+  );
 } 

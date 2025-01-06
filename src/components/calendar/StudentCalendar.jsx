@@ -1,192 +1,486 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useUser, useBooking, useError, useOverlay } from "@/components/providers";
-import { getWeekBounds, calculateSelectedDate } from "@/lib/utils/timeUtils";
-import { generateWeekDates, WEEKDAY_LABELS } from "@/lib/utils/dateUtils";
-import { getStudentBookings } from "@/services/booking.service";
-import BookingOverlay from "./BookingOverlay";
-import { CALENDAR_CONFIG, TOTAL_INTERVALS } from "@/lib/utils/calendarUtil";
-import { useTranslation } from "react-i18next";
-import CalendarOverlay from "./CalendarOverlay";
-import { AvailabilityEvent } from "./AvailabilityEvent";
-import { BookingEvent } from "./BookingEvent";
-import { useCalendar } from "../providers/CalendarContext";
+import { useEffect, useRef, useState } from 'react';
+import Calendar from '@toast-ui/react-calendar';
+import '@toast-ui/calendar/dist/toastui-calendar.min.css';
+import { useUser, useBooking } from '@/components/providers';
+import BookingOverlay from './BookingOverlay';
+import FeedbackOverlay from '@/components/overlays/FeedbackOverlay';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { ExternalLink, Star, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { deleteFeedback } from "@/services/booking.service";
 
-export default function Calendar() {
-  const { user, selectedTeacher, teacherList, userLoading } = useUser();
+export default function StudentCalendar() {
+  const calendarRef = useRef(null);
+  const { user, selectedTeacher, teacherList } = useUser();
   const { setSelectedSlot, showBookingOverlay, setShowBookingOverlay, bookings, setBookings } = useBooking();
-  const { showCalendarOverlay } = useOverlay();
-  const { weekOffset, setWeekOffset } = useCalendar();
-  const { showError } = useError();
+  const [showUpcoming, setShowUpcoming] = useState(true);
+  const [selectedBooking, setSelectedBooking] = useState(null);
 
-  const { t } = useTranslation("common");
-  const { monday } = getWeekBounds(weekOffset);
-  const mondayDate = new Date(monday.year, monday.month - 1, monday.day);
-  const teacherData = teacherList[selectedTeacher];
-  const [availabilityToDisplay, setAvailabilityToDisplay] = useState([]);
-  const weekDates = generateWeekDates(mondayDate);
-
-  useEffect(() => {
-    const fetchBookings = async () => {
-      if (!user?.uid || userLoading) return;
-
+  const handleDeleteFeedback = async (booking) => {
+    if (window.confirm("Are you sure you want to delete this feedback?")) {
       try {
-        let fetchedBookings;
-        if (selectedTeacher) {
-          fetchedBookings = await getStudentBookings(user.uid);
-        }
-
-        if (fetchedBookings) {
-          setBookings(fetchedBookings);
-        }
+        await deleteFeedback(booking.id);
+        // Update local state
+        const updatedBookings = bookings.map(b => 
+          b.id === booking.id
+            ? { ...b, feedback: null }
+            : b
+        );
+        setBookings(updatedBookings);
       } catch (error) {
-        showError("Failed to fetch bookings");
-        throw error;
+        console.error("Error deleting feedback:", error);
+        alert("Failed to delete feedback. Please try again.");
       }
-    };
-
-    setAvailabilityToDisplay(teacherData?.availability || []);
-    fetchBookings().catch((error) => {
-      console.error("Error in fetchBookings:", error);
-    });
-  }, [user, selectedTeacher, userLoading]);
-
-  const handleTimeSlotClick = (day, startTime, endTime, isRepeating, totalClasses, link) => {
-    const slot = {
-      date: calculateSelectedDate(day, weekOffset),
-      startTime: startTime,
-      endTime: Math.min(startTime + 1, endTime),
-      isRepeating: isRepeating,
-      totalClasses: totalClasses,
-      link: link,
-    };
-    console.log("link:", slot.link);
-    setSelectedSlot(slot);
-    setShowBookingOverlay(true);
+    }
   };
 
-  const availabilityEvents = availabilityToDisplay.map((event) => {
-    const eventKey = `${event.date.year}_${event.date.month}_${event.date.day}_${event.startTime}`;
-    return <AvailabilityEvent key={eventKey} event={event} onRemove={handleTimeSlotClick} />;
+  // Filter bookings based on upcoming/past
+  const filteredBookings = bookings.filter(booking => {
+    const bookingDateTime = new Date(
+      booking.date.year, 
+      booking.date.month - 1, 
+      booking.date.day,
+      booking.endTime
+    );
+    const now = new Date();
+    return showUpcoming ? bookingDateTime >= now : bookingDateTime < now;
   });
 
-
-  const TimeLabels = () => {
-    const timeSlots = [];
-    for (let hour = CALENDAR_CONFIG.START_HOUR; hour < CALENDAR_CONFIG.END_HOUR; hour++) {
-      const displayHour = hour % 12 || 12;
-      const ampm = hour >= 12 ? "PM" : "AM";
-
-      timeSlots.push(
-        <div key={hour}>
-          <div className="calendarText">{`${displayHour}${ampm}`}</div>
-        </div>,
-        <div key={`${hour}-half`}></div>
-      );
+  const calendars = [
+    {
+      id: 'availability',
+      name: 'Available Slots',
+      backgroundColor: '#10B981', // emerald-500
+      borderColor: '#059669',    // emerald-600
+      dragBackgroundColor: '#A7F3D0', // emerald-200
+      color: '#065F46',         // emerald-800
+    },
+    {
+      id: 'bookings',
+      name: 'My Bookings',
+      backgroundColor: '#3B82F6', // blue-500
+      borderColor: '#2563EB',    // blue-600
+      dragBackgroundColor: '#BFDBFE', // blue-200
+      color: '#1E40AF',         // blue-800
     }
-    return timeSlots;
+  ];
+
+  // Convert teacher availability to TUI calendar events
+  const availabilityEvents = selectedTeacher ? 
+    teacherList[selectedTeacher]?.availability.map((slot) => ({
+      id: `${slot.date.year}_${slot.date.month}_${slot.date.day}_${slot.startTime}`,
+      calendarId: 'availability',
+      title: "Available",
+      category: "time",
+      start: new Date(slot.date.year, slot.date.month - 1, slot.date.day, slot.startTime),
+      end: new Date(slot.date.year, slot.date.month - 1, slot.date.day, slot.endTime),
+      isReadOnly: true,
+      raw: {
+        isRepeating: slot.isRepeating,
+        totalClasses: slot.totalClasses,
+        link: slot.link,
+        date: slot.date,
+        startTime: slot.startTime,
+      },
+    })) || [] : [];
+
+  // Convert bookings to TUI calendar events
+  const bookingEvents = bookings.map((booking) => ({
+    id: booking.id,
+    calendarId: 'bookings',
+    title: booking.title || `Class with ${teacherList[booking.teacherId]?.nickname || booking.teacherId}`,
+    category: "time",
+    start: new Date(booking.date.year, booking.date.month - 1, booking.date.day, booking.startTime),
+    end: new Date(booking.date.year, booking.date.month - 1, booking.date.day, booking.endTime),
+    isReadOnly: true,
+    raw: {
+      link: booking.link,
+      teacherId: booking.teacherId,
+      title: booking.title,
+    },
+  }));
+
+  const events = [...availabilityEvents, ...bookingEvents];
+
+  const handleEventClick = (event) => {
+    if (event.event.calendarId === 'availability') {
+      const slot = teacherList[selectedTeacher]?.availability.find(
+        (s) => 
+          s.date.year === event.event.raw.date.year &&
+          s.date.month === event.event.raw.date.month &&
+          s.date.day === event.event.raw.date.day &&
+          s.startTime === event.event.raw.startTime
+      );
+      
+      if (slot) {
+        setSelectedSlot({
+          ...slot,
+          title: `Class with ${teacherList[selectedTeacher]?.nickname}`,
+        });
+        setShowBookingOverlay(true);
+      }
+    }
+  };
+
+  const template = {
+    time(event) {
+      // Convert to Date object if it isn't already
+      const date = new Date(event.start);
+      
+      // Check if date is valid before formatting
+      const formattedDate = !isNaN(date) ? date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric'
+      }) : '';
+      
+      const isBooking = event.calendarId === 'bookings';
+      const bgColor = isBooking ? 'bg-blue-500' : 'bg-emerald-500';
+      
+      return `
+        <div class="px-2 py-1.5 ${bgColor} flex flex-col min-h-[70px]">
+          <div class="flex items-start justify-between">
+            <div class="flex flex-col flex-1">
+              <div class="text-sm font-medium text-white">${event.title}</div>
+              <div class="text-xs text-white/90">${formattedDate}</div>
+              <div class="text-xs text-white/90">${new Date(event.start).getHours()}:00 - ${new Date(event.end).getHours()}:00</div>
+            </div>
+            ${event.raw?.link ? 
+              `<div class="text-xs text-white/90 flex items-center ml-2">
+                <svg class="inline-block w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </div>` 
+              : ''}
+          </div>
+        </div>
+      `;
+    },
+    popupDetailBody({ schedule }) {
+      const startDate = new Date(schedule.start);
+      const endDate = new Date(schedule.end);
+      const day = startDate.toLocaleString('default', { weekday: 'long' });
+      const date = startDate.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+
+      const isBooking = schedule.calendarId === 'bookings';
+      const textColor = isBooking ? 'text-blue-800' : 'text-emerald-800';
+      const iconColor = isBooking ? 'text-blue-600' : 'text-emerald-600';
+
+      return `
+        <div class="p-4">
+          <div class="text-lg font-medium ${textColor} mb-2">${schedule.title}</div>
+          <div class="text-sm text-gray-600 space-y-2">
+            <div>${day}, ${date}</div>
+            <div>${startDate.getHours()}:00 - ${endDate.getHours()}:00</div>
+            ${schedule.raw?.link ? 
+              `<div class="flex items-center ${iconColor}">
+                <svg class="inline-block w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                Online via Zoom
+              </div>` 
+              : ''}
+          </div>
+        </div>
+      `;
+    },
+  };
+
+  const handleToday = () => {
+    calendarRef.current.getInstance().today();
+  };
+
+  const handlePrev = () => {
+    calendarRef.current.getInstance().prev();
+  };
+
+  const handleNext = () => {
+    calendarRef.current.getInstance().next();
   };
 
   return (
-    <>
-      <div className="flex h-full flex-col">
-        <div className="isolate flex flex-auto flex-col overflow-auto bg-white">
-          <div className="flex max-w-full flex-none flex-col sm:max-w-none md:max-w-full" style={{ width: "165%" }}>
-            <div className="flex justify-between items-center">
-              <button
-                onClick={() => setWeekOffset((prev) => prev - 1)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
-                {t("calendar.navigation.previousWeek")}
-              </button>
-              <h1 className="text-base font-semibold leading-6 text-gray-900">
-                <time dateTime={mondayDate.toISOString().slice(0, 7)}>
-                  {t(`calendar.months.${mondayDate.toLocaleString("default", { month: "long" }).toLowerCase()}`)}{" "}
-                  {mondayDate.getFullYear()}
-                </time>
-              </h1>
-              <button
-                onClick={() => setWeekOffset((prev) => prev + 1)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
-                {t("calendar.navigation.nextWeek")}
-              </button>
-            </div>{" "}
-            <div className="sticky top-0 z-30 flex-none bg-white shadow ring-1 ring-black ring-opacity-5 sm:pr-8">
-              <div className="grid grid-cols-7 text-sm leading-6 text-gray-500 sm:hidden">
-                {WEEKDAY_LABELS.mobile.map((day, i) => (
-                  <button key={i} type="button" className="flex flex-col items-center pb-3 pt-2">
-                    {day}
-                    <span
-                      className={`mt-1 flex h-8 w-8 items-center justify-center font-semibold ${
-                        weekDates[i].isToday ? "rounded-full bg-green-600 text-white" : "text-gray-900"
-                      }`}
-                    >
-                      {weekDates[i].date}
-                    </span>
-                  </button>
-                ))}
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      {/* Calendar Card - Takes up 9 columns on large screens */}
+      <Card className="lg:col-span-9 rounded-xl shadow-md ">
+        <CardContent className="p-4 h-[800px]">
+          <div className="h-full flex flex-col">
+            <div className="flex justify-between p-4 border-b">
+              <div className="space-x-2">
+                <button
+                  onClick={handleToday}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md hover:bg-gray-50"
+                >
+                  Today
+                </button>
+                <button
+                  onClick={handlePrev}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md hover:bg-gray-50"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md hover:bg-gray-50"
+                >
+                  Next
+                </button>
               </div>
+              <select
+                onChange={(e) => calendarRef.current.getInstance().changeView(e.target.value)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md"
+              >
+                <option value="week">Week</option>
+                <option value="day">Day</option>
+              </select>
+            </div>
 
-              <div className="-mr-px hidden grid-cols-7 divide-x divide-gray-100 border-r border-gray-100 text-sm leading-6 text-gray-500 sm:grid">
-                <div className="col-end-1 w-14"></div>
-                {WEEKDAY_LABELS.full.map((day, i) => (
-                  <div key={i} className="flex items-center justify-center py-3">
-                    <span className="flex items-baseline">
-                      {day}
-                      <span
-                        className={`ml-1.5 ${
-                          weekDates[i].isToday
-                            ? "flex h-8 w-8 items-center justify-center rounded-full bg-green-600 font-semibold text-white"
-                            : "items-center justify-center font-semibold text-gray-900"
-                        }`}
-                      >
-                        {weekDates[i].date}
-                      </span>
-                    </span>
+            <div className="flex-1 overflow-auto">
+              <Calendar
+                ref={calendarRef}
+                height="100%"
+                view="week"
+                week={{
+                  startDayOfWeek: 1,
+                  hourStart: 6,
+                  hourEnd: 22,
+                  taskView: false,
+                  eventView: ["time"],
+                }}
+                calendars={calendars}
+                events={events}
+                onClickEvent={handleEventClick}
+                isReadOnly={true}
+                template={template}
+                theme={{
+                  common: {
+                    backgroundColor: "white",
+                    border: "1px solid #e5e7eb",
+                    holiday: { color: "#059669" },
+                    saturday: { color: "#059669" },
+                    dayName: { color: "#059669" },
+                    today: { color: "#059669" },
+                    gridSelection: { backgroundColor: "rgba(16, 185, 129, 0.1)" },
+                  },
+                  week: {
+                    dayName: {
+                      borderLeft: "1px solid #e5e7eb",
+                      backgroundColor: "white",
+                      color: "#374151",
+                      fontWeight: "600",
+                    },
+                    timeGrid: {
+                      borderRight: "1px solid #e5e7eb",
+                    },
+                    timeGridLeft: {
+                      fontSize: "12px",
+                      backgroundColor: "white",
+                      color: "#374151",
+                      fontWeight: "500",
+                    },
+                    today: {
+                      backgroundColor: "rgba(16, 185, 129, 0.05)",
+                      color: "#059669",
+                    },
+                    weekend: {
+                      backgroundColor: "rgba(16, 185, 129, 0.02)",
+                    },
+                    nowIndicatorLabel: {
+                      color: "#059669",
+                    },
+                    nowIndicatorPast: {
+                      border: "1px dashed #10B981",
+                    },
+                    nowIndicatorBullet: {
+                      backgroundColor: "#10B981",
+                    },
+                    nowIndicatorLine: {
+                      border: "1px solid #10B981",
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Bookings Card - Takes up 3 columns on large screens */}
+      <Card className="lg:col-span-3 rounded-xl shadow-md">
+        <CardHeader>
+          <div className="flex flex-col space-y-4">
+            <div>
+              <CardTitle className="text-lg font-medium">Your Classes</CardTitle>
+              <CardDescription>{showUpcoming ? "Upcoming" : "Past"} classes</CardDescription>
+            </div>
+            <Tabs defaultValue="upcoming" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="upcoming" onClick={() => setShowUpcoming(true)}>
+                  Upcoming
+                </TabsTrigger>
+                <TabsTrigger value="past" onClick={() => setShowUpcoming(false)}>
+                  Past
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </CardHeader>
+        <CardContent className="p-4">
+          <ScrollArea className="h-[700px]">
+            {filteredBookings.length > 0 ? (
+              <div className="space-y-3">
+                {filteredBookings.map((booking, index) => (
+                  <div
+                    key={index}
+                    className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {new Date(booking.date.year, booking.date.month - 1, booking.date.day).toLocaleDateString(
+                            "en-US",
+                            { weekday: "long", month: "short", day: "numeric" }
+                          )}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {booking.startTime}:00 - {booking.endTime}:00
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {booking.link && (
+                          <a
+                            href={booking.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            Join Meeting
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">
+                          Teacher: {teacherList[booking.teacherId]?.nickname || "Loading..."}
+                        </Badge>
+                      </div>
+                      {booking.isRepeating && (
+                        <div className="text-xs text-gray-500">
+                          Class {booking.lessonNumber}/{booking.totalLessons}
+                        </div>
+                      )}
+                    </div>
+                    {!showUpcoming && (
+                      <div className="flex items-center justify-between mt-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          {booking.homework ? (
+                            <a 
+                              href={booking.homework.link} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full hover:bg-emerald-200 transition-colors"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              View Homework
+                            </a>
+                          ) : (
+                            <span className="text-xs text-gray-500">No homework assigned yet</span>
+                          )}
+                          {booking.homework?.addedAt && (
+                            <span className="text-xs text-gray-500">
+                              Added {new Date(booking.homework.addedAt).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Feedback Section */}
+                    {!showUpcoming && (
+                      <div className="mt-3 border-t pt-2">
+                        {booking.feedback ? (
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-1">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={star}
+                                    className={`h-4 w-4 ${
+                                      star <= booking.feedback.rating ? "text-yellow-500 fill-current" : "text-gray-300"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  onClick={() => setSelectedBooking(booking)}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 text-blue-600 hover:text-blue-700"
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  onClick={() => handleDeleteFeedback(booking)}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 text-red-600 hover:text-red-700"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                            {booking.feedback.comment && (
+                              <p className="text-sm text-gray-600">{booking.feedback.comment}</p>
+                            )}
+                            <p className="text-xs text-gray-500">
+                              Last updated: {new Date(booking.feedback.updatedAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        ) : (
+                          <Button
+                            onClick={() => setSelectedBooking(booking)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-600 hover:text-blue-700"
+                          >
+                            Add Feedback
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
-            </div>
-            <div className="flex flex-auto">
-              <div className="sticky left-0 z-10 w-14 flex-none bg-white ring-1 ring-gray-100"></div>
-              <div className="grid flex-auto grid-cols-1 grid-rows-1">
-                <div
-                  className="col-start-1 col-end-2 row-start-1 grid divide-y divide-gray-100"
-                  style={{
-                    gridTemplateRows: `repeat(${CALENDAR_CONFIG.HOURS_TO_DISPLAY * 2}, minmax(3.5rem, 1fr))`,
-                  }}
-                >
-                  <div className="row-end-1 h-7"></div>
-                  <TimeLabels />
-                </div>
+            ) : (
+              <div className="text-center text-gray-500 py-4">No {showUpcoming ? "upcoming" : "past"} classes</div>
+            )}
+          </ScrollArea>
+        </CardContent>
+      </Card>
 
-                <div className="col-start-1 col-end-2 row-start-1 hidden grid-cols-7 grid-rows-1 divide-x divide-gray-100 sm:grid sm:grid-cols-7">
-                  <div className="col-start-1 row-span-full" data-day="Monday"></div>
-                  <div className="col-start-2 row-span-full" data-day="Tuesday"></div>
-                  <div className="col-start-3 row-span-full" data-day="Wednesday"></div>
-                  <div className="col-start-4 row-span-full" data-day="Thursday"></div>
-                  <div className="col-start-5 row-span-full" data-day="Friday"></div>
-                  <div className="col-start-6 row-span-full" data-day="Saturday"></div>
-                  <div className="col-start-7 row-span-full" data-day="Sunday"></div>
-                  <div className="col-start-8 row-span-full w-8"></div>
-                </div>
-                <ol
-                  className="col-start-1 col-end-2 row-start-1 grid grid-cols-1 sm:grid-cols-7 sm:pr-8"
-                  style={{
-                    gridTemplateRows: `1.75rem repeat(${TOTAL_INTERVALS}, minmax(0, 1fr)) auto`,
-                  }}
-                >
-                  {availabilityEvents}
-                </ol>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
       {showBookingOverlay && <BookingOverlay />}
-      {showCalendarOverlay && <CalendarOverlay onEventAdded={handleAddEvent} />}
-    </>
+      {selectedBooking && (
+        <FeedbackOverlay
+          booking={selectedBooking}
+          onClose={() => setSelectedBooking(null)}
+          onFeedbackSubmitted={() => {
+            // Update local state to reflect the changes
+            const updatedBookings = [...bookings];
+            setBookings(updatedBookings);
+          }}
+        />
+      )}
+    </div>
   );
 }

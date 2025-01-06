@@ -1,91 +1,142 @@
-import { useState } from 'react';
-import { useUser } from '../providers/UserContext';
-import { useError } from '../providers/ErrorContext';
-import { useOverlay } from '../providers/OverlayContext';
+import { useState, useEffect } from "react";
+import { useUser } from "@/components/providers/UserContext";
+import { useOverlay } from "@/components/providers/OverlayContext";
+import { useNotification } from "@/components/providers/NotificationContext";
+import { updateStudentProfile } from "@/services/user.service";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
 
 export default function StudentProfileOverlay() {
-    const { user, updateGradeLevel, updateStudentDescription } = useUser();
-    const { showError } = useError();
-    const { setShowStudentProfileOverlay } = useOverlay();
+  const { user, setUser } = useUser();
+  const { showStudentProfileOverlay, setShowStudentProfileOverlay } = useOverlay();
+  const { showSuccess, showError } = useNotification();
+  const { t } = useTranslation("common");
+  
+  const [formData, setFormData] = useState({
+    nickname: user?.nickname || "",
+    introduction: user?.introduction || "",
+    interests: user?.interests || "",
+    goals: user?.goals || "",
+  });
 
-    const [gradeLevel, setGradeLevel] = useState(user.academicDetails?.gradeLevel || '');
-    const [description, setDescription] = useState(user.academicDetails?.description || '');
-    const [isSubmitting, setIsSubmitting] = useState(false);
+  useEffect(() => {
+    if (user) {
+      setFormData(prevData => ({
+        nickname: user.nickname ?? prevData.nickname,
+        introduction: user.introduction ?? prevData.introduction,
+        interests: user.interests ?? prevData.interests,
+        goals: user.goals ?? prevData.goals,
+      }));
+    }
+  }, [user]);
 
-    const handleCancel = () => {
-        setShowStudentProfileOverlay(false);
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await updateStudentProfile(user.uid, formData);
+      setUser({ ...user, ...formData });
+      showSuccess(t("profile.updateSuccess"));
+      setShowStudentProfileOverlay(false);
+    } catch (error) {
+      showError(t("profile.updateError"));
+    }
+  };
 
-    const handleSave = async (e) => {
-        e.preventDefault();
-        try {
-            await Promise.all([
-                updateGradeLevel(gradeLevel),
-                updateStudentDescription(description)
-            ]);
-            
-            setShowStudentProfileOverlay(false);
-        } catch (error) {
-            showError(`Failed to update profile: ${error.message}`);
-        }
-    };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-    return (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity">
-            <div className="fixed inset-0 z-10 overflow-y-auto">
-                <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                    <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold leading-6 text-gray-900">
-                                Academic Details
-                            </h3>
-
-                            <div>
-                                <label className="form-label">
-                                    Grade Level
-                                </label>
-                                <input
-                                    type="text"
-                                    value={gradeLevel}
-                                    onChange={(e) => setGradeLevel(e.target.value)}
-                                    className="form-input"
-                                    placeholder="Enter your current grade level"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="form-label">
-                                    Description
-                                </label>
-                                <textarea
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    rows={4}
-                                    className="form-input"
-                                    placeholder="Describe your academic background and goals"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-                            <button
-                                type="button"
-                                onClick={handleSave}
-                                className="overlay-button-primary sm:col-start-2"
-                            >
-                                Save
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleCancel}
-                                className="overlay-button-secondary sm:col-start-1 sm:mt-0 mt-3"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                </div>
+  return (
+    <Dialog open={showStudentProfileOverlay} onOpenChange={setShowStudentProfileOverlay}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-semibold">{t("profile.editProfile")}</DialogTitle>
+        </DialogHeader>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="flex items-center space-x-4">
+            <Avatar className="h-20 w-20">
+              <AvatarImage src={user?.photoURL} />
+              <AvatarFallback>{user?.nickname?.[0]?.toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="text-lg font-medium">{user?.email}</h3>
+              <p className="text-sm text-muted-foreground">{t("profile.student")}</p>
             </div>
-        </div>
-    );
+          </div>
+
+          <Card>
+            <CardContent className="p-4 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="nickname">{t("profile.nickname")}</Label>
+                <Input
+                  id="nickname"
+                  name="nickname"
+                  value={formData.nickname}
+                  onChange={handleChange}
+                  placeholder={t("profile.nicknamePlaceholder")}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="introduction">{t("profile.introduction")}</Label>
+                <Textarea
+                  id="introduction"
+                  name="introduction"
+                  value={formData.introduction}
+                  onChange={handleChange}
+                  placeholder={t("profile.introductionPlaceholder")}
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="interests">{t("profile.interests")}</Label>
+                <Textarea
+                  id="interests"
+                  name="interests"
+                  value={formData.interests}
+                  onChange={handleChange}
+                  placeholder={t("profile.interestsPlaceholder")}
+                  rows={2}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="goals">{t("profile.goals")}</Label>
+                <Textarea
+                  id="goals"
+                  name="goals"
+                  value={formData.goals}
+                  onChange={handleChange}
+                  placeholder={t("profile.goalsPlaceholder")}
+                  rows={2}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowStudentProfileOverlay(false)}
+            >
+              {t("profile.buttons.cancel")}
+            </Button>
+            <Button type="submit">
+              {t("teacherProfile.buttons.save")}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
 } 

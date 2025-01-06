@@ -47,6 +47,33 @@
       "december": "December"
     }
   },
+  "profile": {
+    "editProfile": "Edit Profile",
+    "student": "Student",
+    "teacher": "Teacher",
+    "basicInfo": "Basic Information",
+    "professionalInfo": "Professional Information",
+    "nickname": "Nickname",
+    "nicknamePlaceholder": "Enter your display name",
+    "introduction": "Introduction",
+    "introductionPlaceholder": "Tell us about yourself",
+    "interests": "Interests",
+    "interestsPlaceholder": "What are you interested in learning?",
+    "goals": "Learning Goals",
+    "goalsPlaceholder": "What do you want to achieve?",
+    "expertise": "Areas of Expertise",
+    "expertisePlaceholder": "What subjects do you specialize in?",
+    "education": "Education",
+    "educationPlaceholder": "Your educational background",
+    "experience": "Teaching Experience",
+    "experiencePlaceholder": "Your teaching experience",
+    "teachingStyle": "Teaching Style",
+    "teachingStylePlaceholder": "Describe your teaching approach",
+    "pricing": "Hourly Rate",
+    "pricingPlaceholder": "Enter your hourly rate",
+    "updateSuccess": "Profile updated successfully",
+    "updateError": "Failed to update profile"
+  },
   "teacherProfile": {
     "title": "Edit Profile",
     "nickname": "Nickname",
@@ -63,10 +90,15 @@
       "date": "Select Day",
       "startTime": "Start Time",
       "endTime": "End Time",
+      "selectTime": "Select time",
       "repeating": "Repeating",
+      "totalClasses": "Total Classes",
       "meetLink": "Meeting Link",
-      "meetLinkPlaceholder": "Enter Google Meet link",
-      "session": "Session"
+      "meetLinkPlaceholder": "Enter Zoom meeting link",
+      "maxStudents": "Maximum Students",
+      "maxStudentsPlaceholder": "Enter maximum number of students",
+      "title": "Class Title",
+      "titlePlaceholder": "Enter class title"
     },
     "buttons": {
       "save": "Save",
@@ -75,7 +107,10 @@
     "errors": {
       "fillAllFields": "Please fill in all fields",
       "endTimeLater": "End time must be later than start time",
-      "overlap": "One or more time slots overlap with existing events"
+      "bookingOverlap": "One or more time slots overlap with existing bookings",
+      "availabilityOverlap": "One or more time slots overlap with existing events",
+      "invalidMaxStudents": "Maximum students must be at least 1",
+      "titleRequired": "Please enter a class title"
     }
   },
   "fields": {

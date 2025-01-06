@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/common/Button";
+import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/common/Fields";
 import { useError } from "@/components/providers/ErrorContext";
 import { useNotification } from "@/components/providers/NotificationContext";
@@ -11,21 +11,29 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from "@/components/common/LanguageSwitcher";
 
+//TODO: try to get rid of this thing, must be a better way to do it
+
 export default function SignUpTeacher() {
   const { t } = useTranslation('auth');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
   const [description, setDescription] = useState("");
+  const [passcode, setPasscode] = useState("");
   const { showError } = useError();
   const { showSuccess } = useNotification();
   const router = useRouter();
 
-  const handleSignup = async (e) => {e.preventDefault();
+  const handleSignup = async (e) => {
+    e.preventDefault();
 
     try {
-      if (!email || !password || !nickname || !description) {
+      if (!email || !password || !nickname || !description || !passcode) {
         throw new Error("All fields are required");
+      }
+
+      if (passcode !== "david2025") {
+        throw new Error("Invalid teacher registration code");
       }
 
       await signUpTeacher(email, password, nickname, description);
@@ -97,6 +105,13 @@ export default function SignUpTeacher() {
                 type="password"
                 autoComplete="new-password"
                 onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <TextField
+                label="Teacher Registration Code"
+                name="passcode"
+                type="password"
+                onChange={(e) => setPasscode(e.target.value)}
                 required
               />
 

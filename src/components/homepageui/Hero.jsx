@@ -2,12 +2,12 @@
 
 import { useTranslation } from 'react-i18next';
 import Image from "next/image";
-import { Button } from "@/components/common/Button";
 import { Container } from "@/components/common/Container";
 import SchoolLogo1 from "@/lib/img/SchoolLogo1.png";
 import SchoolLogo2 from "@/lib/img/SchoolLogo2.png";
 import SchoolLogo3 from "@/lib/img/SchoolLogo3.png";
 import SchoolLogo4 from "@/lib/img/SchoolLogo4.png";
+import { Button } from '../ui/button';
 
 export function Hero() {
   const { t } = useTranslation('landing');

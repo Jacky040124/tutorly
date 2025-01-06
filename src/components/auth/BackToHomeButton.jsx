@@ -1,6 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import { Button } from '@/components/common/Button'
+import { Button } from '@/components/ui/Button'
 import { useTranslation } from 'react-i18next'
 
 export default function BackToHomeButton() {

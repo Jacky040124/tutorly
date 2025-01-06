@@ -4,7 +4,15 @@
     "selectTeacherPrompt": "Please select a teacher",
     "profile": "Profile Settings",
     "selectTeacher": "Select a teacher",
-    "teacherRate": "'s rate is ${{price}} per hour"
+    "teacherRate": "'s rate is ${{price}} per hour",
+    "availableClasses": "Available Classes",
+    "selectTeacherToSeeClasses": "Select a teacher to see available classes",
+    "noAvailableClasses": "No available classes",
+    "availableTimeSlots": "'s available time slots",
+    "repeatingClasses": "Repeating ({{count}} classes)",
+    "upcomingBookings": "Your Upcoming Classes",
+    "noBookings": "No upcoming classes",
+    "classWithTeacher": "Class with {{teacher}}"
   },
   "teacher": {
     "profile": "Profile Settings",

@@ -4,7 +4,11 @@
     "selectTeacherPrompt": "请选择老师",
     "profile": "个人设置",
     "selectTeacher": "选择老师",
-    "teacherRate": "的课时费是 {{price}} 加币"
+    "teacherRate": "的课时费是 {{price}} 加币",
+    "availableClasses": "可预约课程",
+    "selectTeacherToSeeClasses": "请选择老师查看可预约课程",
+    "noAvailableClasses": "暂无可预约课程",
+    "availableTimeSlots": "的可预约时段"
   },
   "teacher": {
     "profile": "个人设置",

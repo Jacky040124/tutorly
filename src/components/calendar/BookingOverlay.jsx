@@ -3,18 +3,23 @@ import { useState } from "react";
 import { useUser, useBooking } from "@/components/providers";
 import { formatTime } from "@/lib/utils/timeUtils";
 import { handleBookingConfirmed } from "@/services/booking.service";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { CalendarDays, Clock, User, CreditCard, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function BookingOverlay() {
   const { selectedSlot, setShowBookingOverlay, setBookingConfirmed } = useBooking();
   const { user, selectedTeacher, teacherList } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showTeacherDetails, setShowTeacherDetails] = useState(false);
   const teacherData = teacherList[selectedTeacher];
-
 
   const handleClose = () => {
     setShowBookingOverlay(false);
   };
-
 
   // helper
   const validateBookingRequirements = () => {
@@ -42,6 +47,7 @@ export default function BookingOverlay() {
       createdAt: new Date().toISOString(),
       price: teacherData.pricing,
       link: selectedSlot.link,
+      title: selectedSlot.title,
     };
 
     console.log("Created booking object:", baseBooking);
@@ -82,7 +88,6 @@ export default function BookingOverlay() {
         setShowBookingOverlay,
         setBookingConfirmed
       );
-      handleClose();
     } catch (error) {
       console.error("Booking error:", error);
       alert(error.message);
@@ -91,76 +96,134 @@ export default function BookingOverlay() {
     }
   };
 
-
   return (
-    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity">
-      <div className="fixed inset-0 z-10 overflow-y-auto">
-        <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-          <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
-            <div>
-              <h3 className="text-lg font-medium leading-6 text-gray-900">Confirm Booking</h3>
-              <div className="mt-2">
-                <p className="text-sm text-gray-500">Teacher: {teacherData.nickname}</p>
-                <p className="text-sm text-gray-500">
-                  Date: {selectedSlot.date.day}/{selectedSlot.date.month}/{selectedSlot.date.year}
-                </p>
-                <p className="text-sm text-gray-500">
-                  Time: {formatTime(selectedSlot.startTime)} - {formatTime(selectedSlot.startTime + 1)}
-                </p>
-                <p className="text-sm font-bold text-gray-700 mt-2">
-                  Price per lesson: ${teacherData.pricing}
-                  {selectedSlot.totalClasses && (
-                    <>
-                      <br />
-                      <span className="text-blue-600">
-                        Total for {selectedSlot.totalClasses} lessons: $
-                        {teacherData.pricing * selectedSlot.totalClasses}
-                      </span>
-                    </>
+    <Sheet open={true} onOpenChange={() => setShowBookingOverlay(false)}>
+      <SheetContent className="sm:max-w-lg">
+        <SheetHeader className="space-y-1 mb-6">
+          <SheetTitle>Confirm Booking</SheetTitle>
+        </SheetHeader>
+
+        <ScrollArea className="h-[calc(100vh-8rem)]">
+          <div className="space-y-6">
+            <Card className="shadow-sm">
+              <CardContent className="pt-6 space-y-6">
+                <button 
+                  onClick={() => setShowTeacherDetails(!showTeacherDetails)}
+                  className="flex items-center justify-between w-full text-base hover:text-primary transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <User className="h-5 w-5" />
+                    <span>Teacher: {teacherData.nickname}</span>
+                  </div>
+                  {showTeacherDetails ? (
+                    <ChevronUp className="h-5 w-5" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5" />
                   )}
-                </p>
-                <div className="mt-4 p-3 bg-blue-50 rounded-md">
-                  <p className="text-sm text-blue-800">
-                    <span className="font-semibold">Payment Notice:</span> Online payment is currently under
-                    development. Please e-transfer the lesson fee to your teacher at:
-                  </p>
-                  <p className="text-sm font-medium text-blue-900 mt-1">{teacherData.email}</p>
-                </div>
-                {selectedSlot.totalClasses && (
-                  <div className="bg-blue-50 p-3 rounded-md mb-4">
-                    <p className="text-sm text-blue-800">
-                      <span className="font-semibold">Bulk Booking:</span>
-                      {selectedSlot.totalClasses} lessons
-                    </p>
-                    <p className="text-sm text-blue-800">
-                      Total Price: ${teacherData.pricing * selectedSlot.totalClasses}
-                    </p>
-                    <p className="text-xs text-blue-600 mt-1">Weekly lessons for {selectedSlot.totalClasses} weeks</p>
+                </button>
+
+                {showTeacherDetails && (
+                  <div className="border-t pt-4 space-y-4">
+                    {teacherData.introduction && (
+                      <div className="space-y-1">
+                        <h4 className="font-medium">Introduction</h4>
+                        <p className="text-sm text-muted-foreground">{teacherData.introduction}</p>
+                      </div>
+                    )}
+                    {teacherData.expertise && (
+                      <div className="space-y-1">
+                        <h4 className="font-medium">Expertise</h4>
+                        <p className="text-sm text-muted-foreground">{teacherData.expertise}</p>
+                      </div>
+                    )}
+                    {teacherData.education && (
+                      <div className="space-y-1">
+                        <h4 className="font-medium">Education</h4>
+                        <p className="text-sm text-muted-foreground">{teacherData.education}</p>
+                      </div>
+                    )}
+                    {teacherData.experience && (
+                      <div className="space-y-1">
+                        <h4 className="font-medium">Experience</h4>
+                        <p className="text-sm text-muted-foreground">{teacherData.experience}</p>
+                      </div>
+                    )}
+                    {teacherData.teachingStyle && (
+                      <div className="space-y-1">
+                        <h4 className="font-medium">Teaching Style</h4>
+                        <p className="text-sm text-muted-foreground">{teacherData.teachingStyle}</p>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
-            </div>
-            <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-              <button
-                type="button"
-                className="overlay-button-primary sm:col-start-2"
-                onClick={handleConfirm}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Confirming..." : "Confirm Booking"}
-              </button>
-              <button
-                type="button"
-                className="overlay-button-secondary sm:col-start-1 sm:mt-0"
-                onClick={handleClose}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </button>
-            </div>
+
+                <div className="flex items-center gap-3">
+                  <CalendarDays className="h-5 w-5" />
+                  <span>Date: {selectedSlot.date.day}/{selectedSlot.date.month}/{selectedSlot.date.year}</span>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Clock className="h-5 w-5" />
+                  <span>Time: {formatTime(selectedSlot.startTime)} - {formatTime(selectedSlot.startTime + 1)}</span>
+                </div>
+
+                <div className="flex items-center gap-3 border-t pt-4">
+                  <CreditCard className="h-5 w-5" />
+                  <div>
+                    <p className="font-medium">Price per lesson: ${teacherData.pricing}</p>
+                    {selectedSlot.totalClasses && (
+                      <p className="text-primary mt-1">
+                        Total for {selectedSlot.totalClasses} lessons: ${teacherData.pricing * selectedSlot.totalClasses}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Alert variant="info" className="bg-muted">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <p>
+                  <span className="font-semibold">Payment Notice:</span> Online payment is currently under
+                  development. Please e-transfer the lesson fee to your teacher at:
+                </p>
+                <p className="font-medium mt-1">lolzman2005@gmail.com</p>
+              </AlertDescription>
+            </Alert>
+
+            {selectedSlot.totalClasses && (
+              <Alert className="bg-primary/10 text-primary border-primary/20">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <div className="space-y-2">
+                    <p className="font-semibold">Bulk Booking: {selectedSlot.totalClasses} lessons</p>
+                    <p>Total Price: ${teacherData.pricing * selectedSlot.totalClasses}</p>
+                    <p className="text-sm opacity-90">Weekly lessons for {selectedSlot.totalClasses} weeks</p>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
-        </div>
-      </div>
-    </div>
+        </ScrollArea>
+
+        <SheetFooter className="flex justify-end gap-2 mt-6">
+          <Button
+            variant="outline"
+            onClick={() => setShowBookingOverlay(false)}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirm}
+            disabled={isSubmitting}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            {isSubmitting ? "Confirming..." : "Confirm Booking"}
+          </Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }

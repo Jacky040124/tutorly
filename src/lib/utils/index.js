@@ -1,5 +1,4 @@
 import { withRetry } from "./retryUtil";
-import { Logger } from './loggerUtil';
 import { 
     normalizeToMidnight,
     getAdjustedWeekday,
@@ -13,7 +12,6 @@ import {
 
 import {
     WEEKDAY_LABELS,
-    generateWeekDates as generateDates,
     getRepeatingDates
 } from './dateUtils';
 
@@ -26,7 +24,6 @@ import {
 
 const utils = {
     withRetry,
-    Logger,
     normalizeToMidnight,
     getAdjustedWeekday,
     generateWeekDates,
@@ -36,7 +33,6 @@ const utils = {
     calculateSelectedDate,
     calculateGridPositions,
     WEEKDAY_LABELS,
-    generateDates,
     getRepeatingDates,
     CALENDAR_CONFIG,
     TOTAL_INTERVALS,

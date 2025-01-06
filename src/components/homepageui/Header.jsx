@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import Link from "next/link";
+import { Popover, Transition } from "@headlessui/react";
 import clsx from "clsx";
-import { Button } from "@/components/common/Button";
+import { Button } from "@/components/ui/button";
 import { Container } from "@/components/common/Container";
 import { Logo } from "@/components/common/Logo";
 import { NavLink } from "@/components/common/NavLink";
@@ -74,27 +75,35 @@ export function Header() {
             <Link href="/" aria-label="Home">
               <Logo className="h-10 w-auto" />
             </Link>
+
             <div className="hidden md:flex md:gap-x-6">
-              <NavLink href="#features">{t('nav.features')}</NavLink>
-              <NavLink href="#testimonials">{t('nav.testimonials')}</NavLink>
-              <NavLink href="#pricing">{t('nav.pricing')}</NavLink>
+              <NavLink href="#features">{t("nav.features")}</NavLink>
+              <NavLink href="#testimonials">{t("nav.testimonials")}</NavLink>
+              <NavLink href="#pricing">{t("nav.pricing")}</NavLink>
             </div>
           </div>
+
           <div className="flex items-center gap-x-5 md:gap-x-8">
             <div className="z-50">
               <LanguageSwitcher />
             </div>
+
             <div className="hidden md:block">
-              <NavLink href="/auth/signin">{t('nav.signin')}</NavLink>
+              <NavLink href="/auth/signin">{t("nav.signin")}</NavLink>
             </div>
-            <Button href="/auth/signup" color="blue">
-              <span>
-                {t('nav.getStarted')} <span className="hidden lg:inline">{t('nav.today')}</span>
-              </span>
-            </Button>
+
+            <Link href="/auth/signup">
+              <Button>
+                <span>
+                  {t("nav.getStarted")} <span className="hidden lg:inline">{t("nav.today")}</span>
+                </span>
+              </Button>
+            </Link>
+
             <div className="-mr-1 md:hidden">
               <MobileNavigation />
             </div>
+            
           </div>
         </nav>
       </Container>

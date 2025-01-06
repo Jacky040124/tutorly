@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Button } from '../common/Button';
+import { Button } from '@/common/Button';
+import { Booking } from '@/types/booking';
 
+// TODO: remake using chadcn
 export default function HomeworkLinkOverlay({ booking, onClose, onSuccess }) {
   const [link, setLink] = useState(booking.homeworkLink || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
