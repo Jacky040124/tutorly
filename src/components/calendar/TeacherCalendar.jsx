@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
-import Calendar from '@toast-ui/react-calendar';
+import dynamic from 'next/dynamic';
 import '@toast-ui/calendar/dist/toastui-calendar.min.css';
 import { useUser } from '@/components/providers';
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -17,6 +17,15 @@ import { getTeacherBookings, updateBookingStatus, updateBookingHomework } from "
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { filterBookingsByTime } from "@/lib/utils/calendarUtils";
+
+const Calendar = dynamic(() => import('@toast-ui/react-calendar'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-full">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-500"></div>
+    </div>
+  ),
+});
 
 export default function TeacherCalendar() {
   const calendarRef = useRef(null);

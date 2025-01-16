@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
-import Calendar from '@toast-ui/react-calendar';
+import dynamic from 'next/dynamic';
+// import Calendar from '@toast-ui/react-calendar';
 import '@toast-ui/calendar/dist/toastui-calendar.min.css';
 import { useUser, useBooking } from '@/components/providers';
 import BookingOverlay from './BookingOverlay';
@@ -13,7 +14,17 @@ import { Badge } from "@/components/ui/badge";
 import { ExternalLink, Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { deleteFeedback } from "@/services/booking.service";
+
+const Calendar = dynamic(() => import('@toast-ui/react-calendar'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-full">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-500"></div>
+    </div>
+  ),
+});
 
 export default function StudentCalendar() {
   const calendarRef = useRef(null);
@@ -21,22 +32,29 @@ export default function StudentCalendar() {
   const { setSelectedSlot, showBookingOverlay, setShowBookingOverlay, bookings, setBookings } = useBooking();
   const [showUpcoming, setShowUpcoming] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState(null);
+  const [feedbackToDelete, setFeedbackToDelete] = useState(null);
 
   const handleDeleteFeedback = async (booking) => {
-    if (window.confirm("Are you sure you want to delete this feedback?")) {
-      try {
-        await deleteFeedback(booking.id);
-        // Update local state
-        const updatedBookings = bookings.map(b => 
-          b.id === booking.id
-            ? { ...b, feedback: null }
-            : b
-        );
-        setBookings(updatedBookings);
-      } catch (error) {
-        console.error("Error deleting feedback:", error);
-        alert("Failed to delete feedback. Please try again.");
-      }
+    setFeedbackToDelete(booking);
+  };
+
+  const confirmDeleteFeedback = async () => {
+    if (!feedbackToDelete) return;
+    
+    try {
+      await deleteFeedback(feedbackToDelete.id);
+      // Update local state
+      const updatedBookings = bookings.map(b => 
+        b.id === feedbackToDelete.id
+          ? { ...b, feedback: null }
+          : b
+      );
+      setBookings(updatedBookings);
+    } catch (error) {
+      console.error("Error deleting feedback:", error);
+      alert("Failed to delete feedback. Please try again.");
+    } finally {
+      setFeedbackToDelete(null);
     }
   };
 
@@ -208,279 +226,294 @@ export default function StudentCalendar() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-      {/* Calendar Card - Takes up 9 columns on large screens */}
-      <Card className="lg:col-span-9 rounded-xl shadow-md ">
-        <CardContent className="p-4 h-[800px]">
-          <div className="h-full flex flex-col">
-            <div className="flex justify-between p-4 border-b">
-              <div className="space-x-2">
-                <button
-                  onClick={handleToday}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md hover:bg-gray-50"
-                >
-                  Today
-                </button>
-                <button
-                  onClick={handlePrev}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md hover:bg-gray-50"
-                >
-                  Previous
-                </button>
-                <button
-                  onClick={handleNext}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md hover:bg-gray-50"
-                >
-                  Next
-                </button>
-              </div>
-              <select
-                onChange={(e) => calendarRef.current.getInstance().changeView(e.target.value)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md"
-              >
-                <option value="week">Week</option>
-                <option value="day">Day</option>
-              </select>
-            </div>
-
-            <div className="flex-1 overflow-auto">
-              <Calendar
-                ref={calendarRef}
-                height="100%"
-                view="week"
-                week={{
-                  startDayOfWeek: 1,
-                  hourStart: 6,
-                  hourEnd: 22,
-                  taskView: false,
-                  eventView: ["time"],
-                }}
-                calendars={calendars}
-                events={events}
-                onClickEvent={handleEventClick}
-                isReadOnly={true}
-                template={template}
-                theme={{
-                  common: {
-                    backgroundColor: "white",
-                    border: "1px solid #e5e7eb",
-                    holiday: { color: "#059669" },
-                    saturday: { color: "#059669" },
-                    dayName: { color: "#059669" },
-                    today: { color: "#059669" },
-                    gridSelection: { backgroundColor: "rgba(16, 185, 129, 0.1)" },
-                  },
-                  week: {
-                    dayName: {
-                      borderLeft: "1px solid #e5e7eb",
-                      backgroundColor: "white",
-                      color: "#374151",
-                      fontWeight: "600",
-                    },
-                    timeGrid: {
-                      borderRight: "1px solid #e5e7eb",
-                    },
-                    timeGridLeft: {
-                      fontSize: "12px",
-                      backgroundColor: "white",
-                      color: "#374151",
-                      fontWeight: "500",
-                    },
-                    today: {
-                      backgroundColor: "rgba(16, 185, 129, 0.05)",
-                      color: "#059669",
-                    },
-                    weekend: {
-                      backgroundColor: "rgba(16, 185, 129, 0.02)",
-                    },
-                    nowIndicatorLabel: {
-                      color: "#059669",
-                    },
-                    nowIndicatorPast: {
-                      border: "1px dashed #10B981",
-                    },
-                    nowIndicatorBullet: {
-                      backgroundColor: "#10B981",
-                    },
-                    nowIndicatorLine: {
-                      border: "1px solid #10B981",
-                    },
-                  },
-                }}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Bookings Card - Takes up 3 columns on large screens */}
-      <Card className="lg:col-span-3 rounded-xl shadow-md">
-        <CardHeader>
-          <div className="flex flex-col space-y-4">
-            <div>
-              <CardTitle className="text-lg font-medium">Your Classes</CardTitle>
-              <CardDescription>{showUpcoming ? "Upcoming" : "Past"} classes</CardDescription>
-            </div>
-            <Tabs defaultValue="upcoming" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="upcoming" onClick={() => setShowUpcoming(true)}>
-                  Upcoming
-                </TabsTrigger>
-                <TabsTrigger value="past" onClick={() => setShowUpcoming(false)}>
-                  Past
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-        </CardHeader>
-        <CardContent className="p-4">
-          <ScrollArea className="h-[700px]">
-            {filteredBookings.length > 0 ? (
-              <div className="space-y-3">
-                {filteredBookings.map((booking, index) => (
-                  <div
-                    key={index}
-                    className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+    <>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* Calendar Card - Takes up 9 columns on large screens */}
+        <Card className="lg:col-span-9 rounded-xl shadow-md ">
+          <CardContent className="p-4 h-[800px]">
+            <div className="h-full flex flex-col">
+              <div className="flex justify-between p-4 border-b">
+                <div className="space-x-2">
+                  <button
+                    onClick={handleToday}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md hover:bg-gray-50"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {new Date(booking.date.year, booking.date.month - 1, booking.date.day).toLocaleDateString(
-                            "en-US",
-                            { weekday: "long", month: "short", day: "numeric" }
+                    Today
+                  </button>
+                  <button
+                    onClick={handlePrev}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md hover:bg-gray-50"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={handleNext}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md hover:bg-gray-50"
+                  >
+                    Next
+                  </button>
+                </div>
+                <select
+                  onChange={(e) => calendarRef.current.getInstance().changeView(e.target.value)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md"
+                >
+                  <option value="week">Week</option>
+                  <option value="day">Day</option>
+                </select>
+              </div>
+
+              <div className="flex-1 overflow-auto">
+                <Calendar
+                  ref={calendarRef}
+                  height="100%"
+                  view="week"
+                  week={{
+                    startDayOfWeek: 1,
+                    hourStart: 6,
+                    hourEnd: 22,
+                    taskView: false,
+                    eventView: ["time"],
+                  }}
+                  calendars={calendars}
+                  events={events}
+                  onClickEvent={handleEventClick}
+                  isReadOnly={true}
+                  template={template}
+                  theme={{
+                    common: {
+                      backgroundColor: "white",
+                      border: "1px solid #e5e7eb",
+                      holiday: { color: "#059669" },
+                      saturday: { color: "#059669" },
+                      dayName: { color: "#059669" },
+                      today: { color: "#059669" },
+                      gridSelection: { backgroundColor: "rgba(16, 185, 129, 0.1)" },
+                    },
+                    week: {
+                      dayName: {
+                        borderLeft: "1px solid #e5e7eb",
+                        backgroundColor: "white",
+                        color: "#374151",
+                        fontWeight: "600",
+                      },
+                      timeGrid: {
+                        borderRight: "1px solid #e5e7eb",
+                      },
+                      timeGridLeft: {
+                        fontSize: "12px",
+                        backgroundColor: "white",
+                        color: "#374151",
+                        fontWeight: "500",
+                      },
+                      today: {
+                        backgroundColor: "rgba(16, 185, 129, 0.05)",
+                        color: "#059669",
+                      },
+                      weekend: {
+                        backgroundColor: "rgba(16, 185, 129, 0.02)",
+                      },
+                      nowIndicatorLabel: {
+                        color: "#059669",
+                      },
+                      nowIndicatorPast: {
+                        border: "1px dashed #10B981",
+                      },
+                      nowIndicatorBullet: {
+                        backgroundColor: "#10B981",
+                      },
+                      nowIndicatorLine: {
+                        border: "1px solid #10B981",
+                      },
+                    },
+                  }}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Bookings Card - Takes up 3 columns on large screens */}
+        <Card className="lg:col-span-3 rounded-xl shadow-md">
+          <CardHeader>
+            <div className="flex flex-col space-y-4">
+              <div>
+                <CardTitle className="text-lg font-medium">Your Classes</CardTitle>
+                <CardDescription>{showUpcoming ? "Upcoming" : "Past"} classes</CardDescription>
+              </div>
+              <Tabs defaultValue="upcoming" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="upcoming" onClick={() => setShowUpcoming(true)}>
+                    Upcoming
+                  </TabsTrigger>
+                  <TabsTrigger value="past" onClick={() => setShowUpcoming(false)}>
+                    Past
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4">
+            <ScrollArea className="h-[700px]">
+              {filteredBookings.length > 0 ? (
+                <div className="space-y-3">
+                  {filteredBookings.map((booking, index) => (
+                    <div
+                      key={index}
+                      className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {new Date(booking.date.year, booking.date.month - 1, booking.date.day).toLocaleDateString(
+                              "en-US",
+                              { weekday: "long", month: "short", day: "numeric" }
+                            )}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {booking.startTime}:00 - {booking.endTime}:00
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {booking.link && (
+                            <a
+                              href={booking.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              Join Meeting
+                            </a>
                           )}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {booking.startTime}:00 - {booking.endTime}:00
-                        </p>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {booking.link && (
-                          <a
-                            href={booking.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                            Join Meeting
-                          </a>
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">
+                            Teacher: {teacherList[booking.teacherId]?.nickname || "Loading..."}
+                          </Badge>
+                        </div>
+                        {booking.isRepeating && (
+                          <div className="text-xs text-gray-500">
+                            Class {booking.lessonNumber}/{booking.totalLessons}
+                          </div>
                         )}
                       </div>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">
-                          Teacher: {teacherList[booking.teacherId]?.nickname || "Loading..."}
-                        </Badge>
-                      </div>
-                      {booking.isRepeating && (
-                        <div className="text-xs text-gray-500">
-                          Class {booking.lessonNumber}/{booking.totalLessons}
+                      {!showUpcoming && (
+                        <div className="flex items-center justify-between mt-2 text-sm">
+                          <div className="flex items-center gap-2">
+                            {booking.homework ? (
+                              <a 
+                                href={booking.homework.link} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full hover:bg-emerald-200 transition-colors"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                View Homework
+                              </a>
+                            ) : (
+                              <span className="text-xs text-gray-500">No homework assigned yet</span>
+                            )}
+                            {booking.homework?.addedAt && (
+                              <span className="text-xs text-gray-500">
+                                Added {new Date(booking.homework.addedAt).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Feedback Section */}
+                      {!showUpcoming && (
+                        <div className="mt-3 border-t pt-2">
+                          {booking.feedback ? (
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className={`h-4 w-4 ${
+                                        star <= booking.feedback.rating ? "text-yellow-500 fill-current" : "text-gray-300"
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Button
+                                    onClick={() => setSelectedBooking(booking)}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 text-blue-600 hover:text-blue-700"
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    onClick={() => handleDeleteFeedback(booking)}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 text-red-600 hover:text-red-700"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                              {booking.feedback.comment && (
+                                <p className="text-sm text-gray-600">{booking.feedback.comment}</p>
+                              )}
+                              <p className="text-xs text-gray-500">
+                                Last updated: {new Date(booking.feedback.updatedAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                          ) : (
+                            <Button
+                              onClick={() => setSelectedBooking(booking)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-blue-600 hover:text-blue-700"
+                            >
+                              Add Feedback
+                            </Button>
+                          )}
                         </div>
                       )}
                     </div>
-                    {!showUpcoming && (
-                      <div className="flex items-center justify-between mt-2 text-sm">
-                        <div className="flex items-center gap-2">
-                          {booking.homework ? (
-                            <a 
-                              href={booking.homework.link} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1 text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full hover:bg-emerald-200 transition-colors"
-                            >
-                              <ExternalLink className="h-3 w-3" />
-                              View Homework
-                            </a>
-                          ) : (
-                            <span className="text-xs text-gray-500">No homework assigned yet</span>
-                          )}
-                          {booking.homework?.addedAt && (
-                            <span className="text-xs text-gray-500">
-                              Added {new Date(booking.homework.addedAt).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-gray-500 py-4">No {showUpcoming ? "upcoming" : "past"} classes</div>
+              )}
+            </ScrollArea>
+          </CardContent>
+        </Card>
 
-                    {/* Feedback Section */}
-                    {!showUpcoming && (
-                      <div className="mt-3 border-t pt-2">
-                        {booking.feedback ? (
-                          <div className="space-y-1">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-1">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star
-                                    key={star}
-                                    className={`h-4 w-4 ${
-                                      star <= booking.feedback.rating ? "text-yellow-500 fill-current" : "text-gray-300"
-                                    }`}
-                                  />
-                                ))}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  onClick={() => setSelectedBooking(booking)}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 text-blue-600 hover:text-blue-700"
-                                >
-                                  Edit
-                                </Button>
-                                <Button
-                                  onClick={() => handleDeleteFeedback(booking)}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 text-red-600 hover:text-red-700"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                            {booking.feedback.comment && (
-                              <p className="text-sm text-gray-600">{booking.feedback.comment}</p>
-                            )}
-                            <p className="text-xs text-gray-500">
-                              Last updated: {new Date(booking.feedback.updatedAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                        ) : (
-                          <Button
-                            onClick={() => setSelectedBooking(booking)}
-                            variant="ghost"
-                            size="sm"
-                            className="text-blue-600 hover:text-blue-700"
-                          >
-                            Add Feedback
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center text-gray-500 py-4">No {showUpcoming ? "upcoming" : "past"} classes</div>
-            )}
-          </ScrollArea>
-        </CardContent>
-      </Card>
+        {showBookingOverlay && <BookingOverlay />}
+        {selectedBooking && (
+          <FeedbackOverlay
+            booking={selectedBooking}
+            onClose={() => setSelectedBooking(null)}
+            onFeedbackSubmitted={() => {
+              // Update local state to reflect the changes
+              const updatedBookings = [...bookings];
+              setBookings(updatedBookings);
+            }}
+          />
+        )}
+      </div>
 
-      {showBookingOverlay && <BookingOverlay />}
-      {selectedBooking && (
-        <FeedbackOverlay
-          booking={selectedBooking}
-          onClose={() => setSelectedBooking(null)}
-          onFeedbackSubmitted={() => {
-            // Update local state to reflect the changes
-            const updatedBookings = [...bookings];
-            setBookings(updatedBookings);
-          }}
-        />
-      )}
-    </div>
+      <Dialog open={!!feedbackToDelete} onOpenChange={(open) => !open && setFeedbackToDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Feedback</DialogTitle>
+          </DialogHeader>
+          <p>Are you sure you want to delete this feedback? This action cannot be undone.</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setFeedbackToDelete(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={confirmDeleteFeedback}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
