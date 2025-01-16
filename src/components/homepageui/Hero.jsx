@@ -3,10 +3,6 @@
 import { useTranslation } from 'react-i18next';
 import Image from "next/image";
 import { Container } from "@/components/common/Container";
-import SchoolLogo1 from "@/lib/img/SchoolLogo1.png";
-import SchoolLogo2 from "@/lib/img/SchoolLogo2.png";
-import SchoolLogo3 from "@/lib/img/SchoolLogo3.png";
-import SchoolLogo4 from "@/lib/img/SchoolLogo4.png";
 import { Button } from '../ui/button';
 
 export function Hero() {
@@ -46,14 +42,6 @@ export function Hero() {
           className="mt-8 flex items-center justify-center gap-x-8 sm:flex-col sm:gap-x-0 sm:gap-y-10 xl:flex-row xl:gap-x-12 xl:gap-y-0"
         >
           {[
-            [
-              { name: "hero.universities.ubc", logo: SchoolLogo1 },
-              { name: "hero.universities.bcit", logo: SchoolLogo2 },
-            ],
-            [
-              { name: "hero.universities.sfu", logo: SchoolLogo3 },
-              { name: "hero.universities.uvic", logo: SchoolLogo4 },
-            ],
           ].map((group, groupIndex) => (
             <li key={groupIndex}>
               <ul role="list" className="flex flex-col items-center gap-y-8 sm:flex-row sm:gap-x-12 sm:gap-y-0">

@@ -17,7 +17,7 @@ const lexend = Lexend({
 })
 
 export const metadata = {
-  title: "Bamboo Academy",
+  title: "Tutorly",
   description: "Find your Tutor",
 }
 

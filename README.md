@@ -1,4 +1,4 @@
-# Bamboo Academy Calendar
+# Tutorly Calendar
 
 A specialized online tutoring platform that facilitates seamless connections between teachers and students through integrated scheduling and virtual classroom capabilities.
 
@@ -6,7 +6,7 @@ A specialized online tutoring platform that facilitates seamless connections bet
 
 ## Project Overview
 
-Bamboo Academy Calendar is a comprehensive tutoring management system that combines scheduling, virtual classroom integration, and student progress tracking. The platform emphasizes ease of use while providing robust features for both teachers and students.
+Tutorly Calendar is a comprehensive tutoring management system that combines scheduling, virtual classroom integration, and student progress tracking. The platform emphasizes ease of use while providing robust features for both teachers and students.
 
 ## Key Features
 
