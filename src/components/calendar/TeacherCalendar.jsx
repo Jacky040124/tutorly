@@ -15,7 +15,7 @@ import { useLoading } from "@/components/providers/LoadingContext";
 import { useError } from "@/components/providers/ErrorContext";
 import { getTeacherBookings, updateBookingStatus, updateBookingHomework } from "@/services/booking.service";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { filterBookingsByTime } from "@/lib/utils/calendarUtils";
 
 export default function TeacherCalendar() {
@@ -27,6 +27,7 @@ export default function TeacherCalendar() {
   const [bookings, setBookings] = useState([]);
   const [studentNames, setStudentNames] = useState({});
   const [homeworkLink, setHomeworkLink] = useState("");
+  const [slotToDelete, setSlotToDelete] = useState(null);
 
   const handleBookingStatusChange = async (bookingId, newStatus) => {
     try {
@@ -225,38 +226,39 @@ export default function TeacherCalendar() {
   const handleEventClick = async (event) => {
     // Only allow deletion of availability slots
     if (event.event.calendarId === 'availability') {
-      const confirmDelete = window.confirm("Do you want to remove this time slot?");
+      setSlotToDelete(event.event);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!slotToDelete) return;
+    
+    try {
+      const eventData = slotToDelete;
       
-      if (confirmDelete) {
-        try {
-          const eventData = event.event;
-          
-          if (eventData.raw) {
-            await removeAvailability(eventData.raw);
-            return;
-          }
+      if (eventData.raw) {
+        await removeAvailability(eventData.raw);
+      } else {
+        const startDate = new Date(eventData.start);
+        
+        const slotToRemove = availability.find((slot) => {
+          return (
+            slot.date.year === startDate.getFullYear() &&
+            slot.date.month === startDate.getMonth() + 1 &&
+            slot.date.day === startDate.getDate() &&
+            slot.startTime === startDate.getHours() &&
+            slot.endTime === new Date(eventData.end).getHours()
+          );
+        });
 
-          const startDate = new Date(eventData.start);
-          
-          const slotToRemove = availability.find((slot) => {
-            return (
-              slot.date.year === startDate.getFullYear() &&
-              slot.date.month === startDate.getMonth() + 1 &&
-              slot.date.day === startDate.getDate() &&
-              slot.startTime === startDate.getHours() &&
-              slot.endTime === new Date(eventData.end).getHours()
-            );
-          });
-
-          if (!slotToRemove) {
-            throw new Error("Could not find matching availability slot");
-          }
-
+        if (slotToRemove) {
           await removeAvailability(slotToRemove);
-        } catch (error) {
-          showError(`Failed to remove availability: ${error.message}`);
         }
       }
+    } catch (error) {
+      showError("Failed to remove time slot");
+    } finally {
+      setSlotToDelete(null);
     }
   };
 
@@ -549,6 +551,19 @@ export default function TeacherCalendar() {
           </ScrollArea>
         </CardContent>
       </Card>
+      
+      <Dialog open={!!slotToDelete} onOpenChange={(open) => !open && setSlotToDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Remove Time Slot</DialogTitle>
+          </DialogHeader>
+          <p>Are you sure you want to remove this time slot?</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSlotToDelete(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleConfirmDelete}>Remove</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
