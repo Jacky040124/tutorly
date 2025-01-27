@@ -5,137 +5,41 @@ import Header from "@/components/landingpage/Header";
 import TeacherGrid from "@/components/landingpage/TeacherGrid";
 import SubjectFilter from "@/components/landingpage/SubjectFilter";
 import { Search } from "lucide-react";
+import { useTeachers } from "@/hooks/useTeacher";
+import { Spinner} from "@/components/ui/spinner"
 
-// Sample data
-const sampleTeachers = [
-  {
-    uid: "1",
-    email: "john@example.com",
-    nickname: "John Smith",
-    type: "teacher",
-    description:
-      "Experienced mathematics and physics tutor with over 5 years of teaching experience.",
-    expertise: "Mathematics, Physics, Calculus",
-    education: "MSc in Physics",
-    pricing: 35,
-    availability: [],
-  },
-
-  {
-    uid: "1",
-    email: "john@example.com",
-    nickname: "John Smith",
-    type: "teacher",
-    description:
-      "Experienced mathematics and physics tutor with over 5 years of teaching experience.",
-    expertise: "Mathematics, Physics, Calculus",
-    education: "MSc in Physics",
-    pricing: 35,
-    availability: [],
-  },
-
-  {
-    uid: "1",
-    email: "john@example.com",
-    nickname: "John Smith",
-    type: "teacher",
-    description:
-      "Experienced mathematics and physics tutor with over 5 years of teaching experience.",
-    expertise: "Mathematics, Physics, Calculus",
-    education: "MSc in Physics",
-    pricing: 35,
-    availability: [],
-  },
-
-  {
-    uid: "1",
-    email: "john@example.com",
-    nickname: "John Smith",
-    type: "teacher",
-    description:
-      "Experienced mathematics and physics tutor with over 5 years of teaching experience.",
-    expertise: "Mathematics, Physics, Calculus",
-    education: "MSc in Physics",
-    pricing: 35,
-    availability: [],
-  },
-
-  {
-    uid: "1",
-    email: "john@example.com",
-    nickname: "John Smith",
-    type: "teacher",
-    description:
-      "Experienced mathematics and physics tutor with over 5 years of teaching experience.",
-    expertise: "Mathematics, Physics, Calculus",
-    education: "MSc in Physics",
-    pricing: 35,
-    availability: [],
-  },
-
-  {
-    uid: "1",
-    email: "john@example.com",
-    nickname: "John Smith",
-    type: "teacher",
-    description:
-      "Experienced mathematics and physics tutor with over 5 years of teaching experience.",
-    expertise: "Mathematics, Physics, Calculus",
-    education: "MSc in Physics",
-    pricing: 35,
-    availability: [],
-  },
-
-  {
-    uid: "1",
-    email: "john@example.com",
-    nickname: "John Smith",
-    type: "teacher",
-    description:
-      "Experienced mathematics and physics tutor with over 5 years of teaching experience.",
-    expertise: "Mathematics, Physics, Calculus",
-    education: "MSc in Physics",
-    pricing: 35,
-    availability: [],
-  },
-
-  {
-    uid: "1",
-    email: "john@example.com",
-    nickname: "John Smith",
-    type: "teacher",
-    description:
-      "Experienced mathematics and physics tutor with over 5 years of teaching experience.",
-    expertise: "Mathematics, Physics, Calculus",
-    education: "MSc in Physics",
-    pricing: 35,
-    availability: [],
-  },
-  // Add more sample teachers as needed
-];
-
-const subjects = [
-  "ALL",
-  "MATH",
-  "PHYS",
-  "CHEM",
-  "ENGL",
-  "ECON",
-  "CPSC",
-];
+const subjects = ["ALL", "MATH", "PHYS", "CHEM", "ENGL", "ECON", "CPSC"];
 
 export default function App() {
   const [selectedSubject, setSelectedSubject] = useState("ALL");
-  
+  const { teachers, loading, error } = useTeachers();
 
   const filteredTeachers =
     selectedSubject === "ALL"
-      ? sampleTeachers
-      : sampleTeachers.filter((teacher) =>
+      ? teachers
+      : teachers.filter((teacher) =>
           teacher.expertise
             ?.toLowerCase()
             .includes(selectedSubject.toLowerCase())
         );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Spinner size="sm" className="text-primary" variant="circle" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <ErrorAlert
+        message={error}
+        onRetry={refresh}
+        className="mx-auto mt-20 max-w-2xl"
+      />
+    );
+  }
 
   return (
     <div>
