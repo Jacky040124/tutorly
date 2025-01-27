@@ -4,8 +4,7 @@ import { fetchTeachers } from "@/services/user.service";
 import { Teacher } from "@/types/user";
 
 export const useTeachers = () => {
-
-  const [teachers, setTeachers] = useState <Teacher[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,9 +15,7 @@ export const useTeachers = () => {
         // parse the data
         setTeachers(data);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load teachers"
-        );
+        setError(err instanceof Error ? err.message : "Failed to load teachers");
       } finally {
         setLoading(false);
       }
@@ -29,6 +26,3 @@ export const useTeachers = () => {
 
   return { teachers, loading, error, refresh: () => setLoading(true) };
 };
-
-
-

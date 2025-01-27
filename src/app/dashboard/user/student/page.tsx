@@ -1,10 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useUser } from "@/components/providers/UserContext";
-import { useLoading } from "@/components/providers/LoadingContext";
 import { useError } from "@/components/providers/ErrorContext";
 import { useBooking } from "@/components/providers/BookingContext";
-import { fetchFutureStudentBookings, getStudentBookings } from "@/services/booking.service";
+import { getStudentBookings } from "@/services/booking.service";
 import StudentCalendar from "@/components/calendar/StudentCalendar";
 import ErrorMessage from "@/components/common/ErrorMessage";
 import StudentProfileOverlay from "@/components/overlays/StudentProfileOverlay";
@@ -12,35 +11,27 @@ import { useOverlay } from "@/components/providers/OverlayContext";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "@/components/common/LanguageSwitcher";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, UserCircle, Code2, RefreshCw } from "lucide-react";
+import { CalendarIcon, UserCircle, Code2 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTeachers } from "@/hooks/useTeacher";
+
 
 export default function StudentDashboard() {
-  const { user, teacherList, fetchTeachers, selectedTeacher, setSelectedTeacher, fetchUserNickname } = useUser();
-  const { setIsLoading, isLoading } = useLoading();
+  const { user } = useUser();
+  const [selectedTeacher, setSelectedTeacher] = useState<Number>();
+  const { teachers } = useTeachers();
   const { error, showError } = useError();
-  const {
-    setFutureBookings,
-    setBookings,
-    showBookingOverlay,
-    bookings,
-    futureBookings,
-    setSelectedSlot,
-    setShowBookingOverlay,
-  } = useBooking();
+  const { setFutureBookings, setBookings, showBookingOverlay, bookings, futureBookings } = useBooking();
   const { showStudentProfileOverlay, setShowStudentProfileOverlay } = useOverlay();
-  const { t, i18n } = useTranslation("dashboard");
-  const [teacherNicknames, setTeacherNicknames] = useState({});
+  const { t } = useTranslation("dashboard");
 
   // initialization
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        await fetchTeachers();
-
         if (user?.uid) {
           const allBookings = await getStudentBookings(user.uid);
           const futureBookings = allBookings.filter((booking) => {
@@ -49,57 +40,17 @@ export default function StudentDashboard() {
           });
           setFutureBookings(futureBookings);
           setBookings(allBookings);
-
-          // Fetch teacher nicknames for all bookings
-          const nicknames = {};
-          for (const booking of allBookings) {
-            if (!nicknames[booking.teacherId]) {
-              nicknames[booking.teacherId] = await fetchUserNickname(booking.teacherId);
-            }
-          }
-          setTeacherNicknames(nicknames);
         }
-      } catch (error) {
-        showError(`Error fetching data: ${error.message}`);
-      } finally {
-        setIsLoading(false);
-      }
+      } catch (error : unknown) {
+        if (error instanceof Error) {
+            showError(`Error fetching data: ${error.message}`);
+        } else {
+          console.error("Unknown error:", error);
+        }
+      } 
     };
 
     fetchInitialData();
-  }, [user]);
-
-  useEffect(() => {
-    const fetchBookings = async () => {
-      if (!user?.uid) return;
-
-      try {
-        setIsLoading(true);
-        const allBookings = await getStudentBookings(user.uid);
-        const futureBookings = allBookings.filter((booking) => {
-          const bookingDate = new Date(booking.date.year, booking.date.month - 1, booking.date.day);
-          return bookingDate >= new Date();
-        });
-
-        setFutureBookings(futureBookings);
-        setBookings(allBookings);
-
-        // Fetch teacher nicknames for all bookings
-        const nicknames = {};
-        for (const booking of allBookings) {
-          if (!nicknames[booking.teacherId]) {
-            nicknames[booking.teacherId] = await fetchUserNickname(booking.teacherId);
-          }
-        }
-        setTeacherNicknames(nicknames);
-      } catch (error) {
-        showError(`Error fetching bookings: ${error.message}`);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchBookings();
   }, [user, showBookingOverlay]);
 
   if (!user) {
@@ -113,12 +64,12 @@ export default function StudentDashboard() {
   return (
     <div className="min-h-screen bg-background flex flex-col gap-4 p-4">
       <Card className="rounded-xl shadow-md">
-        <CardContent className="p-6">
-          <div className="space-y-1">
+        <CardContent>
+          <div className=" p-6 space-y-1">
             <CardTitle className="text-3xl font-semibold text-foreground transition-colors duration-200">
-              {selectedTeacher && teacherList[selectedTeacher]
-                ? `${teacherList[selectedTeacher].nickname}${t("student.teacherRate", {
-                    price: teacherList[selectedTeacher].pricing,
+              {selectedTeacher && teachers[selectedTeacher]
+                ? `${teachers[selectedTeacher].nickname}${t("student.teacherRate", {
+                    price: teachers[selectedTeacher].pricing,
                   })}`
                 : t("student.selectTeacherPrompt")}
             </CardTitle>
@@ -156,17 +107,14 @@ export default function StudentDashboard() {
               </Button>
 
               <div className="transition-transform hover:scale-105 duration-200">
-                <Select
-                  value={selectedTeacher || "default"}
-                  onValueChange={(value) => setSelectedTeacher(value === "default" ? "" : value)}
-                >
+                <Select value={selectedTeacher || "default"} onValueChange={(value: number) => setSelectedTeacher(value)}>
                   <SelectTrigger className="w-[200px] rounded-lg">
                     <SelectValue placeholder={t("student.selectTeacher")} />
                   </SelectTrigger>
                   <SelectContent className="rounded-lg">
                     <SelectItem value="default">{t("student.selectTeacher")}</SelectItem>
-                    {teacherList &&
-                      Object.entries(teacherList).map(([id, teacher]) => (
+                    {teachers &&
+                      Object.entries(teachers).map(([id, teacher]) => (
                         <SelectItem key={id} value={id}>
                           {teacher.nickname}
                         </SelectItem>
@@ -187,7 +135,7 @@ export default function StudentDashboard() {
         </Card>
       )}
 
-      <StudentCalendar />
+      <StudentCalendar selectedTeacher={selectedTeacher} />
 
       <Card className="rounded-xl shadow-md">
         <CardContent className="p-0">
@@ -212,7 +160,7 @@ export default function StudentDashboard() {
                     <div>
                       <h3 className="font-medium mb-2">Selected Teacher:</h3>
                       <pre className="text-xs bg-muted p-2 rounded">
-                        {JSON.stringify(selectedTeacher ? teacherList[selectedTeacher] : null, null, 2)}
+                        {JSON.stringify(selectedTeacher ? teachers[selectedTeacher] : null, null, 2)}
                       </pre>
                     </div>
 

@@ -3,28 +3,29 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { getStudentBookings, getTeacherBookings } from "@/services/booking.service";
 import { useUser } from "./UserContext";
+import { Booking } from "@/types/booking";
 
 interface BookingContextType {
   selectedSlot: any | null;
   setSelectedSlot: React.Dispatch<React.SetStateAction<any | null>>;
   showBookingOverlay: boolean;
   setShowBookingOverlay: React.Dispatch<React.SetStateAction<boolean>>;
-  futureBookings: any[];
-  setFutureBookings: React.Dispatch<React.SetStateAction<any[]>>;
-  bookings: any[];
-  setBookings: React.Dispatch<React.SetStateAction<any[]>>;
+  futureBookings: Booking[];
+  setFutureBookings: React.Dispatch<React.SetStateAction<Booking[]>>;
+  bookings: Booking[];
+  setBookings: React.Dispatch<React.SetStateAction<Booking[]>>;
   bookingConfirmed: boolean;
   setBookingConfirmed: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const BookingContext = createContext<BookingContextType | null>(null);
+const BookingContext = createContext<BookingContextType>({} as BookingContextType);
 
 export function BookingProvider({ children }: { children: ReactNode }) {
   const { user } = useUser();
   const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
   const [showBookingOverlay, setShowBookingOverlay] = useState(false);
-  const [futureBookings, setFutureBookings] = useState<any[]>([]);
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [futureBookings, setFutureBookings] = useState<Booking[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
 
   // Fetch bookings when user changes or booking is confirmed
@@ -70,8 +71,8 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   return <BookingContext.Provider value={value}>{children}</BookingContext.Provider>;
 }
 
-export function useBooking() {
-  const context = useContext(BookingContext);
+export function useBooking(): BookingContextType {
+  const context: BookingContextType = useContext(BookingContext);
   if (context === undefined) {
     throw new Error("booking context not wrapped properly");
   }

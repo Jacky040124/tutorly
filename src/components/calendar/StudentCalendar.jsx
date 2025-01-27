@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-// import Calendar from '@toast-ui/react-calendar';
 import '@toast-ui/calendar/dist/toastui-calendar.min.css';
-import { useUser, useBooking } from '@/components/providers';
+import { useBooking } from '@/components/providers/BookingContext';
 import BookingOverlay from './BookingOverlay';
 import FeedbackOverlay from '@/components/overlays/FeedbackOverlay';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,9 +12,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink, Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { deleteFeedback } from "@/services/booking.service";
+import { useTeachers } from '@/hooks/useTeacher';
 
 const Calendar = dynamic(() => import('@toast-ui/react-calendar'), {
   ssr: false,
@@ -26,9 +25,9 @@ const Calendar = dynamic(() => import('@toast-ui/react-calendar'), {
   ),
 });
 
-export default function StudentCalendar() {
+export default function StudentCalendar(selectedTeacher) {
   const calendarRef = useRef(null);
-  const { user, selectedTeacher, teacherList } = useUser();
+  const { teachers } = useTeachers();
   const { setSelectedSlot, showBookingOverlay, setShowBookingOverlay, bookings, setBookings } = useBooking();
   const [showUpcoming, setShowUpcoming] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState(null);
@@ -40,15 +39,11 @@ export default function StudentCalendar() {
 
   const confirmDeleteFeedback = async () => {
     if (!feedbackToDelete) return;
-    
+
     try {
       await deleteFeedback(feedbackToDelete.id);
       // Update local state
-      const updatedBookings = bookings.map(b => 
-        b.id === feedbackToDelete.id
-          ? { ...b, feedback: null }
-          : b
-      );
+      const updatedBookings = bookings.map((b) => (b.id === feedbackToDelete.id ? { ...b, feedback: null } : b));
       setBookings(updatedBookings);
     } catch (error) {
       console.error("Error deleting feedback:", error);
@@ -58,61 +53,62 @@ export default function StudentCalendar() {
     }
   };
 
+
   // Filter bookings based on upcoming/past
-  const filteredBookings = bookings.filter(booking => {
-    const bookingDateTime = new Date(
-      booking.date.year, 
-      booking.date.month - 1, 
-      booking.date.day,
-      booking.endTime
-    );
+  const filteredBookings = bookings.filter((booking) => {
+    const bookingDateTime = new Date(booking.date.year, booking.date.month - 1, booking.date.day, booking.endTime);
     const now = new Date();
     return showUpcoming ? bookingDateTime >= now : bookingDateTime < now;
   });
 
   const calendars = [
     {
-      id: 'availability',
-      name: 'Available Slots',
-      backgroundColor: '#10B981', // emerald-500
-      borderColor: '#059669',    // emerald-600
-      dragBackgroundColor: '#A7F3D0', // emerald-200
-      color: '#065F46',         // emerald-800
+      id: "availability",
+      name: "Available Slots",
+      backgroundColor: "#10B981", // emerald-500
+      borderColor: "#059669", // emerald-600
+      dragBackgroundColor: "#A7F3D0", // emerald-200
+      color: "#065F46", // emerald-800
     },
     {
-      id: 'bookings',
-      name: 'My Bookings',
-      backgroundColor: '#3B82F6', // blue-500
-      borderColor: '#2563EB',    // blue-600
-      dragBackgroundColor: '#BFDBFE', // blue-200
-      color: '#1E40AF',         // blue-800
-    }
+      id: "bookings",
+      name: "My Bookings",
+      backgroundColor: "#3B82F6", // blue-500
+      borderColor: "#2563EB", // blue-600
+      dragBackgroundColor: "#BFDBFE", // blue-200
+      color: "#1E40AF", // blue-800
+    },
   ];
 
   // Convert teacher availability to TUI calendar events
-  const availabilityEvents = selectedTeacher ? 
-    teacherList[selectedTeacher]?.availability.map((slot) => ({
-      id: `${slot.date.year}_${slot.date.month}_${slot.date.day}_${slot.startTime}`,
-      calendarId: 'availability',
-      title: "Available",
-      category: "time",
-      start: new Date(slot.date.year, slot.date.month - 1, slot.date.day, slot.startTime),
-      end: new Date(slot.date.year, slot.date.month - 1, slot.date.day, slot.endTime),
-      isReadOnly: true,
-      raw: {
-        isRepeating: slot.isRepeating,
-        totalClasses: slot.totalClasses,
-        link: slot.link,
-        date: slot.date,
-        startTime: slot.startTime,
-      },
-    })) || [] : [];
+  const availabilityEvents = selectedTeacher
+    ? teachers[selectedTeacher]?.availability.map((slot) => ({
+        id: `${slot.date.year}_${slot.date.month}_${slot.date.day}_${slot.startTime}`,
+        calendarId: "availability",
+        title: "Available",
+        category: "time",
+        start: new Date(slot.date.year, slot.date.month - 1, slot.date.day, slot.startTime),
+        end: new Date(slot.date.year, slot.date.month - 1, slot.date.day, slot.endTime),
+        isReadOnly: true,
+        raw: {
+          isRepeating: slot.isRepeating,
+          totalClasses: slot.totalClasses,
+          link: slot.link,
+          date: slot.date,
+          startTime: slot.startTime,
+        },
+      })) || []
+    : [];
+    
+    console.log("teachers:", teachers);
+    console.log("selectedTeacher Index:", selectedTeacher);
+    console.log("selectedTeacher:", teachers[selectedTeacher]);
+    console.log("availabilityEvents:", availabilityEvents);
 
   // Convert bookings to TUI calendar events
   const bookingEvents = bookings.map((booking) => ({
-    id: booking.id,
-    calendarId: 'bookings',
-    title: booking.title || `Class with ${teacherList[booking.teacherId]?.nickname || booking.teacherId}`,
+    calendarId: "bookings",
+    title: booking.title || `Class with ${booking.teacherId}`,
     category: "time",
     start: new Date(booking.date.year, booking.date.month - 1, booking.date.day, booking.startTime),
     end: new Date(booking.date.year, booking.date.month - 1, booking.date.day, booking.endTime),
@@ -127,19 +123,19 @@ export default function StudentCalendar() {
   const events = [...availabilityEvents, ...bookingEvents];
 
   const handleEventClick = (event) => {
-    if (event.event.calendarId === 'availability') {
-      const slot = teacherList[selectedTeacher]?.availability.find(
-        (s) => 
+    if (event.event.calendarId === "availability") {
+      const slot = teachers[selectedTeacher]?.availability.find(
+        (s) =>
           s.date.year === event.event.raw.date.year &&
           s.date.month === event.event.raw.date.month &&
           s.date.day === event.event.raw.date.day &&
           s.startTime === event.event.raw.startTime
       );
-      
+
       if (slot) {
         setSelectedSlot({
           ...slot,
-          title: `Class with ${teacherList[selectedTeacher]?.nickname}`,
+          title: `Class with ${teachers[selectedTeacher]?.nickname}`,
         });
         setShowBookingOverlay(true);
       }
@@ -150,31 +146,37 @@ export default function StudentCalendar() {
     time(event) {
       // Convert to Date object if it isn't already
       const date = new Date(event.start);
-      
+
       // Check if date is valid before formatting
-      const formattedDate = !isNaN(date) ? date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric'
-      }) : '';
-      
-      const isBooking = event.calendarId === 'bookings';
-      const bgColor = isBooking ? 'bg-blue-500' : 'bg-emerald-500';
-      
+      const formattedDate = !isNaN(date)
+        ? date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })
+        : "";
+
+      const isBooking = event.calendarId === "bookings";
+      const bgColor = isBooking ? "bg-blue-500" : "bg-emerald-500";
+
       return `
         <div class="px-2 py-1.5 ${bgColor} flex flex-col min-h-[70px]">
           <div class="flex items-start justify-between">
             <div class="flex flex-col flex-1">
               <div class="text-sm font-medium text-white">${event.title}</div>
               <div class="text-xs text-white/90">${formattedDate}</div>
-              <div class="text-xs text-white/90">${new Date(event.start).getHours()}:00 - ${new Date(event.end).getHours()}:00</div>
+              <div class="text-xs text-white/90">${new Date(event.start).getHours()}:00 - ${new Date(
+        event.end
+      ).getHours()}:00</div>
             </div>
-            ${event.raw?.link ? 
-              `<div class="text-xs text-white/90 flex items-center ml-2">
+            ${
+              event.raw?.link
+                ? `<div class="text-xs text-white/90 flex items-center ml-2">
                 <svg class="inline-block w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
-              </div>` 
-              : ''}
+              </div>`
+                : ""
+            }
           </div>
         </div>
       `;
@@ -182,16 +184,16 @@ export default function StudentCalendar() {
     popupDetailBody({ schedule }) {
       const startDate = new Date(schedule.start);
       const endDate = new Date(schedule.end);
-      const day = startDate.toLocaleString('default', { weekday: 'long' });
-      const date = startDate.toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric'
+      const day = startDate.toLocaleString("default", { weekday: "long" });
+      const date = startDate.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
       });
 
-      const isBooking = schedule.calendarId === 'bookings';
-      const textColor = isBooking ? 'text-blue-800' : 'text-emerald-800';
-      const iconColor = isBooking ? 'text-blue-600' : 'text-emerald-600';
+      const isBooking = schedule.calendarId === "bookings";
+      const textColor = isBooking ? "text-blue-800" : "text-emerald-800";
+      const iconColor = isBooking ? "text-blue-600" : "text-emerald-600";
 
       return `
         <div class="p-4">
@@ -199,14 +201,16 @@ export default function StudentCalendar() {
           <div class="text-sm text-gray-600 space-y-2">
             <div>${day}, ${date}</div>
             <div>${startDate.getHours()}:00 - ${endDate.getHours()}:00</div>
-            ${schedule.raw?.link ? 
-              `<div class="flex items-center ${iconColor}">
+            ${
+              schedule.raw?.link
+                ? `<div class="flex items-center ${iconColor}">
                 <svg class="inline-block w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
                 Online via Zoom
-              </div>` 
-              : ''}
+              </div>`
+                : ""
+            }
           </div>
         </div>
       `;
@@ -390,7 +394,7 @@ export default function StudentCalendar() {
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
                           <Badge variant="outline">
-                            Teacher: {teacherList[booking.teacherId]?.nickname || "Loading..."}
+                            Teacher: {teachers[booking.teacherId]?.nickname || "Loading..."}
                           </Badge>
                         </div>
                         {booking.isRepeating && (
@@ -403,9 +407,9 @@ export default function StudentCalendar() {
                         <div className="flex items-center justify-between mt-2 text-sm">
                           <div className="flex items-center gap-2">
                             {booking.homework ? (
-                              <a 
-                                href={booking.homework.link} 
-                                target="_blank" 
+                              <a
+                                href={booking.homework.link}
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-1 text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full hover:bg-emerald-200 transition-colors"
                               >
@@ -435,7 +439,9 @@ export default function StudentCalendar() {
                                     <Star
                                       key={star}
                                       className={`h-4 w-4 ${
-                                        star <= booking.feedback.rating ? "text-yellow-500 fill-current" : "text-gray-300"
+                                        star <= booking.feedback.rating
+                                          ? "text-yellow-500 fill-current"
+                                          : "text-gray-300"
                                       }`}
                                     />
                                   ))}
@@ -509,8 +515,12 @@ export default function StudentCalendar() {
           </DialogHeader>
           <p>Are you sure you want to delete this feedback? This action cannot be undone.</p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setFeedbackToDelete(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={confirmDeleteFeedback}>Delete</Button>
+            <Button variant="outline" onClick={() => setFeedbackToDelete(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteFeedback}>
+              Delete
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
