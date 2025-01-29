@@ -21,7 +21,7 @@ import { useTeachers } from "@/hooks/useTeacher";
 
 export default function StudentDashboard() {
   const { user } = useUser();
-  const [selectedTeacher, setSelectedTeacher] = useState<Number>();
+  const [selectedTeacher, setSelectedTeacher] = useState<number>(-1);
   const { teachers } = useTeachers();
   const { error, showError } = useError();
   const { setFutureBookings, setBookings, showBookingOverlay, bookings, futureBookings } = useBooking();
@@ -52,6 +52,10 @@ export default function StudentDashboard() {
 
     fetchInitialData();
   }, [user, showBookingOverlay]);
+
+  const handleSelect = (value: any) => {
+    setSelectedTeacher(value);
+  }
 
   if (!user) {
     return (
@@ -107,7 +111,7 @@ export default function StudentDashboard() {
               </Button>
 
               <div className="transition-transform hover:scale-105 duration-200">
-                <Select value={selectedTeacher || "default"} onValueChange={(value: number) => setSelectedTeacher(value)}>
+                <Select value={selectedTeacher || "default"} onValueChange={(value: number) => handleSelect(value)}>
                   <SelectTrigger className="w-[200px] rounded-lg">
                     <SelectValue placeholder={t("student.selectTeacher")} />
                   </SelectTrigger>

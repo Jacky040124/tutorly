@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef, useState } from 'react';
-import dynamic from 'next/dynamic';
-import '@toast-ui/calendar/dist/toastui-calendar.min.css';
-import { useBooking } from '@/components/providers/BookingContext';
-import BookingOverlay from './BookingOverlay';
-import FeedbackOverlay from '@/components/overlays/FeedbackOverlay';
+import { useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import "@toast-ui/calendar/dist/toastui-calendar.min.css";
+import { useBooking } from "@/components/providers/BookingContext";
+import BookingOverlay from "./BookingOverlay";
+import FeedbackOverlay from "@/components/overlays/FeedbackOverlay";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,9 +14,10 @@ import { ExternalLink, Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { deleteFeedback } from "@/services/booking.service";
-import { useTeachers } from '@/hooks/useTeacher';
+import { useTeachers } from "@/hooks/useTeacher";
+import { Booking } from "@/types/booking";
 
-const Calendar = dynamic(() => import('@toast-ui/react-calendar'), {
+const Calendar = dynamic(() => import("@toast-ui/react-calendar"), {
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center h-full">
@@ -25,23 +26,26 @@ const Calendar = dynamic(() => import('@toast-ui/react-calendar'), {
   ),
 });
 
-export default function StudentCalendar(selectedTeacher) {
+export default function StudentCalendar(param: { selectedTeacher: number }) {
   const calendarRef = useRef(null);
   const { teachers } = useTeachers();
   const { setSelectedSlot, showBookingOverlay, setShowBookingOverlay, bookings, setBookings } = useBooking();
-  const [showUpcoming, setShowUpcoming] = useState(true);
-  const [selectedBooking, setSelectedBooking] = useState(null);
-  const [feedbackToDelete, setFeedbackToDelete] = useState(null);
+  const [showUpcoming, setShowUpcoming] = useState<boolean>(true);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [feedbackToDelete, setFeedbackToDelete] = useState<string>("");
 
-  const handleDeleteFeedback = async (booking) => {
-    setFeedbackToDelete(booking);
+  const handleDeleteFeedback = async (booking: Booking) => {
+    if (booking.feedback) {
+      const bookingid: string = booking.id;
+      setFeedbackToDelete(bookingid);
+    }
   };
 
   const confirmDeleteFeedback = async () => {
     if (!feedbackToDelete) return;
 
     try {
-      await deleteFeedback(feedbackToDelete.id);
+      await deleteFeedback(feedbackToDelete);
       // Update local state
       const updatedBookings = bookings.map((b) => (b.id === feedbackToDelete.id ? { ...b, feedback: null } : b));
       setBookings(updatedBookings);
@@ -49,10 +53,9 @@ export default function StudentCalendar(selectedTeacher) {
       console.error("Error deleting feedback:", error);
       alert("Failed to delete feedback. Please try again.");
     } finally {
-      setFeedbackToDelete(null);
+      setFeedbackToDelete("");
     }
   };
-
 
   // Filter bookings based on upcoming/past
   const filteredBookings = bookings.filter((booking) => {
@@ -81,8 +84,8 @@ export default function StudentCalendar(selectedTeacher) {
   ];
 
   // Convert teacher availability to TUI calendar events
-  const availabilityEvents = selectedTeacher
-    ? teachers[selectedTeacher]?.availability.map((slot) => ({
+  const availabilityEvents = param.selectedTeacher
+    ? teachers[param.selectedTeacher]?.availability.map((slot) => ({
         id: `${slot.date.year}_${slot.date.month}_${slot.date.day}_${slot.startTime}`,
         calendarId: "availability",
         title: "Available",
@@ -99,11 +102,11 @@ export default function StudentCalendar(selectedTeacher) {
         },
       })) || []
     : [];
-    
-    console.log("teachers:", teachers);
-    console.log("selectedTeacher Index:", selectedTeacher);
-    console.log("selectedTeacher:", teachers[selectedTeacher]);
-    console.log("availabilityEvents:", availabilityEvents);
+
+  console.log("teachers:", teachers);
+  console.log("selectedTeacher Index:", param.selectedTeacher);
+  console.log("selectedTeacher:", teachers[param.selectedTeacher]);
+  console.log("availabilityEvents:", availabilityEvents);
 
   // Convert bookings to TUI calendar events
   const bookingEvents = bookings.map((booking) => ({
@@ -122,9 +125,9 @@ export default function StudentCalendar(selectedTeacher) {
 
   const events = [...availabilityEvents, ...bookingEvents];
 
-  const handleEventClick = (event) => {
+  const handleEventClick = (event: any) => {
     if (event.event.calendarId === "availability") {
-      const slot = teachers[selectedTeacher]?.availability.find(
+      const slot = teachers[param.selectedTeacher]?.availability.find(
         (s) =>
           s.date.year === event.event.raw.date.year &&
           s.date.month === event.event.raw.date.month &&
@@ -135,7 +138,7 @@ export default function StudentCalendar(selectedTeacher) {
       if (slot) {
         setSelectedSlot({
           ...slot,
-          title: `Class with ${teachers[selectedTeacher]?.nickname}`,
+          title: `Class with ${teachers[param.selectedTeacher]?.nickname}`,
         });
         setShowBookingOverlay(true);
       }
@@ -143,9 +146,9 @@ export default function StudentCalendar(selectedTeacher) {
   };
 
   const template = {
-    time(event) {
+    time(event: any) {
       // Convert to Date object if it isn't already
-      const date = new Date(event.start);
+      const date: any = new Date(event.start);
 
       // Check if date is valid before formatting
       const formattedDate = !isNaN(date)
@@ -181,7 +184,7 @@ export default function StudentCalendar(selectedTeacher) {
         </div>
       `;
     },
-    popupDetailBody({ schedule }) {
+    popupDetailBody({ schedule }: { schedule: any}) {
       const startDate = new Date(schedule.start);
       const endDate = new Date(schedule.end);
       const day = startDate.toLocaleString("default", { weekday: "long" });
@@ -397,7 +400,7 @@ export default function StudentCalendar(selectedTeacher) {
                             Teacher: {teachers[booking.teacherId]?.nickname || "Loading..."}
                           </Badge>
                         </div>
-                        {booking.isRepeating && (
+                        {booking.bulkId && (
                           <div className="text-xs text-gray-500">
                             Class {booking.lessonNumber}/{booking.totalLessons}
                           </div>

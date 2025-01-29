@@ -1,4 +1,5 @@
 export interface Booking {
+  id: string;
   bulkId?: string;
   createdAt: string;
   date: {

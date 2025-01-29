@@ -2,7 +2,7 @@ import { doc, runTransaction, collection, query, where, getDocs, orderBy, setDoc
 import { db } from "../lib/firebase";
 import { sendMail, generateBookingConfirmationEmail } from "./mail.service";
 import { Booking } from "../../types/booking";
-import { Event, EventDate } from "../../types/event";
+import { Event } from "../../types/event";
 
 type BookingWithId = Booking & { id: string };
 

@@ -6,7 +6,6 @@ import TeacherGrid from "@/components/landingpage/TeacherGrid";
 import SubjectFilter from "@/components/landingpage/SubjectFilter";
 import { Search } from "lucide-react";
 import { useTeachers } from "@/hooks/useTeacher";
-import { Spinner} from "@/components/ui/spinner"
 
 const subjects = ["ALL", "MATH", "PHYS", "CHEM", "ENGL", "ECON", "CPSC"];
 
@@ -25,9 +24,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Spinner size="sm" className="text-primary" variant="circle" />
-      </div>
+      <h2> Loading </h2>
     );
   }
 
