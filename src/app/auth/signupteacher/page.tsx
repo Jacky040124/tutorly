@@ -4,48 +4,42 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/common/Fields";
-import { useError } from "@/components/providers/ErrorContext";
-import { signUpStudent } from "@/services/auth.service";
+import { useNotification } from "@/hooks/useNotification";
+import { signUpTeacher } from "@/services/auth.service";
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from "@/components/common/LanguageSwitcher";
-import { useNotification } from "@/components/providers/NotificationContext";
 
-export default function SignUp() {
+//TODO: try to get rid of this thing, must be a better way to do it
+
+export default function SignUpTeacher() {
   const { t } = useTranslation('auth');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
-  const [signupCode, setSignupCode] = useState("");
-  const { showError } = useError();
+  const [description, setDescription] = useState("");
+  const [passcode, setPasscode] = useState("");
   const { showSuccess } = useNotification();
   const router = useRouter();
 
-  const handleSignup = async (e) => {
+  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
-      if (!email || !password || !nickname || !signupCode) {
+      if (!email || !password || !nickname || !description || !passcode) {
         throw new Error("All fields are required");
       }
 
-      if (signupCode !== 'david0324') {
-        throw new Error("Invalid sign-up code");
+      if (passcode !== "david2025") {
+        throw new Error("Invalid teacher registration code");
       }
 
-      await signUpStudent(email, password, nickname);
+      await signUpTeacher(email, password, nickname, description);
       showSuccess("Sign Up Successful! Please sign in.");
       setTimeout(() => router.push('/auth/signin'), 2000);
       
     } catch (error) {
-      console.error("Signup error:", error);
-      const errorMessage = {
-        'auth/email-already-in-use': 'An account with this email already exists',
-        'auth/invalid-email': 'Invalid email format',
-        'auth/weak-password': 'Password should be at least 6 characters',
-      }[error.code] || error.message;
-      
-      showError(errorMessage);
+      console.error("Teacher signup error:", error);
     }
   };
 
@@ -63,10 +57,10 @@ export default function SignUp() {
 
         <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
           <h2 className="text-3xl font-bold">
-            {t('signup.student.title')}
+            {t('signup.teacher.title')}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            {t('signup.student.subtitle')}{' '}
+            {t('signup.teacher.subtitle')}{' '}
             <Link href="/auth/signin" className="font-medium text-green-600 hover:text-green-500">
               {t('signin.button')}
             </Link>
@@ -75,14 +69,21 @@ export default function SignUp() {
           <div className="mt-8">
             <form onSubmit={handleSignup} className="space-y-6">
               <TextField
-                label={t('signup.student.nickname')}
+                label={t('signup.teacher.nickname')}
                 name="nickname"
                 type="text"
                 onChange={(e) => setNickname(e.target.value)}
                 required
               />
               <TextField
-                label={t('signup.student.email')}
+                label={t('signup.teacher.description')}
+                name="description"
+                type="text"
+                onChange={(e) => setDescription(e.target.value)}
+                required
+              />
+              <TextField
+                label={t('signup.teacher.email')}
                 name="email"
                 type="email"
                 autoComplete="email"
@@ -90,7 +91,7 @@ export default function SignUp() {
                 required
               />
               <TextField
-                label={t('signup.student.password')}
+                label={t('signup.teacher.password')}
                 name="password"
                 type="password"
                 autoComplete="new-password"
@@ -98,38 +99,37 @@ export default function SignUp() {
                 required
               />
               <TextField
-                label="Sign-up Code"
-                name="signupCode"
-                type="text"
-                onChange={(e) => setSignupCode(e.target.value)}
+                label="Teacher Registration Code"
+                name="passcode"
+                type="password"
+                onChange={(e) => setPasscode(e.target.value)}
                 required
               />
 
               <div className="space-y-4">
                 <Button
                   type="submit"
-                  variant="solid"
+                  variant="outline"
                   color="blue"
                   className="w-full"
                 >
-                  {t('signup.student.button')}
+                  {t('signup.teacher.button')}
                 </Button>
                 <Link
-                  href="/auth/signupteacher"
+                  href="/auth/signup"
                   className="block text-center text-sm text-gray-600 hover:text-gray-900"
                 >
-                  {t('signup.student.teacherLink')}
+                  {t('signup.teacher.studentLink')}
                 </Link>
               </div>
             </form>
           </div>
         </div>
       </div>
-
       <div className="hidden lg:block w-1/2 bg-green-600 relative">
         <div className="absolute inset-0 flex flex-col justify-center items-center text-white p-12">
-          <h1 className="text-4xl font-bold mb-6">Start Learning Today</h1>
-          <p className="text-xl text-center max-w-md">Join our community and learn from the best.</p>
+          <h1 className="text-4xl font-bold mb-6">{t('signup.teacher.banner.title')}</h1>
+          <p className="text-xl text-center max-w-md">{t('signup.teacher.banner.subtitle')}</p>
         </div>
       </div>
     </div>

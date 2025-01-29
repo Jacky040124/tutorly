@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import '@toast-ui/calendar/dist/toastui-calendar.min.css';
-import { useUser } from '@/components/providers';
+import { useUser } from '@/hooks/useUser';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,6 @@ import { RefreshCw, ExternalLink, Plus, Star } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { useLoading } from "@/components/providers/LoadingContext";
-import { useError } from "@/components/providers/ErrorContext";
 import { getTeacherBookings, updateBookingStatus, updateBookingHomework } from "@/services/booking.service";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
@@ -30,8 +28,6 @@ const Calendar = dynamic(() => import('@toast-ui/react-calendar'), {
 export default function TeacherCalendar() {
   const calendarRef = useRef(null);
   const { user, availability, removeAvailability, fetchUserNickname } = useUser();
-  const { setIsLoading } = useLoading();
-  const { showError } = useError();
   const [showUpcoming, setShowUpcoming] = useState(true);
   const [bookings, setBookings] = useState([]);
   const [studentNames, setStudentNames] = useState({});
@@ -40,7 +36,6 @@ export default function TeacherCalendar() {
 
   const handleBookingStatusChange = async (bookingId, newStatus) => {
     try {
-      setIsLoading(true);
       await updateBookingStatus(bookingId, newStatus);
       
       // Update local state
@@ -52,15 +47,13 @@ export default function TeacherCalendar() {
         )
       );
     } catch (error) {
-      showError(`Error updating booking status: ${error.message}`);
+      console.error(`Error updating booking status: ${error.message}`);
     } finally {
-      setIsLoading(false);
     }
   };
 
   const handleHomeworkSubmit = async (bookingId) => {
     try {
-      setIsLoading(true);
       await updateBookingHomework(bookingId, homeworkLink);
       
       // Update local state
@@ -79,9 +72,8 @@ export default function TeacherCalendar() {
       );
       setHomeworkLink(""); // Reset input
     } catch (error) {
-      showError(`Error updating homework: ${error.message}`);
+      console.error(`Error updating homework: ${error.message}`);
     } finally {
-      setIsLoading(false);
     }
   };
 
@@ -94,7 +86,6 @@ export default function TeacherCalendar() {
       }
 
       try {
-        setIsLoading(true);
         const fetchedBookings = await getTeacherBookings(user.uid);
         setBookings(fetchedBookings);
 
@@ -107,9 +98,8 @@ export default function TeacherCalendar() {
         }
         setStudentNames(prev => ({ ...prev, ...names }));
       } catch (error) {
-        showError(`Error fetching bookings: ${error.message}`);
+        console.error(`Error fetching bookings: ${error.message}`);
       } finally {
-        setIsLoading(false);
       }
     };
 
@@ -265,7 +255,7 @@ export default function TeacherCalendar() {
         }
       }
     } catch (error) {
-      showError("Failed to remove time slot");
+      console.error("Failed to remove time slot");
     } finally {
       setSlotToDelete(null);
     }

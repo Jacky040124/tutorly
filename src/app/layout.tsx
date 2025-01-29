@@ -21,7 +21,7 @@ export const metadata = {
   description: "Find your Tutor",
 }
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: {children: React.ReactNode}) {
   return (
     <html lang="en" className={clsx(
       'h-full scroll-smooth bg-white antialiased',

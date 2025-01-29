@@ -1,13 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useUser } from "@/components/providers/UserContext";
-import { useError } from "@/components/providers/ErrorContext";
-import { useBooking } from "@/components/providers/BookingContext";
+import { useUser } from "@/hooks/useUser";
+import { useBooking } from "@/hooks/useBooking";
 import { getStudentBookings } from "@/services/booking.service";
 import StudentCalendar from "@/components/calendar/StudentCalendar";
-import ErrorMessage from "@/components/common/ErrorMessage";
 import StudentProfileOverlay from "@/components/overlays/StudentProfileOverlay";
-import { useOverlay } from "@/components/providers/OverlayContext";
+import { useOverlay } from "@/hooks/useOverlay";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "@/components/common/LanguageSwitcher";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -23,7 +21,6 @@ export default function StudentDashboard() {
   const { user } = useUser();
   const [selectedTeacher, setSelectedTeacher] = useState<number>(-1);
   const { teachers } = useTeachers();
-  const { error, showError } = useError();
   const { setFutureBookings, setBookings, showBookingOverlay, bookings, futureBookings } = useBooking();
   const { showStudentProfileOverlay, setShowStudentProfileOverlay } = useOverlay();
   const { t } = useTranslation("dashboard");
@@ -43,7 +40,7 @@ export default function StudentDashboard() {
         }
       } catch (error : unknown) {
         if (error instanceof Error) {
-            showError(`Error fetching data: ${error.message}`);
+            console.error(`Error fetching data: ${error.message}`);
         } else {
           console.error("Unknown error:", error);
         }
@@ -131,13 +128,6 @@ export default function StudentDashboard() {
         </CardContent>
       </Card>
 
-      {error && (
-        <Card className="rounded-xl shadow-md bg-destructive/10">
-          <CardContent className="p-4">
-            <ErrorMessage message={error} />
-          </CardContent>
-        </Card>
-      )}
 
       <StudentCalendar selectedTeacher={selectedTeacher} />
 

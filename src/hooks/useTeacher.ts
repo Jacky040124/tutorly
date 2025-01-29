@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { fetchTeachers } from "@/services/user.service";
 import { Teacher } from "@/types/user";
 
-export const useTeachers = () => {
+export function useTeachers() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

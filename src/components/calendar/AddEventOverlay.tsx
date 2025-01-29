@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useUser, useError, useOverlay } from "@/components/providers";
+import { useUser, useOverlay } from "@/components/providers";
 import { getRepeatingDates } from "@/lib/utils/dateUtils.ts";
 import { useTranslation } from "react-i18next";
 import { 
@@ -20,9 +20,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function AddEventOverlay() {
-  const { user, availability, updateAvailability } = useUser();
+  const { availability, updateAvailability } = useUser();
   const { setShowAddEventOverlay } = useOverlay();
-  const { error, showError } = useError();
   const { showSuccess } = useNotification();
   const { t } = useTranslation("common");
   const { bookings } = useBooking();
@@ -159,7 +158,7 @@ export default function AddEventOverlay() {
         console.log('Overlap check for event:', { event, hasOverlap, conflictingEvent });
         
         if (hasOverlap) {
-          showError(t('calendarOverlay.errors.availabilityOverlap'));
+          console.error(t('calendarOverlay.errors.availabilityOverlap'));
           setIsSubmitting(false);
           return;
         }
@@ -175,7 +174,6 @@ export default function AddEventOverlay() {
       );
     } catch (error) {
       console.error("Error adding event:", error);
-      showError(error.message);
     } finally {
       setIsSubmitting(false);
     }

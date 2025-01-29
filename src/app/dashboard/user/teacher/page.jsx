@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from "@/components/providers/UserContext";
-import { useError } from "@/components/providers/ErrorContext";
 import TeacherCalendar from "@/components/calendar/TeacherCalendar";
 import TeacherProfileOverlay from "@/components/overlays/TeacherProfileOverlay";
 import { useOverlay } from "@/components/providers/OverlayContext";
@@ -16,7 +15,6 @@ import { getTeacherBookings } from "@/services/booking.service";
 
 export default function TeacherDashboard() {
   const { user } = useUser();
-  const { error, showError } = useError();
   const { t, i18n } = useTranslation("dashboard");
   const [bookings, setBookings] = useState([]);
   const { 
@@ -35,12 +33,12 @@ export default function TeacherDashboard() {
         const fetchedBookings = await getTeacherBookings(user.uid);
         setBookings(fetchedBookings);
       } catch (error) {
-        showError(`Error fetching bookings: ${error.message}`);
+        console.error(`Error fetching bookings: ${error.message}`);
       }
     };
 
     fetchBookings();
-  }, [user, showError]);
+  }, [user]);
 
   const currentDate = new Date().toLocaleString(i18n.language, { 
     month: "long",
@@ -94,13 +92,6 @@ export default function TeacherDashboard() {
           </Button>
         </div>
       </div>
-
-      {/* Error Display */}
-      {error && (
-        <div className="text-red-500 bg-red-50 p-4 rounded-lg">
-          {t("common.error")}: {error}
-        </div>
-      )}
 
       {/* Calendar Section */}
       <TeacherCalendar bookings={bookings} />

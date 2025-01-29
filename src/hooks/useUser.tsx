@@ -2,10 +2,10 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, setDoc, getDoc, collection, getDocs, runTransaction } from "firebase/firestore";
-import { db, auth } from "../../lib/firebase";
-import { User, Teacher, Student } from "../../../types/user";
-import { Event } from "../../../types/event";
+import { doc, setDoc, getDoc, runTransaction } from "firebase/firestore";
+import { db, auth } from "../lib/firebase";
+import { User, Teacher, Student } from "../../types/user";
+import { Event } from "../../types/event";
 
 interface UserContextType {
   user: User | null;
@@ -13,14 +13,10 @@ interface UserContextType {
   loading: boolean;
   availability: Event[];
   updateAvailability: (newAvailability: Event[]) => Promise<void>;
-  teacherList: Record<string, User>;
-  fetchTeachers: () => Promise<Record<string, User>>;
   fetchStudentData: (studentId: string) => Promise<{ data: User }>;
   updatePrice: (newPrice: number) => Promise<void>;
   updateNickname: (newNickname: string) => Promise<void>;
   updateDescription: (newDescription: string) => Promise<void>;
-  selectedTeacher: string;
-  setSelectedTeacher: (teacherId: string) => void;
   updateUserBalance: (newBalance: number) => Promise<void>;
   updateGradeLevel: (newGradeLevel: string) => Promise<void>;
   updateStudentDescription: (newDescription: string) => Promise<void>;
@@ -34,8 +30,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [availability, setAvailability] = useState<Event[]>([]);
-  const [teacherList, setTeacherList] = useState<Record<string, User>>({});
-  const [selectedTeacher, setSelectedTeacher] = useState("");
 
   //TODO: figure out what this useEffect do and whather it is necessary
   useEffect(() => {
@@ -250,22 +244,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // fetch a list of all teachers
-  const fetchTeachers = async () => {
-    const teachers: Record<string, User> = {};
-    const querySnapshot = await getDocs(collection(db, "users"));
-    querySnapshot.forEach((doc) => {
-      const userData = doc.data();
-      if (userData.type === "teacher") {
-        teachers[doc.id] = {
-          ...userData,
-          uid: doc.id,
-        } as Teacher;
-      }
-    });
-    setTeacherList(teachers);
-    return teachers;
-  };
 
   const fetchStudentData = async (studentId: string) => {
     if (!studentId) {
@@ -301,7 +279,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // helper
   const _removeSingleAvailability = async (availabilityToRemove: Event) => {
     console.log("availabilityToRemove:", availabilityToRemove);
     if (user == null) return;
@@ -378,14 +355,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
     loading,
     availability,
     updateAvailability,
-    teacherList,
-    fetchTeachers,
     fetchStudentData,
     updatePrice,
     updateNickname,
     updateDescription,
-    selectedTeacher,
-    setSelectedTeacher,
     updateUserBalance,
     updateGradeLevel,
     updateStudentDescription,

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { useUser, useBooking } from "@/components/providers";
+import { useUser } from "@/hooks/useUser";
+import { useBooking } from "@/hooks/useBooking";
 import { formatTime } from "@/lib/utils/timeUtils";
 import { handleBookingConfirmed } from "@/services/booking.service";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
@@ -9,13 +10,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CalendarDays, Clock, User, CreditCard, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useTeachers } from "@/hooks/useTeacher"; 
 
-export default function BookingOverlay() {
+export default function BookingOverlay(prop : {selectedTeacher: number}) {
   const { selectedSlot, setShowBookingOverlay, setBookingConfirmed } = useBooking();
-  const { user, selectedTeacher, teacherList } = useUser();
+  const { user } = useUser();
+  const { teacherList } = useTeachers()
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showTeacherDetails, setShowTeacherDetails] = useState(false);
-  const teacherData = teacherList[selectedTeacher];
+  const teacherData = teacherList[prop.selectedTeacher];
 
   const handleClose = () => {
     setShowBookingOverlay(false);
