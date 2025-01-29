@@ -1,8 +1,9 @@
 interface BaseUser {
   uid: string;
   email: string | null;
+  photoURL?: string;
   nickname: string;
-  type: 'teacher' | 'student';
+  type: "teacher" | "student";
   createdAt?: string;
 }
 
@@ -19,8 +20,11 @@ export interface Teacher extends BaseUser {
 }
 
 export interface Student extends BaseUser {
-  type: 'student';
+  type: "student";
   balance: number;
+  introduction: string;
+  interests: string;
+  goals: string;
   bookingHistory?: any[]; // Optional booking history
   academicDetails?: {
     gradeLevel?: string;

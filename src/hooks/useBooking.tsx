@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { getStudentBookings, getTeacherBookings } from "@/services/booking.service";
-import { useUser } from "./useUser";
+import { useUser } from "@/hooks/useUser";
 import { Booking } from "@/types/booking";
 
 interface BookingContextType {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser } from "@/components/providers/UserContext";
+import { useUser } from '@/hooks/useUser';
 import TeacherCalendar from "@/components/calendar/TeacherCalendar";
 import TeacherProfileOverlay from "@/components/overlays/TeacherProfileOverlay";
 import { useOverlay } from "@/components/providers/OverlayContext";

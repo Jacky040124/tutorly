@@ -50,8 +50,9 @@ export default function StudentDashboard() {
     fetchInitialData();
   }, [user, showBookingOverlay]);
 
-  const handleSelect = (value: any) => {
-    setSelectedTeacher(value);
+  const handleSelect = (value: string) => {
+    const parsedValue = parseInt(value, 10);
+    setSelectedTeacher(parsedValue);
   }
 
   if (!user) {
@@ -108,7 +109,10 @@ export default function StudentDashboard() {
               </Button>
 
               <div className="transition-transform hover:scale-105 duration-200">
-                <Select value={selectedTeacher || "default"} onValueChange={(value: number) => handleSelect(value)}>
+                <Select
+                  value={String(selectedTeacher) || "default"}
+                  onValueChange={(value: string) => handleSelect(value)}
+                >
                   <SelectTrigger className="w-[200px] rounded-lg">
                     <SelectValue placeholder={t("student.selectTeacher")} />
                   </SelectTrigger>
@@ -127,7 +131,6 @@ export default function StudentDashboard() {
           </div>
         </CardContent>
       </Card>
-
 
       <StudentCalendar selectedTeacher={selectedTeacher} />
 

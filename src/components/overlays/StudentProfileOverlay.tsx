@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useUser } from "@/components/providers/UserContext";
-import { useOverlay } from "@/components/providers/OverlayContext";
-import { useNotification } from "@/components/providers/NotificationContext";
+import { useUser } from "@/hooks/useUser";
+import { useOverlay } from "@/hooks/useOverlay";
+import { useNotification } from "@/hooks/useNotification";
 import { updateStudentProfile } from "@/services/user.service";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -11,44 +11,47 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { Student } from "@/types/user";
 
 export default function StudentProfileOverlay() {
   const { user, setUser } = useUser();
   const { showStudentProfileOverlay, setShowStudentProfileOverlay } = useOverlay();
   const { showSuccess, showError } = useNotification();
   const { t } = useTranslation("common");
-  
+
   const [formData, setFormData] = useState({
     nickname: user?.nickname || "",
-    introduction: user?.introduction || "",
-    interests: user?.interests || "",
-    goals: user?.goals || "",
+    introduction: (user as Student).introduction || "",
+    interests: (user as Student).interests || "",
+    goals: (user as Student).goals || "",
   });
 
   useEffect(() => {
     if (user) {
-      setFormData(prevData => ({
+      setFormData((prevData) => ({
         nickname: user.nickname ?? prevData.nickname,
         introduction: user.introduction ?? prevData.introduction,
-        interests: user.interests ?? prevData.interests,
-        goals: user.goals ?? prevData.goals,
+        interests: (user as Student).interests ?? prevData.interests,
+        goals: (user as Student).goals ?? prevData.goals,
       }));
     }
   }, [user]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      await updateStudentProfile(user.uid, formData);
-      setUser({ ...user, ...formData });
-      showSuccess(t("profile.updateSuccess"));
-      setShowStudentProfileOverlay(false);
+      if (user) {
+        await updateStudentProfile(user.uid, formData);
+        setUser({ ...user, ...formData });
+        showSuccess(t("profile.updateSuccess"));
+        setShowStudentProfileOverlay(false);
+      }
     } catch (error) {
       showError(t("profile.updateError"));
     }
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -59,7 +62,7 @@ export default function StudentProfileOverlay() {
         <DialogHeader>
           <DialogTitle className="text-2xl font-semibold">{t("profile.editProfile")}</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex items-center space-x-4">
             <Avatar className="h-20 w-20">
@@ -124,19 +127,13 @@ export default function StudentProfileOverlay() {
           </Card>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowStudentProfileOverlay(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => setShowStudentProfileOverlay(false)}>
               {t("profile.buttons.cancel")}
             </Button>
-            <Button type="submit">
-              {t("teacherProfile.buttons.save")}
-            </Button>
+            <Button type="submit">{t("teacherProfile.buttons.save")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   );
-} 
+}

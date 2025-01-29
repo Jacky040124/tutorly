@@ -245,7 +245,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
 
 
-  const fetchStudentData = async (studentId: string) => {
+  const fetchStudentData = async (studentId: string): Promise<{ data: User }> => {
     if (!studentId) {
       throw new Error("Student ID is required");
     }
@@ -263,12 +263,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
         throw new Error("User is not a student");
       }
 
-      const data = {
+      const data: Student = {
         email: userData.email,
         uid: studentId,
         type: userData.type,
         nickname: userData.nickname,
         balance: userData.balance,
+        introduction: userData.introduction,
+        interests: userData.interests,
+        goals: userData.goals,
         academicDetails: userData.academicDetails || {},
       };
 

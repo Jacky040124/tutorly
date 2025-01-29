@@ -1,13 +1,20 @@
 import { useState, useEffect } from 'react';
-import { useUser } from '@/components/providers/UserContext';
+import { useUser } from '@/hooks/useUser';
 import { Star } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { handleFeedbackSubmit } from "@/services/booking.service";
 import { useTranslation } from 'react-i18next';
+import { Booking } from '@/types/booking';
 
-export default function FeedbackOverlay({ booking, onClose, onFeedbackSubmitted }) {
+interface FeedbackOverlayProp {
+  booking: Booking;
+  onClose: () => void;
+  onFeedbackSubmitted: () => void;
+}
+
+export default function FeedbackOverlay({ booking, onClose, onFeedbackSubmitted }: FeedbackOverlayProp) {
   const { user } = useUser();
   const [feedbackText, setFeedbackText] = useState("");
   const [rating, setRating] = useState(0);
@@ -45,11 +52,15 @@ export default function FeedbackOverlay({ booking, onClose, onFeedbackSubmitted 
     }
 
     try {
-      await handleFeedbackSubmit(booking.id, {
-        rating,
-        comment: feedbackText?.trim() || "",
-        studentId: user.uid,
-      }, !!booking.feedback);
+      await handleFeedbackSubmit(
+        booking.id,
+        {
+          rating,
+          comment: feedbackText?.trim() || "",
+          studentId: user.uid,
+        },
+        !!booking.feedback
+      );
 
       onFeedbackSubmitted();
       onClose();
@@ -65,7 +76,7 @@ export default function FeedbackOverlay({ booking, onClose, onFeedbackSubmitted 
     <Dialog open={true} onOpenChange={() => onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{booking.feedback ? 'Edit Feedback' : 'Add Feedback'}</DialogTitle>
+          <DialogTitle>{booking.feedback ? "Edit Feedback" : "Add Feedback"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-4">
           <div className="flex items-center gap-1">
@@ -73,9 +84,7 @@ export default function FeedbackOverlay({ booking, onClose, onFeedbackSubmitted 
               <button
                 key={star}
                 onClick={() => setRating(star)}
-                className={`p-1 ${
-                  star <= rating ? "text-yellow-500" : "text-gray-300"
-                }`}
+                className={`p-1 ${star <= rating ? "text-yellow-500" : "text-gray-300"}`}
               >
                 <Star className="h-5 w-5" fill={star <= rating ? "currentColor" : "none"} />
               </button>
@@ -88,16 +97,10 @@ export default function FeedbackOverlay({ booking, onClose, onFeedbackSubmitted 
             className="min-h-[100px]"
           />
           <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={onClose}
-            >
+            <Button variant="outline" onClick={onClose}>
               {t("profile.buttons.cancel")}
             </Button>
-            <Button
-              onClick={handleSaveFeedback}
-              disabled={!rating}
-            >
+            <Button onClick={handleSaveFeedback} disabled={!rating}>
               Save
             </Button>
           </div>

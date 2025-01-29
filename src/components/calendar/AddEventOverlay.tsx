@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useUser, useOverlay } from "@/components/providers";
+import { useUser } from "@/hooks/useUser";
 import { getRepeatingDates } from "@/lib/utils/dateUtils.ts";
 import { useTranslation } from "react-i18next";
 import { 

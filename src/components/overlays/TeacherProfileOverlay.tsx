@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useUser } from "@/components/providers/UserContext";
-import { useOverlay } from "@/components/providers/OverlayContext";
-import { useNotification } from "@/components/providers/NotificationContext";
+import { useUser } from "@/hooks/useUser";
+import { useOverlay } from "@/hooks/useOverlay";
+import { useNotification } from "@/hooks/useNotification";
 import { updateTeacherProfile } from "@/services/user.service";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranslation } from "react-i18next";
+import { Teacher } from "@/types/user";
 
 export default function TeacherProfileOverlay() {
   const { user, setUser } = useUser();
@@ -21,39 +22,41 @@ export default function TeacherProfileOverlay() {
 
   const [formData, setFormData] = useState({
     nickname: user?.nickname || "",
-    introduction: user?.introduction || "",
-    expertise: user?.expertise || "",
-    education: user?.education || "",
-    experience: user?.experience || "",
-    teachingStyle: user?.teachingStyle || "",
+    introduction: (user as Teacher)?.introduction || "",
+    expertise: (user as Teacher)?.expertise || "",
+    education: (user as Teacher)?.education || "",
+    experience: (user as Teacher)?.experience || "",
+    teachingStyle: (user as Teacher)?.teachingStyle || "",
   });
 
   useEffect(() => {
     if (user) {
-      setFormData(prevData => ({
+      setFormData((prevData) => ({
         nickname: user.nickname ?? prevData.nickname,
         introduction: user.introduction ?? prevData.introduction,
-        expertise: user.expertise ?? prevData.expertise,
-        education: user.education ?? prevData.education,
-        experience: user.experience ?? prevData.experience,
-        teachingStyle: user.teachingStyle ?? prevData.teachingStyle,
+        expertise: (user as Teacher).expertise ?? prevData.expertise,
+        education: (user as Teacher).education ?? prevData.education,
+        experience: (user as Teacher).experience ?? prevData.experience,
+        teachingStyle: (user as Teacher).teachingStyle ?? prevData.teachingStyle,
       }));
     }
   }, [user]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     try {
-      await updateTeacherProfile(user.uid, formData);
-      setUser({ ...user, ...formData });
-      showSuccess(t("profile.updateSuccess"));
-      setShowTeacherProfileOverlay(false);
+      if (user) {
+        await updateTeacherProfile(user.uid, formData);
+        setUser({ ...user, ...formData });
+        showSuccess(t("profile.updateSuccess"));
+        setShowTeacherProfileOverlay(false);
+      }
     } catch (error) {
       showError(t("profile.updateError"));
     }
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -168,21 +171,13 @@ export default function TeacherProfileOverlay() {
           </Tabs>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowTeacherProfileOverlay(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => setShowTeacherProfileOverlay(false)}>
               {t("teacherProfile.buttons.cancel")}
             </Button>
-            <Button type="submit">
-              {t("teacherProfile.buttons.save")}
-            </Button>
+            <Button type="submit">{t("teacherProfile.buttons.save")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   );
 }
-
-
