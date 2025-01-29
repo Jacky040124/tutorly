@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
 import { useUser } from "@/hooks/useUser";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signIn } from "@/services/auth.service";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -14,8 +12,9 @@ import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
 import { useForm, Controller } from "react-hook-form";
 import React from "react";
+import type { User } from "@/types/user";
 
-type signInData = {
+type SignInData = {
   email: string;
   password: string;
 };
@@ -25,7 +24,7 @@ export default function SignIn() {
   const router = useRouter();
   const { setUser } = useUser();
 
-  const { handleSubmit, control, register } = useForm<signInData>();
+  const { handleSubmit, control, register } = useForm<SignInData>();
 
   useEffect(() => {
     const savedEmail = window.localStorage.getItem("emailForSignIn");
@@ -40,53 +39,11 @@ export default function SignIn() {
     }
   }, [register]);
 
-  const updateUserContext = (userCredential: any, userData: any) => {
-    if (userData.type === "teacher") {
-      setUser({
-        email: userCredential.user.email,
-        uid: userCredential.user.uid,
-        type: "teacher",
-        nickname: userData.nickname,
-        description: userData.description || "",
-        availability: userData.availability || [],
-        pricing: userData.pricing || 0
-      });
-    } else if (userData.type === "student") {
-      setUser({
-        email: userCredential.user.email,
-        uid: userCredential.user.uid,
-        type: "student",
-        nickname: userData.nickname,
-        balance: userData.balance || 0,
-        introduction: userData.introduction || "",
-        interests: userData.interests || "",
-        goals: userData.goals || ""
-      });
-    }
-  };
-
-  const handleSignIn = async (data: any) => {
+  const handleSignIn = async (data: SignInData) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
-
-      const docRef = doc(db, "users", userCredential.user.uid);
-      const docSnap = await getDoc(docRef);
-
-      if (!docSnap.exists()) {
-        throw new Error("User data not found");
-      }
-
-      const userData = docSnap.data();
-      updateUserContext(userCredential, userData);
-
-      // Navigate based on user type
-      const route =
-        userData.type === "teacher"
-          ? "/dashboard/user/teacher"
-          : userData.type === "manager"
-          ? "/dashboard/user/manager"
-          : "/dashboard/user/student";
-      router.replace(route);
+      const { user, redirectTo } = await signIn(data.email, data.password);
+      setUser(user as User);
+      router.replace(redirectTo);
     } catch (error) {
       console.error("Sign-in error:", error);
     }
