@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useUser } from "@/hooks/useUser";
-import { getRepeatingDates } from "@/lib/utils/dateUtils.ts";
+import { getRepeatingDates } from "@/lib/utils/dateUtils";
 import { useTranslation } from "react-i18next";
 import { 
   checkOverlap, 
@@ -9,8 +9,9 @@ import {
   generateTimeOptions,
   isValidEvent 
 } from "@/lib/utils/calendarUtil";
-import { useBooking } from "@/components/providers";
-import { useNotification } from "@/components/providers/NotificationContext";
+import { useBooking } from "@/hooks/useBooking";
+import { useNotification } from "@/hooks/useNotification";
+import { useOverlay } from "@/hooks/useOverlay";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,10 +29,10 @@ export default function AddEventOverlay() {
 
   // Basic event fields
   const [title, setTitle] = useState("");
-  const [date, setDate] = useState(null);
+  const [date, setDate] = useState<Date | null>(null);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [meetingLinks, setMeetingLinks] = useState({});
+  const [meetingLinks, setMeetingLinks] = useState<Record<string, string>>({});
   
   // Student enrollment fields
   const [maxStudents, setMaxStudents] = useState(1);
@@ -53,8 +54,8 @@ export default function AddEventOverlay() {
   }, [date, isRepeating]);
 
   // Initialize meeting links when repeat dates change
-  const initializeMeetingLinks = (dates) => {
-    const newLinks = {};
+  const initializeMeetingLinks = (dates: Array<{ year: number; month: number; day: number }>) => {
+    const newLinks: Record<string, string> = {};
     dates.forEach((date, index) => {
       const dateKey = `${date.year}-${date.month}-${date.day}`;
       if (!meetingLinks[dateKey]) {
@@ -90,7 +91,7 @@ export default function AddEventOverlay() {
     return valid;
   };
 
-  const handleSave = async (e) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     console.log('Starting save process...');
@@ -113,7 +114,7 @@ export default function AddEventOverlay() {
             endTime: parseInt(endTime),
             meeting_link: meetingLinks[dateKey],
             title: title,
-            maxStudents: parseInt(maxStudents),
+            maxStudents: maxStudents,
             enrolledStudentIds: [],
             isRepeating: true,
             repeatGroupId,
@@ -126,6 +127,7 @@ export default function AddEventOverlay() {
         });
       } else {
         console.log('Creating single event...');
+        if (!date) return;
         const dateKey = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
         const event = {
           date: {
@@ -137,9 +139,12 @@ export default function AddEventOverlay() {
           endTime: parseInt(endTime),
           meeting_link: meetingLinks[dateKey],
           title: title,
-          maxStudents: parseInt(maxStudents),
+          maxStudents: parseInt(maxStudents.toString()),
           enrolledStudentIds: [],
           isRepeating: false,
+          repeatGroupId: `single_${Date.now()}`,
+          repeatIndex: 0,
+          totalClasses: 1,
           createdAt: new Date().toISOString(),
         };
         console.log('Single event:', event);
@@ -150,11 +155,12 @@ export default function AddEventOverlay() {
       console.log('Current availability:', availability);
       console.log('Current bookings:', bookings);
 
-      const existingEvents = [...(availability || []), ...(bookings || [])];
+      // Only check overlaps against availability
+      const existingAvailability = availability || [];
       
       // Check for overlaps with all new events
       for (const event of newEvents) {
-        const { hasOverlap, conflictingEvent } = checkOverlap(existingEvents, event);
+        const { hasOverlap, conflictingEvent } = checkOverlap(existingAvailability, event);
         console.log('Overlap check for event:', { event, hasOverlap, conflictingEvent });
         
         if (hasOverlap) {
@@ -205,8 +211,8 @@ export default function AddEventOverlay() {
             <Label>{t("calendarOverlay.fields.date")}</Label>
             <Calendar
               mode="single"
-              selected={date}
-              onSelect={setDate}
+              selected={date || undefined}
+              onSelect={(date: Date | undefined) => setDate(date ?? null)}
               className="rounded-md border"
             />
           </div>

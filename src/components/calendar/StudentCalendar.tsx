@@ -27,10 +27,11 @@ type CalendarInstance = {
 };
 
 const DynamicCalendar = dynamic(
-  () => import("@toast-ui/react-calendar").then((mod) => {
-    const Calendar = mod.default;
-    return ({ forwardedRef, ...props }: any) => <Calendar {...props} ref={forwardedRef} />;
-  }),
+  () =>
+    import("@toast-ui/react-calendar").then((mod) => {
+      const Calendar = mod.default;
+      return ({ forwardedRef, ...props }: any) => <Calendar {...props} ref={forwardedRef} />;
+    }),
   { ssr: false }
 );
 
@@ -38,7 +39,7 @@ const CalendarWrapper = forwardRef((props: any, ref: ForwardedRef<CalendarInstan
   return <DynamicCalendar {...props} forwardedRef={ref} />;
 });
 
-CalendarWrapper.displayName = 'CalendarWrapper';
+CalendarWrapper.displayName = "CalendarWrapper";
 
 interface StudentCalendarProps {
   selectedTeacher: number;
@@ -66,9 +67,7 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
     try {
       await deleteFeedback(feedbackToDelete);
       // Update local state
-      const updatedBookings = bookings.map((b) => 
-        b.id === feedbackToDelete ? { ...b, feedback: undefined } : b
-      );
+      const updatedBookings = bookings.map((b) => (b.id === feedbackToDelete ? { ...b, feedback: undefined } : b));
       setBookings(updatedBookings);
     } catch (error) {
       console.error("Error deleting feedback:", error);
@@ -129,20 +128,28 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
   console.log("selectedTeacher:", teachers[selectedTeacher]);
   console.log("availabilityEvents:", availabilityEvents);
 
+  // Helper function to find teacher by ID
+  const findTeacherById = (teacherId: string) => {
+    return teachers.find((teacher) => teacher.uid === teacherId);
+  };
+
   // Convert bookings to TUI calendar events
-  const bookingEvents = bookings.map((booking) => ({
-    calendarId: "bookings",
-    title: booking.title || `Class with ${booking.teacherId}`,
-    category: "time",
-    start: new Date(booking.date.year, booking.date.month - 1, booking.date.day, booking.startTime),
-    end: new Date(booking.date.year, booking.date.month - 1, booking.date.day, booking.endTime),
-    isReadOnly: true,
-    raw: {
-      link: booking.link,
-      teacherId: booking.teacherId,
-      title: booking.title,
-    },
-  }));
+  const bookingEvents = bookings.map((booking) => {
+    const teacher = findTeacherById(booking.teacherId);
+    return {
+      calendarId: "bookings",
+      title: booking.title || `Class with ${teacher?.nickname || "Unknown Teacher"}`,
+      category: "time",
+      start: new Date(booking.date.year, booking.date.month - 1, booking.date.day, booking.startTime),
+      end: new Date(booking.date.year, booking.date.month - 1, booking.date.day, booking.endTime),
+      isReadOnly: true,
+      raw: {
+        link: booking.link,
+        teacherId: booking.teacherId,
+        title: booking.title,
+      },
+    };
+  });
 
   const events = [...availabilityEvents, ...bookingEvents];
 
@@ -205,7 +212,11 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
         </div>
       `;
     },
-    popupDetailBody({ schedule }: { schedule: { start: Date; end: Date; raw?: { link?: string }; title: string; calendarId: string } }) {
+    popupDetailBody({
+      schedule,
+    }: {
+      schedule: { start: Date; end: Date; raw?: { link?: string }; title: string; calendarId: string };
+    }) {
       const startDate = new Date(schedule.start);
       const endDate = new Date(schedule.end);
       const day = startDate.toLocaleString("default", { weekday: "long" });
@@ -284,13 +295,6 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
                     Next
                   </button>
                 </div>
-                <select
-                  onChange={(e) => calendarRef.current?.getInstance()?.changeView(e.target.value)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md"
-                >
-                  <option value="week">Week</option>
-                  <option value="day">Day</option>
-                </select>
               </div>
 
               <div className="flex-1 overflow-auto">
@@ -383,6 +387,7 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
               </Tabs>
             </div>
           </CardHeader>
+
           <CardContent className="p-4">
             <ScrollArea className="h-[700px]">
               {filteredBookings.length > 0 ? (
@@ -421,7 +426,7 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
                           <Badge variant="outline">
-                            Teacher: {teachers[Number(booking.teacherId)]?.nickname || "Loading..."}
+                            Teacher: {findTeacherById(booking.teacherId)?.nickname || "Unknown Teacher"}
                           </Badge>
                         </div>
                         {booking.bulkId && (

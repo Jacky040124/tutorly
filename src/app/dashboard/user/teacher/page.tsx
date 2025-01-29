@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useUser } from '@/hooks/useUser';
 import TeacherCalendar from "@/components/calendar/TeacherCalendar";
 import TeacherProfileOverlay from "@/components/overlays/TeacherProfileOverlay";
-import { useOverlay } from "@/components/providers/OverlayContext";
+import { useOverlay } from "@/hooks/useOverlay";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "@/components/common/LanguageSwitcher";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,11 +12,12 @@ import { Button } from "@/components/ui/button";
 import { CalendarIcon, UserCircle, ChevronUpIcon, Plus } from "lucide-react";
 import AddEventOverlay from "@/components/calendar/AddEventOverlay";
 import { getTeacherBookings } from "@/services/booking.service";
+import { Booking } from "@/types/booking";
 
 export default function TeacherDashboard() {
   const { user } = useUser();
   const { t, i18n } = useTranslation("dashboard");
-  const [bookings, setBookings] = useState([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const { 
     showTeacherProfileOverlay, 
     setShowTeacherProfileOverlay,
@@ -33,7 +34,11 @@ export default function TeacherDashboard() {
         const fetchedBookings = await getTeacherBookings(user.uid);
         setBookings(fetchedBookings);
       } catch (error) {
-        console.error(`Error fetching bookings: ${error.message}`);
+        if (error instanceof Error) {
+          console.error(`Error fetching bookings: ${error.message}`);
+        } else {
+          console.error("Unknown error fetching bookings");
+        }
       }
     };
 
@@ -59,7 +64,7 @@ export default function TeacherDashboard() {
       <Card className="rounded-xl shadow-sm">
         <CardHeader className="pb-4">
           <CardTitle className="text-2xl font-semibold">{t("teacher.welcome")}</CardTitle>
-          <p className="text-gray-500">{t("student.greeting", { name: user?.displayName || user?.nickname })}</p>
+          <p className="text-gray-500">{t("student.greeting", { name: user?.nickname })}</p>
         </CardHeader>
       </Card>
 
@@ -117,7 +122,6 @@ export default function TeacherDashboard() {
                 {
                   teacher: user,
                   bookings: bookings,
-                  error: error,
                 },
                 null,
                 2

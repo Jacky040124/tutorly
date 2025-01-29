@@ -11,12 +11,14 @@ import { RefreshCw, ExternalLink, Plus, Star } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { getTeacherBookings, updateBookingStatus, updateBookingHomework } from "@/services/booking.service";
+import { updateBookingStatus, updateBookingHomework } from "@/services/booking.service";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { filterBookingsByTime } from "@/lib/utils/calendarUtils";
+import { Booking } from "@/types/booking";
+import { CalendarEvent } from "@/types/event";
 
-const Calendar = dynamic(() => import('@toast-ui/react-calendar'), {
+const Calendar = dynamic<any>(() => import('@toast-ui/react-calendar').then(mod => mod.default), {
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center h-full">
@@ -25,141 +27,129 @@ const Calendar = dynamic(() => import('@toast-ui/react-calendar'), {
   ),
 });
 
-export default function TeacherCalendar() {
-  const calendarRef = useRef(null);
+type CalendarInstance = {
+  getInstance: () => {
+    today: () => void;
+    prev: () => void;
+    next: () => void;
+    changeView: (view: string) => void;
+  };
+};
+
+type EventClickData = {
+  event: CalendarEvent;
+};
+
+export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
+  const calendarRef = useRef<CalendarInstance | null>(null);
   const { user, availability, removeAvailability, fetchUserNickname } = useUser();
   const [showUpcoming, setShowUpcoming] = useState(true);
-  const [bookings, setBookings] = useState([]);
-  const [studentNames, setStudentNames] = useState({});
+  const [studentNames, setStudentNames] = useState<{ [key: string]: string }>({});
   const [homeworkLink, setHomeworkLink] = useState("");
-  const [slotToDelete, setSlotToDelete] = useState(null);
+  const [slotToDelete, setSlotToDelete] = useState<CalendarEvent | null>(null);
 
-  const handleBookingStatusChange = async (bookingId, newStatus) => {
+  const handleBookingStatusChange = async (bookingId: string, newStatus: "completed" | "confirmed" | "cancelled") => {
     try {
       await updateBookingStatus(bookingId, newStatus);
-      
-      // Update local state
-      setBookings(prevBookings => 
-        prevBookings.map(booking => 
-          booking.id === bookingId 
-            ? { ...booking, status: newStatus }
-            : booking
-        )
-      );
     } catch (error) {
-      console.error(`Error updating booking status: ${error.message}`);
-    } finally {
+      if (error instanceof Error) {
+        console.error(`Error updating booking status: ${error.message}`);
+      }
     }
   };
 
-  const handleHomeworkSubmit = async (bookingId) => {
+  const handleHomeworkSubmit = async (bookingId: string) => {
     try {
       await updateBookingHomework(bookingId, homeworkLink);
-      
-      // Update local state
-      setBookings(prevBookings => 
-        prevBookings.map(booking => 
-          booking.id === bookingId 
-            ? { 
-                ...booking, 
-                homework: { 
-                  link: homeworkLink, 
-                  addedAt: new Date().toISOString() 
-                } 
-              }
-            : booking
-        )
-      );
       setHomeworkLink(""); // Reset input
     } catch (error) {
-      console.error(`Error updating homework: ${error.message}`);
-    } finally {
+      if (error instanceof Error) {
+        console.error(`Error updating homework: ${error.message}`);
+      }
     }
   };
 
-  // Fetch bookings and student names
+  // Fetch student names
   useEffect(() => {
-    const fetchBookings = async () => {
-      if (!user?.uid) {
-        console.log("No user UID available");
-        return;
-      }
+    const fetchNames = async () => {
+      if (!user?.uid) return;
 
       try {
-        const fetchedBookings = await getTeacherBookings(user.uid);
-        setBookings(fetchedBookings);
-
-        // Fetch student names
-        const names = {};
-        for (const booking of fetchedBookings) {
+        const names: { [key: string]: string } = {};
+        for (const booking of bookings) {
           if (!studentNames[booking.studentId]) {
-            names[booking.studentId] = await fetchUserNickname(booking.studentId);
+            const nickname = await fetchUserNickname(booking.studentId);
+            if (nickname) {
+              names[booking.studentId] = nickname;
+            }
           }
         }
         setStudentNames(prev => ({ ...prev, ...names }));
       } catch (error) {
-        console.error(`Error fetching bookings: ${error.message}`);
-      } finally {
+        if (error instanceof Error) {
+          console.error(`Error fetching student names: ${error.message}`);
+        }
       }
     };
 
-    fetchBookings();
-  }, [user, availability]);
+    fetchNames();
+  }, [user, bookings]);
 
   // Filter bookings based on upcoming/past
   const filteredBookings = filterBookingsByTime(bookings, showUpcoming);
 
   const calendars = [
     {
-      id: 'availability',
-      name: 'Available Slots',
-      backgroundColor: '#10B981',
-      borderColor: '#059669',
-      dragBackgroundColor: '#A7F3D0',
-      color: '#065F46',
+      id: "availability",
+      name: "Available Slots",
+      backgroundColor: "#10B981",
+      borderColor: "#059669",
+      dragBackgroundColor: "#A7F3D0",
+      color: "#065F46",
     },
     {
-      id: 'bookings',
-      name: 'Booked Classes',
-      backgroundColor: '#3B82F6',
-      borderColor: '#2563EB',
-      dragBackgroundColor: '#BFDBFE',
-      color: '#1E40AF',
-    }
+      id: "bookings",
+      name: "Booked Classes",
+      backgroundColor: "#3B82F6",
+      borderColor: "#2563EB",
+      dragBackgroundColor: "#BFDBFE",
+      color: "#1E40AF",
+    },
   ];
 
   // Convert availability to events
-  const availabilityEvents = user?.availability?.map((slot) => {
-    const year = slot.date.year;
-    const month = String(slot.date.month).padStart(2, '0');
-    const day = String(slot.date.day).padStart(2, '0');
-    
-    const start = `${year}-${month}-${day}T${String(slot.startTime).padStart(2, '0')}:00:00`;
-    const end = `${year}-${month}-${day}T${String(slot.endTime).padStart(2, '0')}:00:00`;
+  const availabilityEvents =
+    user?.type === "teacher" ? user.availability?.map((slot) => {
+      const year = slot.date.year;
+      const month = String(slot.date.month).padStart(2, "0");
+      const day = String(slot.date.day).padStart(2, "0");
 
-    return {
-      id: slot.createdAt,
-      calendarId: "availability",
-      title: "Available",
-      category: "time",
-      start,
-      end,
-      isReadOnly: true,
-      raw: {
-        ...slot,
-        isAvailability: true,
-      }
-    };
-  }) || [];
+      const start = `${year}-${month}-${day}T${String(slot.startTime).padStart(2, "0")}:00:00`;
+      const end = `${year}-${month}-${day}T${String(slot.endTime).padStart(2, "0")}:00:00`;
+
+      return {
+        id: slot.createdAt,
+        calendarId: "availability",
+        title: "Available",
+        category: "time",
+        start,
+        end,
+        isReadOnly: true,
+        raw: {
+          ...slot,
+          isAvailability: true,
+        },
+      };
+    }) || [] : [];
 
   // Convert bookings to events
   const bookingEvents = bookings.map((booking) => {
     const year = booking.date.year;
-    const month = String(booking.date.month).padStart(2, '0');
-    const day = String(booking.date.day).padStart(2, '0');
-    
-    const start = `${year}-${month}-${day}T${String(booking.startTime).padStart(2, '0')}:00:00`;
-    const end = `${year}-${month}-${day}T${String(booking.endTime).padStart(2, '0')}:00:00`;
+    const month = String(booking.date.month).padStart(2, "0");
+    const day = String(booking.date.day).padStart(2, "0");
+
+    const start = `${year}-${month}-${day}T${String(booking.startTime).padStart(2, "0")}:00:00`;
+    const end = `${year}-${month}-${day}T${String(booking.endTime).padStart(2, "0")}:00:00`;
 
     return {
       id: booking.id,
@@ -172,74 +162,86 @@ export default function TeacherCalendar() {
       raw: {
         ...booking,
         isBooking: true,
-      }
+      },
     };
   });
 
   const events = [...availabilityEvents, ...bookingEvents];
 
   const template = {
-    time(event) {
+    time(event: CalendarEvent) {
       const date = new Date(event.start);
-      const formattedDate = !isNaN(date) ? date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric'
-      }) : '';
-      
-      const isBooking = event.calendarId === 'bookings';
-      const bgColor = isBooking ? 'bg-blue-500' : 'bg-emerald-500';
-      
+      const formattedDate = !isNaN(date.getTime())
+        ? date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })
+        : "";
+
+      const isBooking = event.calendarId === "bookings";
+      const bgColor = isBooking ? "bg-blue-500" : "bg-emerald-500";
+
       return `
         <div class="px-2 py-1.5 ${bgColor} flex flex-col min-h-[70px]">
           <div class="flex items-start justify-between">
             <div class="flex flex-col flex-1">
               <div class="text-sm font-medium text-white">${event.title}</div>
               <div class="text-xs text-white/90">${formattedDate}</div>
-              <div class="text-xs text-white/90">${new Date(event.start).getHours()}:00 - ${new Date(event.end).getHours()}:00</div>
+              <div class="text-xs text-white/90">${new Date(event.start).getHours()}:00 - ${new Date(
+        event.end
+      ).getHours()}:00</div>
             </div>
-            ${event.raw?.link ? 
-              `<div class="text-xs text-white/90 flex items-center ml-2">
+            ${
+              event.raw?.meeting_link
+                ? `<div class="text-xs text-white/90 flex items-center ml-2">
                 <svg class="inline-block w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
-              </div>` 
-              : ''}
+              </div>`
+                : ""
+            }
           </div>
         </div>
       `;
-    }
+    },
   };
 
   const handleToday = () => {
-    calendarRef.current.getInstance().today();
+    if (calendarRef.current) {
+      calendarRef.current.getInstance().today();
+    }
   };
 
   const handlePrev = () => {
-    calendarRef.current.getInstance().prev();
+    if (calendarRef.current) {
+      calendarRef.current.getInstance().prev();
+    }
   };
 
   const handleNext = () => {
-    calendarRef.current.getInstance().next();
+    if (calendarRef.current) {
+      calendarRef.current.getInstance().next();
+    }
   };
 
-  const handleEventClick = async (event) => {
+  const handleEventClick = async (event: EventClickData) => {
     // Only allow deletion of availability slots
-    if (event.event.calendarId === 'availability') {
+    if (event.event.calendarId === "availability") {
       setSlotToDelete(event.event);
     }
   };
 
   const handleConfirmDelete = async () => {
     if (!slotToDelete) return;
-    
+
     try {
       const eventData = slotToDelete;
-      
+
       if (eventData.raw) {
         await removeAvailability(eventData.raw);
       } else {
         const startDate = new Date(eventData.start);
-        
+
         const slotToRemove = availability.find((slot) => {
           return (
             slot.date.year === startDate.getFullYear() &&
@@ -281,7 +283,7 @@ export default function TeacherCalendar() {
               </div>
               <Select
                 defaultValue="week"
-                onValueChange={(value) => calendarRef.current.getInstance().changeView(value)}
+                onValueChange={(value) => calendarRef.current?.getInstance().changeView(value)}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Select view" />
@@ -406,9 +408,9 @@ export default function TeacherCalendar() {
                       </div>
                       <div className="flex items-center gap-2">
                         {booking.link && (
-                          <a 
-                            href={booking.link} 
-                            target="_blank" 
+                          <a
+                            href={booking.link}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-1 text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
                           >
@@ -420,11 +422,11 @@ export default function TeacherCalendar() {
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline">Student: {studentNames[booking.studentId] || 'Loading...'}</Badge>
+                        <Badge variant="outline">Student: {studentNames[booking.studentId] || "Loading..."}</Badge>
                         {!showUpcoming && (
                           <Select
                             value={booking.status}
-                            onValueChange={(value) => handleBookingStatusChange(booking.id, value)}
+                            onValueChange={(value) => handleBookingStatusChange(booking.id, value as "completed" | "confirmed" | "cancelled")}
                           >
                             <SelectTrigger className="w-[130px] h-7">
                               <SelectValue />
@@ -442,9 +444,9 @@ export default function TeacherCalendar() {
                       <div className="flex items-center justify-between mt-2 text-sm">
                         <div className="flex items-center gap-2">
                           {booking.homework ? (
-                            <a 
-                              href={booking.homework.link} 
-                              target="_blank" 
+                            <a
+                              href={booking.homework.link}
+                              target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center gap-1 text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors"
                             >
@@ -474,7 +476,7 @@ export default function TeacherCalendar() {
                               </DialogContent>
                             </Dialog>
                           )}
-                          
+
                           {booking.feedback ? (
                             <div className="flex items-center gap-2">
                               <Dialog>
@@ -493,9 +495,15 @@ export default function TeacherCalendar() {
                                       <span>Rating:</span>
                                       <div className="flex">
                                         {Array.from({ length: 5 }).map((_, i) => (
-                                          <Star 
-                                            key={i} 
-                                            className={`h-4 w-4 ${i < booking.feedback.rating ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+                                          <Star
+                                            key={i}
+                                            className={`h-4 w-4 ${
+                                              booking.feedback?.rating
+                                                ? i < booking.feedback.rating
+                                                  ? "text-yellow-400 fill-current"
+                                                  : "text-gray-300"
+                                                : "text-gray-300"
+                                            }`}
                                           />
                                         ))}
                                       </div>
@@ -517,9 +525,15 @@ export default function TeacherCalendar() {
                               </Dialog>
                               <div className="flex items-center gap-1">
                                 {Array.from({ length: 5 }).map((_, i) => (
-                                  <Star 
-                                    key={i} 
-                                    className={`h-3 w-3 ${i < booking.feedback.rating ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+                                  <Star
+                                    key={i}
+                                    className={`h-3 w-3 ${
+                                      booking.feedback?.rating
+                                        ? i < booking.feedback.rating
+                                          ? "text-yellow-400 fill-current"
+                                          : "text-gray-300"
+                                        : "text-gray-300"
+                                    }`}
                                   />
                                 ))}
                               </div>
@@ -533,10 +547,10 @@ export default function TeacherCalendar() {
                             </div>
                           )}
                         </div>
-                        {booking.isRepeating && (
+                        {booking.bulkId && (
                           <div className="text-xs text-gray-500 flex items-center gap-1">
                             <RefreshCw className="h-3 w-3" />
-                            {booking.currentClass}/{booking.totalClasses}
+                            {booking.lessonNumber}/{booking.totalLessons}
                           </div>
                         )}
                       </div>
@@ -550,7 +564,7 @@ export default function TeacherCalendar() {
           </ScrollArea>
         </CardContent>
       </Card>
-      
+
       <Dialog open={!!slotToDelete} onOpenChange={(open) => !open && setSlotToDelete(null)}>
         <DialogContent>
           <DialogHeader>
@@ -558,8 +572,12 @@ export default function TeacherCalendar() {
           </DialogHeader>
           <p>Are you sure you want to remove this time slot?</p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSlotToDelete(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleConfirmDelete}>Remove</Button>
+            <Button variant="outline" onClick={() => setSlotToDelete(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmDelete}>
+              Remove
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

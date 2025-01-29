@@ -20,7 +20,7 @@ import { getWeekBounds } from "@/lib/utils/timeUtils";
 
 export default function StudentDashboard() {
   const { user } = useUser();
-  const [selectedTeacher, setSelectedTeacher] = useState<number>(-1);
+  const [selectedTeacher, setSelectedTeacher] = useState<string>("default");
   const [weekOffset, setWeekOffset] = useState<number>(0);
   const { teachers } = useTeachers();
   const { setFutureBookings, setBookings, showBookingOverlay, bookings, futureBookings } = useBooking();
@@ -57,9 +57,13 @@ export default function StudentDashboard() {
   }, [user, showBookingOverlay]);
 
   const handleSelect = (value: string) => {
-    const parsedValue = parseInt(value, 10);
-    setSelectedTeacher(parsedValue);
+    setSelectedTeacher(value);
   }
+
+  // Helper function to find teacher by ID
+  const findTeacherById = (teacherId: string) => {
+    return teachers.find(teacher => teacher.uid === teacherId);
+  };
 
   if (!user) {
     return (
@@ -75,9 +79,9 @@ export default function StudentDashboard() {
         <CardContent>
           <div className=" p-6 space-y-1">
             <CardTitle className="text-3xl font-semibold text-foreground transition-colors duration-200">
-              {selectedTeacher && teachers[selectedTeacher]
-                ? `${teachers[selectedTeacher].nickname}${t("student.teacherRate", {
-                    price: teachers[selectedTeacher].pricing,
+              {selectedTeacher !== "default" && findTeacherById(selectedTeacher)
+                ? `${findTeacherById(selectedTeacher)?.nickname}${t("student.teacherRate", {
+                    price: findTeacherById(selectedTeacher)?.pricing,
                   })}`
                 : t("student.selectTeacherPrompt")}
             </CardTitle>
@@ -116,8 +120,8 @@ export default function StudentDashboard() {
 
               <div className="transition-transform hover:scale-105 duration-200">
                 <Select
-                  value={String(selectedTeacher) || "default"}
-                  onValueChange={(value: string) => handleSelect(value)}
+                  value={selectedTeacher}
+                  onValueChange={handleSelect}
                 >
                   <SelectTrigger className="w-[200px] rounded-lg">
                     <SelectValue placeholder={t("student.selectTeacher")} />
@@ -125,8 +129,8 @@ export default function StudentDashboard() {
                   <SelectContent className="rounded-lg">
                     <SelectItem value="default">{t("student.selectTeacher")}</SelectItem>
                     {teachers &&
-                      Object.entries(teachers).map(([id, teacher]) => (
-                        <SelectItem key={id} value={id}>
+                      teachers.map((teacher) => (
+                        <SelectItem key={teacher.uid} value={teacher.uid}>
                           {teacher.nickname}
                         </SelectItem>
                       ))}
@@ -139,7 +143,7 @@ export default function StudentDashboard() {
       </Card>
 
       <StudentCalendar 
-        selectedTeacher={selectedTeacher} 
+        selectedTeacher={selectedTeacher === "default" ? -1 : teachers.findIndex(t => t.uid === selectedTeacher)} 
         weekOffset={weekOffset}
         setWeekOffset={setWeekOffset}
       />
@@ -167,7 +171,7 @@ export default function StudentDashboard() {
                     <div>
                       <h3 className="font-medium mb-2">Selected Teacher:</h3>
                       <pre className="text-xs bg-muted p-2 rounded">
-                        {JSON.stringify(selectedTeacher ? teachers[selectedTeacher] : null, null, 2)}
+                        {JSON.stringify(selectedTeacher ? findTeacherById(selectedTeacher) : null, null, 2)}
                       </pre>
                     </div>
 
