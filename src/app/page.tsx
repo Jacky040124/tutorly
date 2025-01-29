@@ -98,7 +98,7 @@ export default function App() {
         <div className="mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 px-10">
             {filteredTeachers.map((teacher) => (
-              <div className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 border-2 border-[#e5e5e5]">
+              <div key={teacher.uid} className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 border-2 border-[#e5e5e5]">
                 <div className="relative">
                   <img
                     src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${teacher.nickname}`}

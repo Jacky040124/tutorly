@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, forwardRef, ForwardedRef } from "react";
 import dynamic from "next/dynamic";
 import "@toast-ui/calendar/dist/toastui-calendar.min.css";
 import { useBooking } from "@/hooks/useBooking";
@@ -17,27 +17,46 @@ import { deleteFeedback } from "@/services/booking.service";
 import { useTeachers } from "@/hooks/useTeacher";
 import { Booking } from "@/types/booking";
 
-const Calendar = dynamic(() => import("@toast-ui/react-calendar"), {
-  ssr: false,
-  loading: () => (
-    <div className="flex items-center justify-center h-full">
-      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-500"></div>
-    </div>
-  ),
+type CalendarInstance = {
+  getInstance: () => {
+    today: () => void;
+    prev: () => void;
+    next: () => void;
+    changeView: (view: string) => void;
+  };
+};
+
+const DynamicCalendar = dynamic(
+  () => import("@toast-ui/react-calendar").then((mod) => {
+    const Calendar = mod.default;
+    return ({ forwardedRef, ...props }: any) => <Calendar {...props} ref={forwardedRef} />;
+  }),
+  { ssr: false }
+);
+
+const CalendarWrapper = forwardRef((props: any, ref: ForwardedRef<CalendarInstance>) => {
+  return <DynamicCalendar {...props} forwardedRef={ref} />;
 });
 
-export default function StudentCalendar(param: { selectedTeacher: number }) {
-  const calendarRef = useRef(null);
+CalendarWrapper.displayName = 'CalendarWrapper';
+
+interface StudentCalendarProps {
+  selectedTeacher: number;
+  weekOffset: number;
+  setWeekOffset: React.Dispatch<React.SetStateAction<number>>;
+}
+
+export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOffset }: StudentCalendarProps) {
+  const calendarRef = useRef<CalendarInstance>(null);
   const { teachers } = useTeachers();
   const { setSelectedSlot, showBookingOverlay, setShowBookingOverlay, bookings, setBookings } = useBooking();
   const [showUpcoming, setShowUpcoming] = useState<boolean>(true);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [feedbackToDelete, setFeedbackToDelete] = useState<string>("");
+  const [feedbackToDelete, setFeedbackToDelete] = useState("");
 
   const handleDeleteFeedback = async (booking: Booking) => {
     if (booking.feedback) {
-      const bookingid: string = booking.id;
-      setFeedbackToDelete(bookingid);
+      setFeedbackToDelete(booking.id);
     }
   };
 
@@ -47,7 +66,9 @@ export default function StudentCalendar(param: { selectedTeacher: number }) {
     try {
       await deleteFeedback(feedbackToDelete);
       // Update local state
-      const updatedBookings = bookings.map((b) => (b.id === feedbackToDelete.id ? { ...b, feedback: null } : b));
+      const updatedBookings = bookings.map((b) => 
+        b.id === feedbackToDelete ? { ...b, feedback: undefined } : b
+      );
       setBookings(updatedBookings);
     } catch (error) {
       console.error("Error deleting feedback:", error);
@@ -84,8 +105,8 @@ export default function StudentCalendar(param: { selectedTeacher: number }) {
   ];
 
   // Convert teacher availability to TUI calendar events
-  const availabilityEvents = param.selectedTeacher
-    ? teachers[param.selectedTeacher]?.availability.map((slot) => ({
+  const availabilityEvents = selectedTeacher
+    ? teachers[selectedTeacher]?.availability.map((slot) => ({
         id: `${slot.date.year}_${slot.date.month}_${slot.date.day}_${slot.startTime}`,
         calendarId: "availability",
         title: "Available",
@@ -104,8 +125,8 @@ export default function StudentCalendar(param: { selectedTeacher: number }) {
     : [];
 
   console.log("teachers:", teachers);
-  console.log("selectedTeacher Index:", param.selectedTeacher);
-  console.log("selectedTeacher:", teachers[param.selectedTeacher]);
+  console.log("selectedTeacher Index:", selectedTeacher);
+  console.log("selectedTeacher:", teachers[selectedTeacher]);
   console.log("availabilityEvents:", availabilityEvents);
 
   // Convert bookings to TUI calendar events
@@ -127,7 +148,7 @@ export default function StudentCalendar(param: { selectedTeacher: number }) {
 
   const handleEventClick = (event: any) => {
     if (event.event.calendarId === "availability") {
-      const slot = teachers[param.selectedTeacher]?.availability.find(
+      const slot = teachers[selectedTeacher]?.availability.find(
         (s) =>
           s.date.year === event.event.raw.date.year &&
           s.date.month === event.event.raw.date.month &&
@@ -138,7 +159,7 @@ export default function StudentCalendar(param: { selectedTeacher: number }) {
       if (slot) {
         setSelectedSlot({
           ...slot,
-          title: `Class with ${teachers[param.selectedTeacher]?.nickname}`,
+          title: `Class with ${teachers[selectedTeacher]?.nickname}`,
         });
         setShowBookingOverlay(true);
       }
@@ -184,7 +205,7 @@ export default function StudentCalendar(param: { selectedTeacher: number }) {
         </div>
       `;
     },
-    popupDetailBody({ schedule }: { schedule: any}) {
+    popupDetailBody({ schedule }: { schedule: { start: Date; end: Date; raw?: { link?: string }; title: string; calendarId: string } }) {
       const startDate = new Date(schedule.start);
       const endDate = new Date(schedule.end);
       const day = startDate.toLocaleString("default", { weekday: "long" });
@@ -221,15 +242,18 @@ export default function StudentCalendar(param: { selectedTeacher: number }) {
   };
 
   const handleToday = () => {
-    calendarRef.current.getInstance().today();
+    setWeekOffset(0);
+    calendarRef.current?.getInstance()?.today();
   };
 
   const handlePrev = () => {
-    calendarRef.current.getInstance().prev();
+    setWeekOffset((prev: number) => prev - 1);
+    calendarRef.current?.getInstance()?.prev();
   };
 
   const handleNext = () => {
-    calendarRef.current.getInstance().next();
+    setWeekOffset((prev: number) => prev + 1);
+    calendarRef.current?.getInstance()?.next();
   };
 
   return (
@@ -261,7 +285,7 @@ export default function StudentCalendar(param: { selectedTeacher: number }) {
                   </button>
                 </div>
                 <select
-                  onChange={(e) => calendarRef.current.getInstance().changeView(e.target.value)}
+                  onChange={(e) => calendarRef.current?.getInstance()?.changeView(e.target.value)}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md"
                 >
                   <option value="week">Week</option>
@@ -270,7 +294,7 @@ export default function StudentCalendar(param: { selectedTeacher: number }) {
               </div>
 
               <div className="flex-1 overflow-auto">
-                <Calendar
+                <CalendarWrapper
                   ref={calendarRef}
                   height="100%"
                   view="week"
@@ -397,7 +421,7 @@ export default function StudentCalendar(param: { selectedTeacher: number }) {
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
                           <Badge variant="outline">
-                            Teacher: {teachers[booking.teacherId]?.nickname || "Loading..."}
+                            Teacher: {teachers[Number(booking.teacherId)]?.nickname || "Loading..."}
                           </Badge>
                         </div>
                         {booking.bulkId && (
@@ -442,7 +466,7 @@ export default function StudentCalendar(param: { selectedTeacher: number }) {
                                     <Star
                                       key={star}
                                       className={`h-4 w-4 ${
-                                        star <= booking.feedback.rating
+                                        booking.feedback?.rating && star <= booking.feedback.rating
                                           ? "text-yellow-500 fill-current"
                                           : "text-gray-300"
                                       }`}
@@ -497,7 +521,7 @@ export default function StudentCalendar(param: { selectedTeacher: number }) {
           </CardContent>
         </Card>
 
-        {showBookingOverlay && <BookingOverlay />}
+        {showBookingOverlay && <BookingOverlay selectedTeacher={selectedTeacher} />}
         {selectedBooking && (
           <FeedbackOverlay
             booking={selectedBooking}
@@ -511,14 +535,14 @@ export default function StudentCalendar(param: { selectedTeacher: number }) {
         )}
       </div>
 
-      <Dialog open={!!feedbackToDelete} onOpenChange={(open) => !open && setFeedbackToDelete(null)}>
+      <Dialog open={!!feedbackToDelete} onOpenChange={(open) => !open && setFeedbackToDelete("")}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Feedback</DialogTitle>
           </DialogHeader>
           <p>Are you sure you want to delete this feedback? This action cannot be undone.</p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setFeedbackToDelete(null)}>
+            <Button variant="outline" onClick={() => setFeedbackToDelete("")}>
               Cancel
             </Button>
             <Button variant="destructive" onClick={confirmDeleteFeedback}>

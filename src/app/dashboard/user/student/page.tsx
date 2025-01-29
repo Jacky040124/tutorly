@@ -15,15 +15,21 @@ import { CalendarIcon, UserCircle, Code2 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTeachers } from "@/hooks/useTeacher";
+import { getWeekBounds } from "@/lib/utils/timeUtils";
 
 
 export default function StudentDashboard() {
   const { user } = useUser();
   const [selectedTeacher, setSelectedTeacher] = useState<number>(-1);
+  const [weekOffset, setWeekOffset] = useState<number>(0);
   const { teachers } = useTeachers();
   const { setFutureBookings, setBookings, showBookingOverlay, bookings, futureBookings } = useBooking();
   const { showStudentProfileOverlay, setShowStudentProfileOverlay } = useOverlay();
   const { t } = useTranslation("dashboard");
+
+  // Get the current week's dates based on offset
+  const currentWeek = getWeekBounds(weekOffset);
+  const startDate = new Date(currentWeek.monday.year, currentWeek.monday.month - 1, currentWeek.monday.day);
 
   // initialization
   useEffect(() => {
@@ -88,8 +94,8 @@ export default function StudentDashboard() {
             <div className="flex items-center space-x-4">
               <CalendarIcon className="h-5 w-5 text-muted-foreground animate-pulse" />
               <h1 className="text-base font-semibold text-foreground">
-                <time dateTime={new Date().toISOString()}>
-                  {new Date().toLocaleString("default", { month: "long" })} {new Date().getFullYear()}
+                <time dateTime={startDate.toISOString()}>
+                  {startDate.toLocaleString("default", { month: "long" })} {startDate.getFullYear()}
                 </time>
               </h1>
             </div>
@@ -132,7 +138,11 @@ export default function StudentDashboard() {
         </CardContent>
       </Card>
 
-      <StudentCalendar selectedTeacher={selectedTeacher} />
+      <StudentCalendar 
+        selectedTeacher={selectedTeacher} 
+        weekOffset={weekOffset}
+        setWeekOffset={setWeekOffset}
+      />
 
       <Card className="rounded-xl shadow-md">
         <CardContent className="p-0">
