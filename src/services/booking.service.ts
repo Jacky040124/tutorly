@@ -82,7 +82,8 @@ export async function confirmBooking(bookings : Booking[], availability: Event[]
           }
 
           transaction.set(bookingRef, enrichedBooking);
-          createdBookings.push({ id: bookingRef.id, ...enrichedBooking });
+          const { id, ...bookingWithoutId } = enrichedBooking;
+          createdBookings.push({ id: bookingRef.id, ...bookingWithoutId });
         } catch (error) {
           console.error("Error in booking loop:", error);
           throw error;
@@ -119,10 +120,8 @@ export async function getTeacherBookings(teacherId: string) {
     const bookings: BookingWithId[] = [];
 
     querySnapshot.forEach((doc) => {
-      bookings.push({
-        id: doc.id,
-        ...(doc.data() as Booking),
-      });
+      const { id, ...bookingData } = doc.data() as Booking;
+      bookings.push({ id: doc.id, ...bookingData });
     });
 
     return bookings;
@@ -143,10 +142,8 @@ export async function getStudentBookings(studentId: string) {
     const bookings: BookingWithId[] = [];
 
     querySnapshot.forEach((doc) => {
-      bookings.push({
-        id: doc.id,
-        ...(doc.data() as Booking),
-      });
+      const { id, ...bookingData } = doc.data() as Booking;
+      bookings.push({ id: doc.id, ...bookingData });
     });
 
     console.log("Found student bookings:", bookings);
@@ -193,7 +190,7 @@ export async function fetchFutureStudentBookings(studentId: string) {
 }
 
 export async function handleBookingConfirmed(
-  booking: Booking[],
+  bookings: Booking[],
   teacherAvailability: Event[],
   teacherData: TeacherData,
   userEmail: string,
@@ -201,11 +198,11 @@ export async function handleBookingConfirmed(
   setBookingConfirmed: (confirmed: boolean) => void
 ) {
   try {
-    const result = await confirmBooking(booking, teacherAvailability);
+    const result = await confirmBooking(bookings, teacherAvailability);
     console.log("booking result", result);
 
     try {
-      const emailContent = generateBookingConfirmationEmail(booking, teacherData);
+      const emailContent = generateBookingConfirmationEmail(bookings, teacherData);
       await sendMail({
         to: userEmail,
         subject: "Booking Confirmation - MeetYourTutor",

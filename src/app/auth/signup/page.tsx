@@ -3,11 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { TextField } from "@/components/common/Fields";
+import { TextField } from "@/components/Fields";
 import { signUpStudent } from "@/services/auth.service";
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import LanguageSwitcher from "@/components/common/LanguageSwitcher";
+import LanguageSwitcher from "@/lib/LanguageSwitcher";
 import { useNotification } from "@/hooks/useNotification";
 
 export default function SignUp() {

@@ -1,6 +1,6 @@
 interface BaseUser {
   uid: string;
-  email: string | null;
+  email: string;
   photoURL?: string;
   nickname: string;
   type: "teacher" | "student";

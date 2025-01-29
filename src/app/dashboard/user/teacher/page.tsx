@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from '@/hooks/useUser';
-import TeacherCalendar from "@/components/calendar/TeacherCalendar";
+import TeacherCalendar from "@/components/TeacherCalendar";
 import TeacherProfileOverlay from "@/components/overlays/TeacherProfileOverlay";
 import { useOverlay } from "@/hooks/useOverlay";
 import { useTranslation } from "react-i18next";
-import LanguageSwitcher from "@/components/common/LanguageSwitcher";
+import LanguageSwitcher from "@/lib/LanguageSwitcher";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, UserCircle, ChevronUpIcon, Plus } from "lucide-react";
-import AddEventOverlay from "@/components/calendar/AddEventOverlay";
+import AddEventOverlay from "@/components/overlays/AddEventOverlay";
 import { getTeacherBookings } from "@/services/booking.service";
 import { Booking } from "@/types/booking";
 

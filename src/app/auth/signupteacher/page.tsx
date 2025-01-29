@@ -3,12 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { TextField } from "@/components/common/Fields";
+import { TextField } from "@/components/Fields";
 import { useNotification } from "@/hooks/useNotification";
 import { signUpTeacher } from "@/services/auth.service";
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import LanguageSwitcher from "@/components/common/LanguageSwitcher";
+import LanguageSwitcher from "@/lib/LanguageSwitcher";
 
 //TODO: try to get rid of this thing, must be a better way to do it
 

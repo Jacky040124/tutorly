@@ -4,7 +4,7 @@ import { useRef, useState, forwardRef, ForwardedRef } from "react";
 import dynamic from "next/dynamic";
 import "@toast-ui/calendar/dist/toastui-calendar.min.css";
 import { useBooking } from "@/hooks/useBooking";
-import BookingOverlay from "./BookingOverlay";
+import BookingOverlay from "./overlays/BookingOverlay";
 import FeedbackOverlay from "@/components/overlays/FeedbackOverlay";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";

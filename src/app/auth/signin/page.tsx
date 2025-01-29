@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { useUser } from "@/hooks/useUser";
@@ -8,9 +8,9 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { TextField } from "@/components/common/Fields";
+import { TextField } from "@/components/Fields";
 import { useTranslation } from "react-i18next";
-import LanguageSwitcher from "@/components/common/LanguageSwitcher";
+import LanguageSwitcher from "@/lib/LanguageSwitcher";
 import { useForm, Controller } from "react-hook-form";
 import React from "react";
 
@@ -40,25 +40,28 @@ export default function SignIn() {
   }, [register]);
 
   const updateUserContext = (userCredential: any, userData: any) => {
-    const baseUserData = {
-      email: userCredential.user.email,
-      uid: userCredential.user.uid,
-      type: userData.type,
-      nickname: userData.nickname,
-    };
-
-    const typeSpecificData =
-      userData.type === "teacher"
-        ? {
-            description: userData.description,
-            availability: userData.availability,
-            pricing: userData.pricing,
-          }
-        : {
-            balance: userData.balance,
-          };
-
-    setUser({ ...baseUserData, ...typeSpecificData });
+    if (userData.type === "teacher") {
+      setUser({
+        email: userCredential.user.email,
+        uid: userCredential.user.uid,
+        type: "teacher",
+        nickname: userData.nickname,
+        description: userData.description || "",
+        availability: userData.availability || [],
+        pricing: userData.pricing || 0
+      });
+    } else if (userData.type === "student") {
+      setUser({
+        email: userCredential.user.email,
+        uid: userCredential.user.uid,
+        type: "student",
+        nickname: userData.nickname,
+        balance: userData.balance || 0,
+        introduction: userData.introduction || "",
+        interests: userData.interests || "",
+        goals: userData.goals || ""
+      });
+    }
   };
 
   const handleSignIn = async (data: any) => {
