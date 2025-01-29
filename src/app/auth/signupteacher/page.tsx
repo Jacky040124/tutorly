@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { TextField } from "@/components/Fields";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useNotification } from "@/hooks/useNotification";
 import { signUpTeacher } from "@/services/auth.service";
 import { useRouter } from 'next/navigation';
@@ -68,43 +69,62 @@ export default function SignUpTeacher() {
 
           <div className="mt-8">
             <form onSubmit={handleSignup} className="space-y-6">
-              <TextField
-                label={t('signup.teacher.nickname')}
-                name="nickname"
-                type="text"
-                onChange={(e) => setNickname(e.target.value)}
-                required
-              />
-              <TextField
-                label={t('signup.teacher.description')}
-                name="description"
-                type="text"
-                onChange={(e) => setDescription(e.target.value)}
-                required
-              />
-              <TextField
-                label={t('signup.teacher.email')}
-                name="email"
-                type="email"
-                autoComplete="email"
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <TextField
-                label={t('signup.teacher.password')}
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <TextField
-                label="Teacher Registration Code"
-                name="passcode"
-                type="password"
-                onChange={(e) => setPasscode(e.target.value)}
-                required
-              />
+              <div className="space-y-2">
+                <Label htmlFor="nickname">{t('signup.teacher.nickname')}</Label>
+                <Input
+                  id="nickname"
+                  name="nickname"
+                  type="text"
+                  onChange={(e) => setNickname(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">{t('signup.teacher.description')}</Label>
+                <Input
+                  id="description"
+                  name="description"
+                  type="text"
+                  onChange={(e) => setDescription(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">{t('signup.teacher.email')}</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">{t('signup.teacher.password')}</Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="passcode">Teacher Registration Code</Label>
+                <Input
+                  id="passcode"
+                  name="passcode"
+                  type="password"
+                  onChange={(e) => setPasscode(e.target.value)}
+                  required
+                />
+              </div>
 
               <div className="space-y-4">
                 <Button

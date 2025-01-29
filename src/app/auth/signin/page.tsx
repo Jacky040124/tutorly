@@ -8,7 +8,8 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { TextField } from "@/components/Fields";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
 import { useForm, Controller } from "react-hook-form";
@@ -114,32 +115,39 @@ export default function SignIn() {
 
           <div className="mt-8">
             <form onSubmit={handleSubmit(handleSignIn)} className="space-y-6">
-              <Controller
-                name="email"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    label={t("signin.email")}
-                    type="email"
-                    autoComplete="email"
-                    {...field}
-                    required
-                  />
-                )}
-              />
-              <Controller
-                name="password"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    label={t("signin.password")}
-                    type="password"
-                    autoComplete="current-password"
-                    {...field}
-                    required
-                  />
-                )}
-              />
+              <div className="space-y-2">
+                <Label htmlFor="email">{t("signin.email")}</Label>
+                <Controller
+                  name="email"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      id="email"
+                      type="email"
+                      autoComplete="email"
+                      {...field}
+                      required
+                    />
+                  )}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password">{t("signin.password")}</Label>
+                <Controller
+                  name="password"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      id="password"
+                      type="password"
+                      autoComplete="current-password"
+                      {...field}
+                      required
+                    />
+                  )}
+                />
+              </div>
 
               <div>
                 <Button type="submit" variant="outline" color="slate" className="w-full">

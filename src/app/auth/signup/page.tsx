@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { TextField } from "@/components/Fields";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { signUpStudent } from "@/services/auth.service";
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
@@ -64,36 +65,51 @@ export default function SignUp() {
 
           <div className="mt-8">
             <form onSubmit={handleSignup} className="space-y-6">
-              <TextField
-                label={t('signup.student.nickname')}
-                name="nickname"
-                type="text"
-                onChange={(e) => setNickname(e.target.value)}
-                required
-              />
-              <TextField
-                label={t('signup.student.email')}
-                name="email"
-                type="email"
-                autoComplete="email"
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <TextField
-                label={t('signup.student.password')}
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <TextField
-                label="Sign-up Code"
-                name="signupCode"
-                type="text"
-                onChange={(e) => setSignupCode(e.target.value)}
-                required
-              />
+              <div className="space-y-2">
+                <Label htmlFor="nickname">{t('signup.student.nickname')}</Label>
+                <Input
+                  id="nickname"
+                  name="nickname"
+                  type="text"
+                  onChange={(e) => setNickname(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">{t('signup.student.email')}</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">{t('signup.student.password')}</Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="signupCode">Sign-up Code</Label>
+                <Input
+                  id="signupCode"
+                  name="signupCode"
+                  type="text"
+                  onChange={(e) => setSignupCode(e.target.value)}
+                  required
+                />
+              </div>
 
               <div className="space-y-4">
                 <Button
