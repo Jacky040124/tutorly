@@ -5,15 +5,15 @@ import { NotificationProvider } from '@/hooks/useNotification';
 import { OverlayProvider } from '@/hooks/useOverlay';
 
 export default function ClientLayout({ children }: { children: React.ReactNode}) {
-
-
   return (
-      <NotificationProvider>
-        <UserProvider>
-          <BookingProvider>
-            <OverlayProvider>{children}</OverlayProvider>
-          </BookingProvider>
-        </UserProvider>
-      </NotificationProvider>
+    <NotificationProvider>
+      <UserProvider>
+        <BookingProvider>
+          <OverlayProvider>
+            {children}
+          </OverlayProvider>
+        </BookingProvider>
+      </UserProvider>
+    </NotificationProvider>
   );
 } 

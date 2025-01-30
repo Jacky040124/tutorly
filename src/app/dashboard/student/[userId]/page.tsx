@@ -4,7 +4,7 @@ import { useUser } from "@/hooks/useUser";
 import { useBooking } from "@/hooks/useBooking";
 import { getStudentBookings } from "@/services/booking.service";
 import StudentCalendar from "@/components/StudentCalendar";
-import StudentProfileOverlay from "@/components/overlays/StudentProfileOverlay";
+import StudentProfileOverlay from "@/components/StudentProfileOverlay";
 import { useOverlay } from "@/hooks/useOverlay";
 import { useTranslations } from 'next-intl';
 import LanguageSwitcher from "@/lib/LanguageSwitcher";

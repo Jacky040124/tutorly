@@ -1,8 +1,9 @@
-// Keep this as a server component
+// Root layout is kept as a server component for better performance
+// Client-side providers are moved to a separate component
 import { Inter, Lexend } from "next/font/google";
 import clsx from "clsx";
 import "@/app/globals.css";
-import ClientLayout from "@/components/layouts/ClientLayout";
+import ClientLayout from "@/components/ClientLayout";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 

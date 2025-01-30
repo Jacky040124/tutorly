@@ -3,14 +3,14 @@
 import { useState, useEffect } from "react";
 import { useUser } from '@/hooks/useUser';
 import TeacherCalendar from "@/components/TeacherCalendar";
-import TeacherProfileOverlay from "@/components/overlays/TeacherProfileOverlay";
+import TeacherProfileOverlay from "@/components/TeacherProfileOverlay";
 import { useOverlay } from "@/hooks/useOverlay";
 import { useTranslations } from 'next-intl';
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, UserCircle, ChevronUpIcon, Plus } from "lucide-react";
-import AddEventOverlay from "@/components/overlays/AddEventOverlay";
+import AddEventOverlay from "@/components/AddEventOverlay";
 import { getTeacherBookings } from "@/services/booking.service";
 import { Booking } from "@/types/booking";
 
