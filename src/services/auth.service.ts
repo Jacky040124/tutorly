@@ -40,7 +40,7 @@ export const signIn = async (email: string, password: string) => {
 
     return {
         user: formattedUser,
-        redirectTo: `/dashboard/user/${userData.type}`
+        redirectTo: `/dashboard/${userData.type}/${userCredential.user.uid}`
     };
 };
 

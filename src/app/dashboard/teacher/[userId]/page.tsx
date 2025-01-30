@@ -14,23 +14,25 @@ import AddEventOverlay from "@/components/overlays/AddEventOverlay";
 import { getTeacherBookings } from "@/services/booking.service";
 import { Booking } from "@/types/booking";
 
-export default function TeacherDashboard() {
+interface TeacherDashboardProps {
+  params: {
+    userId: string;
+  };
+}
+
+export default function TeacherDashboard({ params }: TeacherDashboardProps) {
   const { user } = useUser();
   const t = useTranslations("Dashboard.Teacher");
-  const tCommon = useTranslations('Dashboard.Common');
+  const tCommon = useTranslations("Dashboard.Common");
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const { 
-    showTeacherProfileOverlay, 
-    setShowTeacherProfileOverlay,
-    showAddEventOverlay,
-    setShowAddEventOverlay 
-  } = useOverlay();
+  const { showTeacherProfileOverlay, setShowTeacherProfileOverlay, showAddEventOverlay, setShowAddEventOverlay } =
+    useOverlay();
   const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
     const fetchBookings = async () => {
       if (!user?.uid) return;
-      
+
       try {
         const fetchedBookings = await getTeacherBookings(user.uid);
         setBookings(fetchedBookings);
@@ -46,15 +48,15 @@ export default function TeacherDashboard() {
     fetchBookings();
   }, [user]);
 
-  const currentDate = new Date().toLocaleString('en-US', { 
+  const currentDate = new Date().toLocaleString("en-US", {
     month: "long",
-    year: "numeric" 
+    year: "numeric",
   });
 
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">{tCommon('pleaseSignIn')}</div>
+        <div className="text-lg">{tCommon("pleaseSignIn")}</div>
       </div>
     );
   }
@@ -64,8 +66,8 @@ export default function TeacherDashboard() {
       {/* Welcome Card */}
       <Card className="rounded-xl shadow-sm">
         <CardHeader className="pb-4">
-          <CardTitle className="text-2xl font-semibold">{t('welcome')}</CardTitle>
-          <p className="text-gray-500">{tCommon('greeting', { name: user?.nickname })}</p>
+          <CardTitle className="text-2xl font-semibold">{t("welcome")}</CardTitle>
+          <p className="text-gray-500">{tCommon("greeting", { name: user?.nickname })}</p>
         </CardHeader>
       </Card>
 
@@ -85,7 +87,7 @@ export default function TeacherDashboard() {
             className="flex items-center gap-2 transition-all duration-200 hover:scale-105 rounded-lg"
           >
             <Plus className="h-4 w-4" />
-            {t('addEvent')}
+            {t("addEvent")}
           </Button>
           <Button
             onClick={() => setShowTeacherProfileOverlay(true)}
@@ -94,7 +96,7 @@ export default function TeacherDashboard() {
             className="flex items-center gap-2 transition-all duration-200 hover:scale-105 rounded-lg"
           >
             <UserCircle className="h-4 w-4" />
-            {t('profile')}
+            {t("profile")}
           </Button>
         </div>
       </div>
@@ -112,7 +114,7 @@ export default function TeacherDashboard() {
       <Card className="rounded-xl shadow-sm">
         <CardHeader className="cursor-pointer select-none" onClick={() => setShowDebug(!showDebug)}>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium">{tCommon('debugInformation')}</CardTitle>
+            <CardTitle className="text-sm font-medium">{tCommon("debugInformation")}</CardTitle>
             <ChevronUpIcon className={`h-4 w-4 transition-transform ${showDebug ? "rotate-0" : "rotate-180"}`} />
           </div>
         </CardHeader>

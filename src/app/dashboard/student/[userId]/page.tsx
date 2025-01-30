@@ -17,15 +17,21 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTeachers } from "@/hooks/useTeacher";
 import { getWeekBounds } from "@/lib/utils/timeUtils";
 
-export default function StudentDashboard() {
+interface StudentDashboardProps {
+  params: {
+    userId: string;
+  };
+}
+
+export default function StudentDashboard({ params }: StudentDashboardProps) {
   const { user } = useUser();
   const [selectedTeacher, setSelectedTeacher] = useState<string>("default");
   const [weekOffset, setWeekOffset] = useState<number>(0);
   const { teachers } = useTeachers();
   const { setFutureBookings, setBookings, showBookingOverlay, bookings, futureBookings } = useBooking();
   const { showStudentProfileOverlay, setShowStudentProfileOverlay } = useOverlay();
-  const t = useTranslations('Dashboard.Student');
-  const tCommon = useTranslations('Dashboard.Common');
+  const t = useTranslations("Dashboard.Student");
+  const tCommon = useTranslations("Dashboard.Common");
 
   // Get the current week's dates based on offset
   const currentWeek = getWeekBounds(weekOffset);
@@ -44,13 +50,13 @@ export default function StudentDashboard() {
           setFutureBookings(futureBookings);
           setBookings(allBookings);
         }
-      } catch (error : unknown) {
+      } catch (error: unknown) {
         if (error instanceof Error) {
-            console.error(`Error fetching data: ${error.message}`);
+          console.error(`Error fetching data: ${error.message}`);
         } else {
           console.error("Unknown error:", error);
         }
-      } 
+      }
     };
 
     fetchInitialData();
@@ -58,17 +64,17 @@ export default function StudentDashboard() {
 
   const handleSelect = (value: string) => {
     setSelectedTeacher(value);
-  }
+  };
 
   // Helper function to find teacher by ID
   const findTeacherById = (teacherId: string) => {
-    return teachers.find(teacher => teacher.uid === teacherId);
+    return teachers.find((teacher) => teacher.uid === teacherId);
   };
 
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">{tCommon('pleaseSignIn')}</div>
+        <div className="text-lg">{tCommon("pleaseSignIn")}</div>
       </div>
     );
   }
@@ -80,13 +86,13 @@ export default function StudentDashboard() {
           <div className=" p-6 space-y-1">
             <CardTitle className="text-3xl font-semibold text-foreground transition-colors duration-200">
               {selectedTeacher !== "default" && findTeacherById(selectedTeacher)
-                ? t('teacherRate', {
+                ? t("teacherRate", {
                     price: findTeacherById(selectedTeacher)?.pricing,
                   })
-                : t('selectTeacherPrompt')}
+                : t("selectTeacherPrompt")}
             </CardTitle>
             <CardDescription className="text-lg">
-              {t('greeting')}, {user.nickname}
+              {t("greeting")}, {user.nickname}
             </CardDescription>
           </div>
         </CardContent>
@@ -115,19 +121,16 @@ export default function StudentDashboard() {
                 className="flex items-center space-x-2 transition-all duration-200 hover:scale-105 rounded-lg"
               >
                 <UserCircle className="h-4 w-4" />
-                <span>{t('profile')}</span>
+                <span>{t("profile")}</span>
               </Button>
 
               <div className="transition-transform hover:scale-105 duration-200">
-                <Select
-                  value={selectedTeacher}
-                  onValueChange={handleSelect}
-                >
+                <Select value={selectedTeacher} onValueChange={handleSelect}>
                   <SelectTrigger className="w-[200px] rounded-lg">
-                    <SelectValue placeholder={t('selectTeacher')} />
+                    <SelectValue placeholder={t("selectTeacher")} />
                   </SelectTrigger>
                   <SelectContent className="rounded-lg">
-                    <SelectItem value="default">{t('selectTeacher')}</SelectItem>
+                    <SelectItem value="default">{t("selectTeacher")}</SelectItem>
                     {teachers &&
                       teachers.map((teacher) => (
                         <SelectItem key={teacher.uid} value={teacher.uid}>
@@ -142,8 +145,8 @@ export default function StudentDashboard() {
         </CardContent>
       </Card>
 
-      <StudentCalendar 
-        selectedTeacher={selectedTeacher === "default" ? -1 : teachers.findIndex(t => t.uid === selectedTeacher)} 
+      <StudentCalendar
+        selectedTeacher={selectedTeacher === "default" ? -1 : teachers.findIndex((t) => t.uid === selectedTeacher)}
         weekOffset={weekOffset}
         setWeekOffset={setWeekOffset}
       />
@@ -155,7 +158,7 @@ export default function StudentDashboard() {
               <AccordionTrigger className="text-sm hover:no-underline px-4 py-2">
                 <div className="flex items-center space-x-2">
                   <Code2 className="h-4 w-4" />
-                  <span>{tCommon('debugInformation')}</span>
+                  <span>{tCommon("debugInformation")}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent>

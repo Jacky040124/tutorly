@@ -23,7 +23,14 @@ export const metadata = {
   description: "Find your Tutor",
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
+interface RootLayoutProp {
+  children: React.ReactNode;
+  params: {
+    userId: string;
+  };
+}
+
+export default async function RootLayout({ children, params }: RootLayoutProp) {
   // prefered language
   const locale = await getLocale();
 
@@ -35,7 +42,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale} className={clsx("h-full scroll-smooth bg-white antialiased", inter.variable, lexend.variable)}>
       <body className="flex h-full flex-col">
         <ClientLayout>
-          <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+          <NextIntlClientProvider messages={messages}>
+            {children}
+          </NextIntlClientProvider>
         </ClientLayout>
       </body>
     </html>
