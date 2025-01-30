@@ -12,46 +12,39 @@ import { CalendarDays, Clock, User, CreditCard, AlertCircle, ChevronDown, Chevro
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTeachers } from "@/hooks/useTeacher";
 import { Booking } from "@/types/booking";
+import { Teacher } from "@/types/user";
 
 export default function BookingOverlay(prop: { selectedTeacher: number }) {
   const { selectedSlot, setShowBookingOverlay, setBookingConfirmed } = useBooking();
   const { user } = useUser();
   const { teachers } = useTeachers();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showTeacherDetails, setShowTeacherDetails] = useState(false);
-  const teacherData = teachers[prop.selectedTeacher];
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [showTeacherDetails, setShowTeacherDetails] = useState<boolean>(false);
+  const teacher: Teacher = teachers[prop.selectedTeacher];
 
   const handleClose = () => {
     setShowBookingOverlay(false);
   };
 
   // helper
-  const validateBookingRequirements = () => {
-    if (!user?.email) {
-      throw new Error("Please sign in to book a lesson");
-    }
-
-    const price = selectedSlot.totalClasses ? teacherData.pricing * selectedSlot.totalClasses : teacherData.pricing;
-
-    if (!user || user.type !== "student" || user.balance < price) {
-      throw new Error(`Insufficient balance. Required: $${price}`);
-    }
-  };
-
-  // helper
   const createBookingObject = () => {
     console.log("Selected slot with link:", selectedSlot);
 
-    const baseBooking = {
+    const baseBooking: Omit<Booking, 'id'> = {
       studentId: user!.uid,
-      teacherId: teacherData.uid,
+      teacherId: teacher.uid,
       startTime: selectedSlot.startTime,
       endTime: selectedSlot.startTime + 1,
       status: "confirmed",
       createdAt: new Date().toISOString(),
-      price: teacherData.pricing,
-      link: selectedSlot.link,
-      title: selectedSlot.title,
+      price: teacher.pricing,
+      link: selectedSlot.meeting_link || '',
+      title: selectedSlot.title || '',
+      date: {
+        day: selectedSlot.date.day,
+        month: selectedSlot.date.month,
+        year: selectedSlot.date.year
+      }
     };
 
     console.log("Created booking object:", baseBooking);
@@ -65,7 +58,7 @@ export default function BookingOverlay(prop: { selectedTeacher: number }) {
     }
 
     // Bulk booking
-    const bulkId = `bulk_${Date.now()}_${user!.uid}`;
+    const bulkId: string = `bulk_${Date.now()}_${user!.uid}`;
     return Array.from({ length: selectedSlot.totalClasses }, (_, index) => ({
       ...baseBooking,
       date: {
@@ -83,16 +76,15 @@ export default function BookingOverlay(prop: { selectedTeacher: number }) {
 
     try {
       if (user) {
-        validateBookingRequirements();
-        const bookings = createBookingObject() as Omit<Booking, 'id'>[];
+        const bookings = createBookingObject() as Array<Omit<Booking, 'id'>>;
         await handleBookingConfirmed(
           bookings as any,
-          teacherData.availability,
+          teacher.availability,
           {
-            email: teacherData.email || '',
-            availability: teacherData.availability,
-            nickname: teacherData.nickname,
-            pricing: teacherData.pricing
+            email: teacher.email || '',
+            availability: teacher.availability,
+            nickname: teacher.nickname,
+            pricing: teacher.pricing
           },
           user.email,
           setShowBookingOverlay,
@@ -123,41 +115,41 @@ export default function BookingOverlay(prop: { selectedTeacher: number }) {
                 >
                   <div className="flex items-center gap-3">
                     <User className="h-5 w-5" />
-                    <span>Teacher: {teacherData.nickname}</span>
+                    <span>Teacher: {teacher?.nickname}</span>
                   </div>
                   {showTeacherDetails ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                 </button>
 
                 {showTeacherDetails && (
                   <div className="border-t pt-4 space-y-4">
-                    {teacherData.introduction && (
+                    {teacher?.introduction && (
                       <div className="space-y-1">
                         <h4 className="font-medium">Introduction</h4>
-                        <p className="text-sm text-muted-foreground">{teacherData.introduction}</p>
+                        <p className="text-sm text-muted-foreground">{teacher?.introduction}</p>
                       </div>
                     )}
-                    {teacherData.expertise && (
+                    {teacher?.expertise && (
                       <div className="space-y-1">
                         <h4 className="font-medium">Expertise</h4>
-                        <p className="text-sm text-muted-foreground">{teacherData.expertise}</p>
+                        <p className="text-sm text-muted-foreground">{teacher?.expertise}</p>
                       </div>
                     )}
-                    {teacherData.education && (
+                    {teacher?.education && (
                       <div className="space-y-1">
                         <h4 className="font-medium">Education</h4>
-                        <p className="text-sm text-muted-foreground">{teacherData.education}</p>
+                        <p className="text-sm text-muted-foreground">{teacher?.education}</p>
                       </div>
                     )}
-                    {teacherData.experience && (
+                    {teacher?.experience && (
                       <div className="space-y-1">
                         <h4 className="font-medium">Experience</h4>
-                        <p className="text-sm text-muted-foreground">{teacherData.experience}</p>
+                        <p className="text-sm text-muted-foreground">{teacher?.experience}</p>
                       </div>
                     )}
-                    {teacherData.teachingStyle && (
+                    {teacher?.teachingStyle && (
                       <div className="space-y-1">
                         <h4 className="font-medium">Teaching Style</h4>
-                        <p className="text-sm text-muted-foreground">{teacherData.teachingStyle}</p>
+                        <p className="text-sm text-muted-foreground">{teacher?.teachingStyle}</p>
                       </div>
                     )}
                   </div>
@@ -180,11 +172,11 @@ export default function BookingOverlay(prop: { selectedTeacher: number }) {
                 <div className="flex items-center gap-3 border-t pt-4">
                   <CreditCard className="h-5 w-5" />
                   <div>
-                    <p className="font-medium">Price per lesson: ${teacherData.pricing}</p>
+                    <p className="font-medium">Price per lesson: ${teacher?.pricing}</p>
                     {selectedSlot.totalClasses && (
                       <p className="text-primary mt-1">
                         Total for {selectedSlot.totalClasses} lessons: $
-                        {teacherData.pricing * selectedSlot.totalClasses}
+                        {teacher?.pricing * selectedSlot.totalClasses}
                       </p>
                     )}
                   </div>
@@ -209,7 +201,7 @@ export default function BookingOverlay(prop: { selectedTeacher: number }) {
                 <AlertDescription>
                   <div className="space-y-2">
                     <p className="font-semibold">Bulk Booking: {selectedSlot.totalClasses} lessons</p>
-                    <p>Total Price: ${teacherData.pricing * selectedSlot.totalClasses}</p>
+                    <p>Total Price: ${teacher?.pricing * selectedSlot.totalClasses}</p>
                     <p className="text-sm opacity-90">Weekly lessons for {selectedSlot.totalClasses} weeks</p>
                   </div>
                 </AlertDescription>

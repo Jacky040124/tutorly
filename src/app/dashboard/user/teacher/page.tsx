@@ -16,7 +16,7 @@ import { Booking } from "@/types/booking";
 
 export default function TeacherDashboard() {
   const { user } = useUser();
-  const t = useTranslations('Dashboard.Teacher');
+  const t = useTranslations("Dashboard.Teacher");
   const tCommon = useTranslations('Dashboard.Common');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const { 
@@ -46,7 +46,7 @@ export default function TeacherDashboard() {
     fetchBookings();
   }, [user]);
 
-  const currentDate = new Date().toLocaleString(i18n.language, { 
+  const currentDate = new Date().toLocaleString('en-US', { 
     month: "long",
     year: "numeric" 
   });
