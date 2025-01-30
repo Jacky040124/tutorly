@@ -1,13 +1,18 @@
 "use client";
 
-import { useTranslation } from 'react-i18next';
+import { useLocale } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 export default function LanguageSwitcher() {
-  const { i18n } = useTranslation();
+  const locale = useLocale();
+  const router = useRouter();
 
-  const changeLanguage = (lng) => {
-    i18n.changeLanguage(lng);
-    localStorage.setItem('i18nextLng', lng);
+  const changeLanguage = (newLocale) => {
+    // Set the locale cookie
+    document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000`; // 1 year
+    
+    // Refresh the page to load new translations
+    router.refresh();
   };
 
   return (
@@ -15,7 +20,7 @@ export default function LanguageSwitcher() {
       <button
         onClick={() => changeLanguage('en')}
         className={`px-2 py-1 rounded ${
-          i18n.language === 'en' 
+          locale === 'en' 
             ? 'bg-green-600 text-white' 
             : 'text-gray-600 hover:bg-gray-100'
         }`}
@@ -25,7 +30,7 @@ export default function LanguageSwitcher() {
       <button
         onClick={() => changeLanguage('zh')}
         className={`px-2 py-1 rounded ${
-          i18n.language === 'zh' 
+          locale === 'zh' 
             ? 'bg-green-600 text-white' 
             : 'text-gray-600 hover:bg-gray-100'
         }`}

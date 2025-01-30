@@ -5,7 +5,7 @@ import { useUser } from '@/hooks/useUser';
 import TeacherCalendar from "@/components/TeacherCalendar";
 import TeacherProfileOverlay from "@/components/overlays/TeacherProfileOverlay";
 import { useOverlay } from "@/hooks/useOverlay";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from 'next-intl';
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,8 @@ import { Booking } from "@/types/booking";
 
 export default function TeacherDashboard() {
   const { user } = useUser();
-  const { t, i18n } = useTranslation("dashboard");
+  const t = useTranslations('Dashboard.Teacher');
+  const tCommon = useTranslations('Dashboard.Common');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const { 
     showTeacherProfileOverlay, 
@@ -53,7 +54,7 @@ export default function TeacherDashboard() {
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">{t("common.pleaseSignIn")}</div>
+        <div className="text-lg">{tCommon('pleaseSignIn')}</div>
       </div>
     );
   }
@@ -63,8 +64,8 @@ export default function TeacherDashboard() {
       {/* Welcome Card */}
       <Card className="rounded-xl shadow-sm">
         <CardHeader className="pb-4">
-          <CardTitle className="text-2xl font-semibold">{t("teacher.welcome")}</CardTitle>
-          <p className="text-gray-500">{t("student.greeting", { name: user?.nickname })}</p>
+          <CardTitle className="text-2xl font-semibold">{t('welcome')}</CardTitle>
+          <p className="text-gray-500">{tCommon('greeting', { name: user?.nickname })}</p>
         </CardHeader>
       </Card>
 
@@ -84,7 +85,7 @@ export default function TeacherDashboard() {
             className="flex items-center gap-2 transition-all duration-200 hover:scale-105 rounded-lg"
           >
             <Plus className="h-4 w-4" />
-            {t("teacher.add")}
+            {t('addEvent')}
           </Button>
           <Button
             onClick={() => setShowTeacherProfileOverlay(true)}
@@ -93,7 +94,7 @@ export default function TeacherDashboard() {
             className="flex items-center gap-2 transition-all duration-200 hover:scale-105 rounded-lg"
           >
             <UserCircle className="h-4 w-4" />
-            {t("teacher.profile")}
+            {t('profile')}
           </Button>
         </div>
       </div>
@@ -111,7 +112,7 @@ export default function TeacherDashboard() {
       <Card className="rounded-xl shadow-sm">
         <CardHeader className="cursor-pointer select-none" onClick={() => setShowDebug(!showDebug)}>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium">{t("common.debugInformation")}</CardTitle>
+            <CardTitle className="text-sm font-medium">{tCommon('debugInformation')}</CardTitle>
             <ChevronUpIcon className={`h-4 w-4 transition-transform ${showDebug ? "rotate-0" : "rotate-180"}`} />
           </div>
         </CardHeader>

@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from 'next-intl';
 import { Button } from "@/components/ui/button";
 import { Student } from "@/types/user";
 
@@ -17,7 +17,7 @@ export default function StudentProfileOverlay() {
   const { user, setUser } = useUser();
   const { showStudentProfileOverlay, setShowStudentProfileOverlay } = useOverlay();
   const { showSuccess, showError } = useNotification();
-  const { t } = useTranslation("common");
+  const t = useTranslations('Profile');
 
   const [formData, setFormData] = useState({
     nickname: user?.nickname || "",
@@ -43,11 +43,11 @@ export default function StudentProfileOverlay() {
       if (user) {
         await updateStudentProfile(user.uid, formData);
         setUser({ ...user, ...formData });
-        showSuccess(t("profile.updateSuccess"));
+        showSuccess(t('updateSuccess'));
         setShowStudentProfileOverlay(false);
       }
     } catch (error) {
-      showError(t("profile.updateError"));
+      showError(t('updateError'));
     }
   };
 
@@ -60,7 +60,7 @@ export default function StudentProfileOverlay() {
     <Dialog open={showStudentProfileOverlay} onOpenChange={setShowStudentProfileOverlay}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-semibold">{t("profile.editProfile")}</DialogTitle>
+          <DialogTitle className="text-2xl font-semibold">{t('editProfile')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -71,55 +71,55 @@ export default function StudentProfileOverlay() {
             </Avatar>
             <div>
               <h3 className="text-lg font-medium">{user?.email}</h3>
-              <p className="text-sm text-muted-foreground">{t("profile.student")}</p>
+              <p className="text-sm text-muted-foreground">{t('student')}</p>
             </div>
           </div>
 
           <Card>
             <CardContent className="p-4 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="nickname">{t("profile.nickname")}</Label>
+                <Label htmlFor="nickname">{t('nickname')}</Label>
                 <Input
                   id="nickname"
                   name="nickname"
                   value={formData.nickname}
                   onChange={handleChange}
-                  placeholder={t("profile.nicknamePlaceholder")}
+                  placeholder={t('nicknamePlaceholder')}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="introduction">{t("profile.introduction")}</Label>
+                <Label htmlFor="introduction">{t('introduction')}</Label>
                 <Textarea
                   id="introduction"
                   name="introduction"
                   value={formData.introduction}
                   onChange={handleChange}
-                  placeholder={t("profile.introductionPlaceholder")}
+                  placeholder={t('introductionPlaceholder')}
                   rows={3}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="interests">{t("profile.interests")}</Label>
+                <Label htmlFor="interests">{t('interests')}</Label>
                 <Textarea
                   id="interests"
                   name="interests"
                   value={formData.interests}
                   onChange={handleChange}
-                  placeholder={t("profile.interestsPlaceholder")}
+                  placeholder={t('interestsPlaceholder')}
                   rows={2}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="goals">{t("profile.goals")}</Label>
+                <Label htmlFor="goals">{t('goals')}</Label>
                 <Textarea
                   id="goals"
                   name="goals"
                   value={formData.goals}
                   onChange={handleChange}
-                  placeholder={t("profile.goalsPlaceholder")}
+                  placeholder={t('goalsPlaceholder')}
                   rows={2}
                 />
               </div>
@@ -128,9 +128,9 @@ export default function StudentProfileOverlay() {
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setShowStudentProfileOverlay(false)}>
-              {t("profile.buttons.cancel")}
+              {t('buttons.cancel')}
             </Button>
-            <Button type="submit">{t("teacherProfile.buttons.save")}</Button>
+            <Button type="submit">{t('buttons.save')}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

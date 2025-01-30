@@ -11,14 +11,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from 'next-intl';
 import { Teacher } from "@/types/user";
 
 export default function TeacherProfileOverlay() {
   const { user, setUser } = useUser();
   const { showTeacherProfileOverlay, setShowTeacherProfileOverlay } = useOverlay();
   const { showSuccess, showError } = useNotification();
-  const { t } = useTranslation("common");
+  const t = useTranslations('Profile');
 
   const [formData, setFormData] = useState({
     nickname: user?.nickname || "",
@@ -48,11 +48,11 @@ export default function TeacherProfileOverlay() {
       if (user) {
         await updateTeacherProfile(user.uid, formData);
         setUser({ ...user, ...formData });
-        showSuccess(t("profile.updateSuccess"));
+        showSuccess(t('updateSuccess'));
         setShowTeacherProfileOverlay(false);
       }
     } catch (error) {
-      showError(t("profile.updateError"));
+      showError(t('updateError'));
     }
   };
 
@@ -65,7 +65,7 @@ export default function TeacherProfileOverlay() {
     <Dialog open={showTeacherProfileOverlay} onOpenChange={setShowTeacherProfileOverlay}>
       <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-semibold">{t("profile.editProfile")}</DialogTitle>
+          <DialogTitle className="text-2xl font-semibold">{t('editProfile')}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -76,38 +76,38 @@ export default function TeacherProfileOverlay() {
             </Avatar>
             <div>
               <h3 className="text-lg font-medium">{user?.email}</h3>
-              <p className="text-sm text-muted-foreground">{t("profile.teacher")}</p>
+              <p className="text-sm text-muted-foreground">{t('teacher')}</p>
             </div>
           </div>
 
           <Tabs defaultValue="basic" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="basic">{t("profile.basicInfo")}</TabsTrigger>
-              <TabsTrigger value="professional">{t("profile.professionalInfo")}</TabsTrigger>
+              <TabsTrigger value="basic">{t('basicInfo')}</TabsTrigger>
+              <TabsTrigger value="professional">{t('professionalInfo')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="basic">
               <Card>
                 <CardContent className="p-4 space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="nickname">{t("profile.nickname")}</Label>
+                    <Label htmlFor="nickname">{t('nickname')}</Label>
                     <Input
                       id="nickname"
                       name="nickname"
                       value={formData.nickname}
                       onChange={handleChange}
-                      placeholder={t("profile.nicknamePlaceholder")}
+                      placeholder={t('nicknamePlaceholder')}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="introduction">{t("profile.introduction")}</Label>
+                    <Label htmlFor="introduction">{t('introduction')}</Label>
                     <Textarea
                       id="introduction"
                       name="introduction"
                       value={formData.introduction}
                       onChange={handleChange}
-                      placeholder={t("profile.introductionPlaceholder")}
+                      placeholder={t('introductionPlaceholder')}
                       rows={3}
                     />
                   </div>
@@ -119,49 +119,49 @@ export default function TeacherProfileOverlay() {
               <Card>
                 <CardContent className="p-4 space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="expertise">{t("profile.expertise")}</Label>
+                    <Label htmlFor="expertise">{t('expertise')}</Label>
                     <Textarea
                       id="expertise"
                       name="expertise"
                       value={formData.expertise}
                       onChange={handleChange}
-                      placeholder={t("profile.expertisePlaceholder")}
+                      placeholder={t('expertisePlaceholder')}
                       rows={2}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="education">{t("profile.education")}</Label>
+                    <Label htmlFor="education">{t('education')}</Label>
                     <Textarea
                       id="education"
                       name="education"
                       value={formData.education}
                       onChange={handleChange}
-                      placeholder={t("profile.educationPlaceholder")}
+                      placeholder={t('educationPlaceholder')}
                       rows={2}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="experience">{t("profile.experience")}</Label>
+                    <Label htmlFor="experience">{t('experience')}</Label>
                     <Textarea
                       id="experience"
                       name="experience"
                       value={formData.experience}
                       onChange={handleChange}
-                      placeholder={t("profile.experiencePlaceholder")}
+                      placeholder={t('experiencePlaceholder')}
                       rows={2}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="teachingStyle">{t("profile.teachingStyle")}</Label>
+                    <Label htmlFor="teachingStyle">{t('teachingStyle')}</Label>
                     <Textarea
                       id="teachingStyle"
                       name="teachingStyle"
                       value={formData.teachingStyle}
                       onChange={handleChange}
-                      placeholder={t("profile.teachingStylePlaceholder")}
+                      placeholder={t('teachingStylePlaceholder')}
                       rows={2}
                     />
                   </div>
@@ -172,9 +172,9 @@ export default function TeacherProfileOverlay() {
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setShowTeacherProfileOverlay(false)}>
-              {t("teacherProfile.buttons.cancel")}
+              {t('buttons.cancel')}
             </Button>
-            <Button type="submit">{t("teacherProfile.buttons.save")}</Button>
+            <Button type="submit">{t('buttons.save')}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useUser } from "@/hooks/useUser";
 import { getRepeatingDates } from "@/lib/utils/dateUtils";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from 'next-intl';
 import { 
   checkOverlap, 
   CALENDAR_CONFIG, 
@@ -24,7 +24,7 @@ export default function AddEventOverlay() {
   const { availability, updateAvailability } = useUser();
   const { setShowAddEventOverlay } = useOverlay();
   const { showSuccess } = useNotification();
-  const { t } = useTranslation("common");
+  const t = useTranslations('CalendarOverlay');
   const { bookings } = useBooking();
 
   // Basic event fields
@@ -164,7 +164,7 @@ export default function AddEventOverlay() {
         console.log('Overlap check for event:', { event, hasOverlap, conflictingEvent });
         
         if (hasOverlap) {
-          console.error(t('calendarOverlay.errors.availabilityOverlap'));
+          console.error(t('errors.availabilityOverlap'));
           setIsSubmitting(false);
           return;
         }
@@ -175,8 +175,8 @@ export default function AddEventOverlay() {
       await updateAvailability(newEvents);
       setShowAddEventOverlay(false);
       showSuccess(isRepeating ? 
-        t("calendarOverlay.bulkEventsAddedSuccess", { count: newEvents.length }) : 
-        t("calendarOverlay.eventAddedSuccess")
+        t('bulkEventsAddedSuccess', { count: newEvents.length }) : 
+        t('eventAddedSuccess')
       );
     } catch (error) {
       console.error("Error adding event:", error);
@@ -191,24 +191,24 @@ export default function AddEventOverlay() {
     <Sheet open={true} onOpenChange={() => setShowAddEventOverlay(false)}>
       <SheetContent className="sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>{t("calendarOverlay.title")}</SheetTitle>
+          <SheetTitle>{t('title')}</SheetTitle>
         </SheetHeader>
 
         <div className="space-y-6 py-6">
           {/* Title Input */}
           <div className="space-y-2">
-            <Label>{t("calendarOverlay.fields.title")}</Label>
+            <Label>{t('fields.title')}</Label>
             <Input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={t("calendarOverlay.fields.titlePlaceholder")}
+              placeholder={t('fields.titlePlaceholder')}
             />
           </div>
 
           {/* Date Picker */}
           <div className="space-y-2">
-            <Label>{t("calendarOverlay.fields.date")}</Label>
+            <Label>{t('fields.date')}</Label>
             <Calendar
               mode="single"
               selected={date || undefined}
@@ -220,13 +220,13 @@ export default function AddEventOverlay() {
           {/* Time Selection */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>{t("calendarOverlay.fields.startTime")}</Label>
+              <Label>{t('fields.startTime')}</Label>
               <Select 
                 value={startTime} 
                 onValueChange={setStartTime}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={t("calendarOverlay.fields.selectTime")} />
+                  <SelectValue placeholder={t('fields.selectTime')} />
                 </SelectTrigger>
                 <SelectContent>
                   {timeOptions.map(option => (
@@ -239,13 +239,13 @@ export default function AddEventOverlay() {
             </div>
 
             <div className="space-y-2">
-              <Label>{t("calendarOverlay.fields.endTime")}</Label>
+              <Label>{t('fields.endTime')}</Label>
               <Select 
                 value={endTime} 
                 onValueChange={setEndTime}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={t("calendarOverlay.fields.selectTime")} />
+                  <SelectValue placeholder={t('fields.selectTime')} />
                 </SelectTrigger>
                 <SelectContent>
                   {timeOptions.map(option => (
@@ -260,7 +260,7 @@ export default function AddEventOverlay() {
 
           {/* Meeting Links */}
           <div className="space-y-4">
-            <Label>{t("calendarOverlay.fields.meetLink")}</Label>
+            <Label>{t('fields.meetLink')}</Label>
             {isRepeating ? (
               repeatDates.map((repeatDate, index) => {
                 const dateKey = `${repeatDate.year}-${repeatDate.month}-${repeatDate.day}`;
@@ -278,7 +278,7 @@ export default function AddEventOverlay() {
                           [dateKey]: e.target.value
                         }));
                       }}
-                      placeholder={t("calendarOverlay.fields.meetLinkPlaceholder")}
+                      placeholder={t('fields.meetLinkPlaceholder')}
                     />
                   </div>
                 );
@@ -295,7 +295,7 @@ export default function AddEventOverlay() {
                       [dateKey]: e.target.value
                     }));
                   }}
-                  placeholder={t("calendarOverlay.fields.meetLinkPlaceholder")}
+                  placeholder={t('fields.meetLinkPlaceholder')}
                 />
               )
             )}
@@ -303,13 +303,13 @@ export default function AddEventOverlay() {
 
           {/* Max Students */}
           <div className="space-y-2">
-            <Label>{t("calendarOverlay.fields.maxStudents")}</Label>
+            <Label>{t('fields.maxStudents')}</Label>
             <Input
               type="number"
               min="1"
               value={maxStudents}
               onChange={(e) => setMaxStudents(parseInt(e.target.value))}
-              placeholder={t("calendarOverlay.fields.maxStudentsPlaceholder")}
+              placeholder={t('fields.maxStudentsPlaceholder')}
             />
           </div>
 
@@ -317,12 +317,12 @@ export default function AddEventOverlay() {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label className="text-sm font-medium">
-                {t("calendarOverlay.fields.repeating")}
+                {t('fields.repeating')}
               </Label>
               <div className="text-sm text-muted-foreground">
                 {isRepeating && date ? 
-                  `Will create ${repeatDates.length} classes this month` : 
-                  "Toggle to repeat weekly for remaining weeks in the month"}
+                  t('fields.repeatingClasses', { count: repeatDates.length }) : 
+                  t('fields.repeatingDescription')}
               </div>
             </div>
             <Switch
@@ -338,14 +338,14 @@ export default function AddEventOverlay() {
             onClick={() => setShowAddEventOverlay(false)}
             variant="outline"
           >
-            {t("calendarOverlay.buttons.cancel")}
+            {t('buttons.cancel')}
           </Button>
           <Button
             onClick={handleSave}
             disabled={!isValid() || isSubmitting}
             className="bg-green-600 hover:bg-green-700"
           >
-            {isSubmitting ? t("calendarOverlay.buttons.saving") : t("calendarOverlay.buttons.save")}
+            {isSubmitting ? t('buttons.saving') : t('buttons.save')}
           </Button>
         </SheetFooter>
       </SheetContent>

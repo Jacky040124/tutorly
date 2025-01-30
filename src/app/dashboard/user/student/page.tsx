@@ -6,7 +6,7 @@ import { getStudentBookings } from "@/services/booking.service";
 import StudentCalendar from "@/components/StudentCalendar";
 import StudentProfileOverlay from "@/components/overlays/StudentProfileOverlay";
 import { useOverlay } from "@/hooks/useOverlay";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from 'next-intl';
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
@@ -17,7 +17,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTeachers } from "@/hooks/useTeacher";
 import { getWeekBounds } from "@/lib/utils/timeUtils";
 
-
 export default function StudentDashboard() {
   const { user } = useUser();
   const [selectedTeacher, setSelectedTeacher] = useState<string>("default");
@@ -25,7 +24,8 @@ export default function StudentDashboard() {
   const { teachers } = useTeachers();
   const { setFutureBookings, setBookings, showBookingOverlay, bookings, futureBookings } = useBooking();
   const { showStudentProfileOverlay, setShowStudentProfileOverlay } = useOverlay();
-  const { t } = useTranslation("dashboard");
+  const t = useTranslations('Dashboard.Student');
+  const tCommon = useTranslations('Dashboard.Common');
 
   // Get the current week's dates based on offset
   const currentWeek = getWeekBounds(weekOffset);
@@ -68,7 +68,7 @@ export default function StudentDashboard() {
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Please sign in to access this page</div>
+        <div className="text-lg">{tCommon('pleaseSignIn')}</div>
       </div>
     );
   }
@@ -80,13 +80,13 @@ export default function StudentDashboard() {
           <div className=" p-6 space-y-1">
             <CardTitle className="text-3xl font-semibold text-foreground transition-colors duration-200">
               {selectedTeacher !== "default" && findTeacherById(selectedTeacher)
-                ? `${findTeacherById(selectedTeacher)?.nickname}${t("student.teacherRate", {
+                ? t('teacherRate', {
                     price: findTeacherById(selectedTeacher)?.pricing,
-                  })}`
-                : t("student.selectTeacherPrompt")}
+                  })
+                : t('selectTeacherPrompt')}
             </CardTitle>
             <CardDescription className="text-lg">
-              {t("student.greeting")}, {user.nickname}
+              {t('greeting')}, {user.nickname}
             </CardDescription>
           </div>
         </CardContent>
@@ -115,7 +115,7 @@ export default function StudentDashboard() {
                 className="flex items-center space-x-2 transition-all duration-200 hover:scale-105 rounded-lg"
               >
                 <UserCircle className="h-4 w-4" />
-                <span>{t("student.profile")}</span>
+                <span>{t('profile')}</span>
               </Button>
 
               <div className="transition-transform hover:scale-105 duration-200">
@@ -124,10 +124,10 @@ export default function StudentDashboard() {
                   onValueChange={handleSelect}
                 >
                   <SelectTrigger className="w-[200px] rounded-lg">
-                    <SelectValue placeholder={t("student.selectTeacher")} />
+                    <SelectValue placeholder={t('selectTeacher')} />
                   </SelectTrigger>
                   <SelectContent className="rounded-lg">
-                    <SelectItem value="default">{t("student.selectTeacher")}</SelectItem>
+                    <SelectItem value="default">{t('selectTeacher')}</SelectItem>
                     {teachers &&
                       teachers.map((teacher) => (
                         <SelectItem key={teacher.uid} value={teacher.uid}>
@@ -155,7 +155,7 @@ export default function StudentDashboard() {
               <AccordionTrigger className="text-sm hover:no-underline px-4 py-2">
                 <div className="flex items-center space-x-2">
                   <Code2 className="h-4 w-4" />
-                  <span>Debug Information</span>
+                  <span>{tCommon('debugInformation')}</span>
                 </div>
               </AccordionTrigger>
               <AccordionContent>

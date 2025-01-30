@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useTranslation } from "react-i18next";
+import { useTranslations } from 'next-intl';
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
 import { useForm, Controller } from "react-hook-form";
 import React from "react";
@@ -20,7 +20,7 @@ type SignInData = {
 };
 
 export default function SignIn() {
-  const { t } = useTranslation("auth");
+  const t = useTranslations('Auth.SignIn');
   const router = useRouter();
   const { setUser } = useUser();
 
@@ -55,25 +55,25 @@ export default function SignIn() {
         <div className="flex justify-between items-center absolute top-4 left-4 right-4">
           <Link href="/" aria-label="Home">
             <Button variant="outline" color="slate">
-              {t("signin.backToHome")}
+              {t('backToHome')}
             </Button>
           </Link>
           <LanguageSwitcher />
         </div>
 
         <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
-          <h2 className="text-3xl font-bold">{t("signin.title")}</h2>
+          <h2 className="text-3xl font-bold">{t('title')}</h2>
           <p className="mt-2 text-sm text-gray-600">
-            {t("signin.subtitle")}{" "}
+            {t('subtitle')}{" "}
             <Link href="/auth/signup" className="font-medium text-green-600 hover:text-green-500">
-              {t("signin.signupLink")}
+              {t('signupLink')}
             </Link>
           </p>
 
           <div className="mt-8">
             <form onSubmit={handleSubmit(handleSignIn)} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email">{t("signin.email")}</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Controller
                   name="email"
                   control={control}
@@ -90,7 +90,7 @@ export default function SignIn() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password">{t("signin.password")}</Label>
+                <Label htmlFor="password">{t('password')}</Label>
                 <Controller
                   name="password"
                   control={control}
@@ -108,7 +108,7 @@ export default function SignIn() {
 
               <div>
                 <Button type="submit" variant="outline" color="slate" className="w-full">
-                  {t("signin.button")}
+                  {t('button')}
                 </Button>
               </div>
             </form>
