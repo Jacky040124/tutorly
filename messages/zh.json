@@ -26,7 +26,8 @@
       },
       "Teacher": {
         "title": "创建教师账户",
-        "subtitle": "已有账户？登录",
+        "subtitle": "已有账户？",
+        "signInLink": "登录",
         "nickname": "昵称",
         "description": "描述",
         "email": "电子邮箱",

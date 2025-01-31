@@ -115,17 +115,17 @@ export default function App() {
               {paginatedTeachers.map((teacher) => (
                 <Card key={teacher.uid} className="overflow-hidden">
                   <CardHeader className="relative p-0">
-                    <Image
-                      src={teacher.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${teacher.nickname}`}
-                      alt={teacher.nickname}
-                      width={500}
-                      height={300}
-                      className="w-full h-48 object-cover bg-muted"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${teacher.nickname}`;
-                      }}
-                    />
+                    {teacher.photoURL ? (
+                      <Image
+                        src={teacher.photoURL}
+                        alt={teacher.nickname}
+                        width={500}
+                        height={300}
+                        className="w-full h-48 object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-48 bg-muted" />
+                    )}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 p-4">
                       <h3 className="text-xl font-bold text-white">{teacher.nickname}</h3>
                     </div>
