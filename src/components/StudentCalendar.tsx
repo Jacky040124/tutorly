@@ -30,7 +30,9 @@ const DynamicCalendar = dynamic(
   () =>
     import("@toast-ui/react-calendar").then((mod) => {
       const Calendar = mod.default;
-      return ({ forwardedRef, ...props }: any) => <Calendar {...props} ref={forwardedRef} />;
+      const WrappedCalendar = ({ forwardedRef, ...props }: any) => <Calendar {...props} ref={forwardedRef} />;
+      WrappedCalendar.displayName = 'WrappedCalendar';
+      return WrappedCalendar;
     }),
   { ssr: false }
 );
