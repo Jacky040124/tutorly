@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { updateBookingStatus, updateBookingHomework } from "@/services/booking.service";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { filterBookingsByTime } from "@/lib/utils/calendarUtils";
+import { filterBookingsByTime } from "@/utils/calendarUtils";
 import { Booking } from "@/types/booking";
 import { CalendarEvent } from "@/types/event";
 

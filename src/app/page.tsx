@@ -5,6 +5,10 @@ import { Search } from "lucide-react";
 import { useTeachers } from "@/hooks/useTeacher";
 import { useRouter } from "next/navigation";
 import { Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 const subjects = ["ALL", "MATH", "PHYS", "CHEM", "ENGL", "ECON", "CPSC"];
 
@@ -16,16 +20,10 @@ export default function App() {
   const filteredTeachers =
     selectedSubject === "ALL"
       ? teachers
-      : teachers.filter((teacher) =>
-          teacher.expertise
-            ?.toLowerCase()
-            .includes(selectedSubject.toLowerCase())
-        );
+      : teachers.filter((teacher) => teacher.expertise?.toLowerCase().includes(selectedSubject.toLowerCase()));
 
   if (loading) {
-    return (
-      <h2> Loading </h2>
-    );
+    return <h2> Loading </h2>;
   }
 
   if (error) {
@@ -42,18 +40,19 @@ export default function App() {
             </div>
 
             <div className="flex items-center space-x-6">
-              <button
+              <Button
                 onClick={() => router.push("/auth/signupteacher")}
-                className="bg-[#58cc02] text-white px-6 py-3 rounded-2xl font-bold hover:bg-[#46a302] transition-colors shadow-lg shadow-[#58cc02]/30"
+                className="bg-[#58cc02] text-white hover:bg-[#46a302]"
               >
                 Become a Tutor
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => router.push("/auth/signin")}
-                className="border-2 border-[#58cc02] text-[#58cc02] px-6 py-3 rounded-2xl font-bold hover:bg-[#58cc02] hover:text-white transition-colors"
+                variant="outline"
+                className="border-[#58cc02] text-[#58cc02] hover:bg-[#58cc02] hover:text-white"
               >
                 Log In
-              </button>
+              </Button>
             </div>
           </nav>
         </div>
@@ -65,52 +64,50 @@ export default function App() {
           <p className="text-gray-600 text-xl">Learn from the best, achieve your goals</p>
         </div>
 
-        <div className="mb-8 relative">
-          <input
+        <div className="mb-8 relative w-full max-w-xl px-4">
+          <Input
             type="text"
             placeholder="Search for your tutor"
-            className="w-full px-12 py-4 bg-white text-gray-800 rounded-2xl border-2 border-[#e5e5e5] pl-12 focus:outline-none focus:border-[#58cc02] focus:ring-2 focus:ring-[#58cc02]/20 transition-all"
+            className="pl-12"
           />
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+          <Search className="absolute left-8 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
         </div>
 
         <div className="mb-8">
-          <div className="flex space-x-2 p-2">
+          <div className="flex flex-wrap gap-2 p-2">
             {subjects.map((subject) => (
-              <button
+              <Button
                 key={subject}
                 onClick={() => setSelectedSubject(subject)}
-                className={`
-              px-6 py-3 rounded-xl font-medium transition-all
-              ${
-                selectedSubject === subject
-                  ? "bg-[#58cc02] text-white shadow-lg shadow-[#58cc02]/30"
-                  : "bg-[#e5e5e5] text-gray-700 hover:bg-[#d1d1d1]"
-              }
-            `}
+                variant={selectedSubject === subject ? "default" : "secondary"}
+                className={selectedSubject === subject ? "bg-[#58cc02] hover:bg-[#46a302]" : ""}
               >
                 {subject}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
 
-        <div className="mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 px-10">
+        <div className="container mx-auto px-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
             {filteredTeachers.map((teacher) => (
-              <div key={teacher.uid} className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 border-2 border-[#e5e5e5]">
+              <Card key={teacher.uid} className="overflow-hidden">
                 <div className="relative">
                   <img
-                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${teacher.nickname}`}
+                    src={teacher.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${teacher.nickname}`}
                     alt={teacher.nickname}
                     className="w-full h-48 object-cover bg-[#f7f7f7]"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${teacher.nickname}`;
+                    }}
                   />
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 p-4">
                     <h3 className="text-xl font-bold text-white">{teacher.nickname}</h3>
                   </div>
                 </div>
 
-                <div className="p-6">
+                <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center">
                       <Star className="h-5 w-5 text-[#ffd900] fill-current" />
@@ -123,16 +120,17 @@ export default function App() {
 
                   <div className="flex flex-wrap gap-2">
                     {teacher.expertise?.split(",").map((skill, index) => (
-                      <span
+                      <Badge
                         key={index}
-                        className="px-3 py-1 bg-[#f7f7f7] text-gray-700 rounded-full text-sm font-medium"
+                        variant="secondary"
+                        className="bg-[#f7f7f7] text-gray-700 hover:bg-[#f7f7f7]"
                       >
                         {skill.trim()}
-                      </span>
+                      </Badge>
                     ))}
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useUser } from "@/hooks/useUser";
-import { getRepeatingDates } from "@/lib/utils/dateUtils";
+import { getRepeatingDates } from "@/utils/dateUtils";
 import { useTranslations } from 'next-intl';
 import { 
   checkOverlap, 
@@ -8,7 +8,7 @@ import {
   formatDate, 
   generateTimeOptions,
   isValidEvent 
-} from "@/lib/utils/calendarUtil";
+} from "@/utils/calendarUtil";
 import { useBooking } from "@/hooks/useBooking";
 import { useNotification } from "@/hooks/useNotification";
 import { useOverlay } from "@/hooks/useOverlay";

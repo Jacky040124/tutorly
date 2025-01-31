@@ -144,6 +144,7 @@ export async function fetchTeachers(): Promise<Teacher[]> {
         teachingStyle: docData.teachingStyle || "",
         availability: docData.availability || [],
         pricing: docData.pricing || 0,
+        photoURL: docData.photoURL || "",
         // Optional fields with default values
         ...(docData.createdAt && { createdAt: docData.createdAt }),
         ...(docData.introduction && { introduction: docData.introduction }),

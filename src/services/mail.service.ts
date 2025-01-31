@@ -1,5 +1,5 @@
 import { Booking } from "../../types/booking";
-import { formatTime } from "../lib/utils/timeUtils";
+import { formatTime } from "../utils/timeUtils";
 
 interface MailParams {
   content: string;

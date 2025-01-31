@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useOverlay } from "@/hooks/useOverlay";
 import { useNotification } from "@/hooks/useNotification";
 import { updateTeacherProfile } from "@/services/user.service";
+import { uploadImage } from "@/services/storage.service";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,12 +14,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranslations } from 'next-intl';
 import { Teacher } from "@/types/user";
+import { Camera } from "lucide-react";
 
 export default function TeacherProfileOverlay() {
   const { user, setUser } = useUser();
   const { showTeacherProfileOverlay, setShowTeacherProfileOverlay } = useOverlay();
   const { showSuccess, showError } = useNotification();
   const t = useTranslations('Profile');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const [formData, setFormData] = useState({
     nickname: user?.nickname || "",
@@ -27,6 +31,7 @@ export default function TeacherProfileOverlay() {
     education: (user as Teacher)?.education || "",
     experience: (user as Teacher)?.experience || "",
     teachingStyle: (user as Teacher)?.teachingStyle || "",
+    photoURL: user?.photoURL || "",
   });
 
   useEffect(() => {
@@ -38,11 +43,32 @@ export default function TeacherProfileOverlay() {
         education: (user as Teacher).education ?? prevData.education,
         experience: (user as Teacher).experience ?? prevData.experience,
         teachingStyle: (user as Teacher).teachingStyle ?? prevData.teachingStyle,
+        photoURL: user.photoURL ?? prevData.photoURL,
       }));
     }
   }, [user]);
 
-  const handleSubmit = async (e: any) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const result = await uploadImage(file, `teachers/${user?.uid}/profile`);
+      setFormData(prev => ({ ...prev, photoURL: result.downloadUrl }));
+      showSuccess(t('imageUploadSuccess'));
+    } catch (error) {
+      if (error instanceof Error) {
+        showError(error.message);
+      } else {
+        showError(t('imageUploadError'));
+      }
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       if (user) {
@@ -70,10 +96,30 @@ export default function TeacherProfileOverlay() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex items-center space-x-4">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={user?.photoURL} />
-              <AvatarFallback>{(user?.nickname || "U")?.[0]?.toUpperCase()}</AvatarFallback>
-            </Avatar>
+            <div className="relative group">
+              <Avatar 
+                className="h-20 w-20 cursor-pointer transition-opacity group-hover:opacity-75"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <AvatarImage src={formData.photoURL} />
+                <AvatarFallback>{formData.nickname?.[0]?.toUpperCase()}</AvatarFallback>
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Camera className="w-6 h-6 text-white" />
+                </div>
+              </Avatar>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              {isUploading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
+            </div>
             <div>
               <h3 className="text-lg font-medium">{user?.email}</h3>
               <p className="text-sm text-muted-foreground">{t('teacher')}</p>
