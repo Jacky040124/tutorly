@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 import { useTeachers } from "@/hooks/useTeacher";
 import { useRouter } from "next/navigation";
-import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -109,10 +108,6 @@ export default function App() {
 
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center">
-                      <Star className="h-5 w-5 text-[#ffd900] fill-current" />
-                      <span className="text-gray-800 ml-1 font-medium">5.0/5</span>
-                    </div>
                     <span className="text-[#58cc02] font-bold text-lg">${teacher.pricing}/hr</span>
                   </div>
 

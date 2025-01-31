@@ -16,8 +16,13 @@
         "nickname": "昵称",
         "email": "电子邮箱",
         "password": "密码",
+        "signupCode": "注册码",
         "button": "注册",
-        "teacherLink": "注册成为教师"
+        "teacherLink": "注册成为教师",
+        "banner": {
+          "title": "开始学习之旅",
+          "subtitle": "加入我们的社区，向最优秀的老师学习。"
+        }
       },
       "Teacher": {
         "title": "创建教师账户",
@@ -26,13 +31,21 @@
         "description": "描述",
         "email": "电子邮箱",
         "password": "密码",
+        "signupCode": "教师注册码",
         "button": "注册成为教师 →",
-        "studentLink": "注册成为学生"
+        "studentLink": "注册成为学生",
+        "banner": {
+          "title": "开始教学之旅",
+          "subtitle": "加入我们的社区，与全球学生分享您的知识。"
+        }
       }
     }
   },
   "Dashboard": {
     "Common": {
+      "pleaseSignIn": "请登录以访问此页面",
+      "greeting": "欢迎回来，{name}",
+      "debugInformation": "调试信息",
       "calendarOverlay": {
         "title": "新建课程",
         "fields": {
@@ -60,6 +73,15 @@
           "availabilityOverlap": "一个或多个时间段与现有课程重叠",
           "invalidMaxStudents": "最大学生人数必须至少为1",
           "titleRequired": "请输入课程标题"
+        },
+        "removeSlot": {
+          "title": "删除时间段",
+          "confirmation": "确定要删除这个时间段吗？"
+        },
+        "buttons": {
+          "save": "保存",
+          "cancel": "取消",
+          "remove": "删除"
         }
       },
       "fields": {
@@ -78,24 +100,58 @@
       }
     },
     "Student": {
-      "title": "您的预约",
-      "lessonCount": "第 {{number}} 课，共 {{total}} 课",
-      "student": "学生：{{name}}",
-      "teacher": "老师：{{name}}",
+      "title": "您的课程",
+      "selectTeacherPrompt": "选择老师查看其可用时间",
+      "teacherRate": "课程每小时 {price}$",
+      "greeting": "欢迎回来",
+      "profile": "个人资料",
+      "selectTeacher": "选择老师",
+      "tabs": {
+        "upcoming": "即将到来",
+        "past": "历史记录"
+      },
+      "status": {
+        "confirmed": "已确认",
+        "completed": "已完成",
+        "cancelled": "已取消",
+        "upcoming": "即将到来的课程",
+        "past": "历史课程"
+      },
+      "lessonCount": {
+        "lesson": "课程",
+        "of": "/"
+      },
+      "student": "学生",
+      "teacher": "老师",
+      "feedback": {
+        "title": "学生反馈",
+        "rating": "评分",
+        "comment": "评论",
+        "created": "创建时间",
+        "updated": "更新时间",
+        "none": "暂无反馈"
+      },
       "buttons": {
         "meet": "进入课堂",
         "uploadHomework": "上传作业",
         "updateHomework": "更新作业",
         "viewHomework": "查看作业",
         "addFeedback": "添加反馈",
-        "editFeedback": "编辑反馈"
-      }
+        "editFeedback": "编辑反馈",
+        "viewFeedback": "查看反馈"
+      },
+      "noUpcoming": "暂无即将到来的课程",
+      "noPast": "暂无历史课程",
+      "noBookings": "暂无可预约课程"
     },
     "Teacher": {
+      "welcome": "欢迎来到您的教师面板",
       "title": "编辑资料",
       "nickname": "昵称",
       "description": "描述",
       "pricing": "收费 (每小时$)",
+      "profile": "个人资料",
+      "addEvent": "添加课程",
       "buttons": {
         "save": "保存",
         "cancel": "取消"
@@ -126,13 +182,24 @@
     "teachingStylePlaceholder": "描述你的教学方法",
     "pricing": "每小时收费",
     "pricingPlaceholder": "请输入每小时收费",
+    "buttons": {
+      "save": "保存",
+      "cancel": "取消"
+    },
     "updateSuccess": "资料更新成功",
-    "updateError": "资料更新失败"
+    "updateError": "资料更新失败",
+    "imageUploadSuccess": "头像上传成功",
+    "imageUploadError": "头像上传失败"
   },
   "Calendar": {
     "navigation": {
+      "today": "今天",
       "previousWeek": "上周",
       "nextWeek": "下周"
+    },
+    "view": {
+      "week": "周视图",
+      "day": "日视图"
     },
     "months": {
       "january": "一月",
@@ -148,5 +215,38 @@
       "november": "十一月",
       "december": "十二月"
     }
+  },
+  "CalendarOverlay": {
+    "title": "新建课程",
+    "fields": {
+      "title": "课程标题",
+      "titlePlaceholder": "请输入课程标题",
+      "date": "选择日期",
+      "startTime": "开始时间",
+      "endTime": "结束时间",
+      "selectTime": "选择时间",
+      "repeating": "重复课程",
+      "repeatingDescription": "开启后可以创建每周重复的课程",
+      "repeatingClasses": "将创建 {count} 节课程",
+      "meetLink": "会议链接",
+      "meetLinkPlaceholder": "输入Zoom会议链接",
+      "maxStudents": "最大学生人数",
+      "maxStudentsPlaceholder": "输入最大学生人数"
+    },
+    "buttons": {
+      "save": "保存",
+      "saving": "保存中...",
+      "cancel": "取消"
+    },
+    "errors": {
+      "fillAllFields": "请填写所有字段",
+      "endTimeLater": "结束时间必须晚于开始时间",
+      "bookingOverlap": "一个或多个时间段与现有预约重叠",
+      "availabilityOverlap": "一个或多个时间段与现有课程重叠",
+      "invalidMaxStudents": "最大学生人数必须至少为1",
+      "titleRequired": "请输入课程标题"
+    },
+    "eventAddedSuccess": "课程添加成功",
+    "bulkEventsAddedSuccess": "{count} 节课程添加成功"
   }
 }

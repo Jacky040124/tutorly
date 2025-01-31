@@ -7,12 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signUpStudent } from "@/services/auth.service";
 import { useRouter } from 'next/navigation';
-import { useTranslation } from 'react-i18next';
+import { useTranslations } from 'next-intl';
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
 import { useNotification } from "@/hooks/useNotification";
 
 export default function SignUp() {
-  const { t } = useTranslation('auth');
+  const t = useTranslations('Auth.SignUp.Student');
+  const tCommon = useTranslations('Auth.SignIn');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
@@ -46,7 +47,7 @@ export default function SignUp() {
         <div className="flex justify-between items-center absolute top-4 left-4 right-4">
           <Link href="/" aria-label="Home">
             <Button variant="outline" color="slate">
-              {t('signin.backToHome')}
+              {tCommon('backToHome')}
             </Button>
           </Link>
           <LanguageSwitcher />
@@ -54,19 +55,19 @@ export default function SignUp() {
 
         <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
           <h2 className="text-3xl font-bold">
-            {t('signup.student.title')}
+            {t('title')}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            {t('signup.student.subtitle')}{' '}
+            {t('subtitle')}{' '}
             <Link href="/auth/signin" className="font-medium text-green-600 hover:text-green-500">
-              {t('signin.button')}
+              {tCommon('button')}
             </Link>
           </p>
 
           <div className="mt-8">
             <form onSubmit={handleSignup} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="nickname">{t('signup.student.nickname')}</Label>
+                <Label htmlFor="nickname">{t('nickname')}</Label>
                 <Input
                   id="nickname"
                   name="nickname"
@@ -77,7 +78,7 @@ export default function SignUp() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">{t('signup.student.email')}</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Input
                   id="email"
                   name="email"
@@ -89,7 +90,7 @@ export default function SignUp() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">{t('signup.student.password')}</Label>
+                <Label htmlFor="password">{t('password')}</Label>
                 <Input
                   id="password"
                   name="password"
@@ -101,7 +102,7 @@ export default function SignUp() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signupCode">Sign-up Code</Label>
+                <Label htmlFor="signupCode">{t('signupCode')}</Label>
                 <Input
                   id="signupCode"
                   name="signupCode"
@@ -118,13 +119,13 @@ export default function SignUp() {
                   color="blue"
                   className="w-full"
                 >
-                  {t('signup.student.button')}
+                  {t('button')}
                 </Button>
                 <Link
                   href="/auth/signupteacher"
                   className="block text-center text-sm text-gray-600 hover:text-gray-900"
                 >
-                  {t('signup.student.teacherLink')}
+                  {t('teacherLink')}
                 </Link>
               </div>
             </form>
@@ -134,8 +135,8 @@ export default function SignUp() {
 
       <div className="hidden lg:block w-1/2 bg-green-600 relative">
         <div className="absolute inset-0 flex flex-col justify-center items-center text-white p-12">
-          <h1 className="text-4xl font-bold mb-6">Start Learning Today</h1>
-          <p className="text-xl text-center max-w-md">Join our community and learn from the best.</p>
+          <h1 className="text-4xl font-bold mb-6">{t('banner.title')}</h1>
+          <p className="text-xl text-center max-w-md">{t('banner.subtitle')}</p>
         </div>
       </div>
     </div>

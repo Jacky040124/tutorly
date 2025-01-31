@@ -8,13 +8,14 @@ import { Label } from "@/components/ui/label";
 import { useNotification } from "@/hooks/useNotification";
 import { signUpTeacher } from "@/services/auth.service";
 import { useRouter } from 'next/navigation';
-import { useTranslation } from 'react-i18next';
+import { useTranslations } from 'next-intl';
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
 
 //TODO: try to get rid of this thing, must be a better way to do it
 
 export default function SignUpTeacher() {
-  const { t } = useTranslation('auth');
+  const t = useTranslations('Auth.SignUp.Teacher');
+  const tCommon = useTranslations('Auth.SignIn');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
@@ -50,7 +51,7 @@ export default function SignUpTeacher() {
         <div className="flex justify-between items-center absolute top-4 left-4 right-4">
           <Link href="/" aria-label="Home">
             <Button variant="outline" color="slate">
-              {t('signin.backToHome')}
+              {tCommon('backToHome')}
             </Button>
           </Link>
           <LanguageSwitcher />
@@ -58,19 +59,19 @@ export default function SignUpTeacher() {
 
         <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
           <h2 className="text-3xl font-bold">
-            {t('signup.teacher.title')}
+            {t('title')}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            {t('signup.teacher.subtitle')}{' '}
+            {t('subtitle')}{' '}
             <Link href="/auth/signin" className="font-medium text-green-600 hover:text-green-500">
-              {t('signin.button')}
+              {tCommon('button')}
             </Link>
           </p>
 
           <div className="mt-8">
             <form onSubmit={handleSignup} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="nickname">{t('signup.teacher.nickname')}</Label>
+                <Label htmlFor="nickname">{t('nickname')}</Label>
                 <Input
                   id="nickname"
                   name="nickname"
@@ -81,7 +82,7 @@ export default function SignUpTeacher() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">{t('signup.teacher.description')}</Label>
+                <Label htmlFor="description">{t('description')}</Label>
                 <Input
                   id="description"
                   name="description"
@@ -92,7 +93,7 @@ export default function SignUpTeacher() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">{t('signup.teacher.email')}</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Input
                   id="email"
                   name="email"
@@ -104,7 +105,7 @@ export default function SignUpTeacher() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">{t('signup.teacher.password')}</Label>
+                <Label htmlFor="password">{t('password')}</Label>
                 <Input
                   id="password"
                   name="password"
@@ -116,7 +117,7 @@ export default function SignUpTeacher() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="passcode">Teacher Registration Code</Label>
+                <Label htmlFor="passcode">{t('signupCode')}</Label>
                 <Input
                   id="passcode"
                   name="passcode"
@@ -133,13 +134,13 @@ export default function SignUpTeacher() {
                   color="blue"
                   className="w-full"
                 >
-                  {t('signup.teacher.button')}
+                  {t('button')}
                 </Button>
                 <Link
                   href="/auth/signup"
                   className="block text-center text-sm text-gray-600 hover:text-gray-900"
                 >
-                  {t('signup.teacher.studentLink')}
+                  {t('studentLink')}
                 </Link>
               </div>
             </form>
@@ -148,8 +149,8 @@ export default function SignUpTeacher() {
       </div>
       <div className="hidden lg:block w-1/2 bg-green-600 relative">
         <div className="absolute inset-0 flex flex-col justify-center items-center text-white p-12">
-          <h1 className="text-4xl font-bold mb-6">{t('signup.teacher.banner.title')}</h1>
-          <p className="text-xl text-center max-w-md">{t('signup.teacher.banner.subtitle')}</p>
+          <h1 className="text-4xl font-bold mb-6">{t('banner.title')}</h1>
+          <p className="text-xl text-center max-w-md">{t('banner.subtitle')}</p>
         </div>
       </div>
     </div>

@@ -16,8 +16,13 @@
         "nickname": "Nickname",
         "email": "Email address",
         "password": "Password",
+        "signupCode": "Sign-up Code",
         "button": "Sign up",
-        "teacherLink": "Sign up as a teacher instead"
+        "teacherLink": "Sign up as a teacher instead",
+        "banner": {
+          "title": "Start Learning Today",
+          "subtitle": "Join our community and learn from the best."
+        }
       },
       "Teacher": {
         "title": "Create your teacher account",
@@ -37,6 +42,9 @@
   },
   "Dashboard": {
     "Common": {
+      "pleaseSignIn": "Please sign in to access this page",
+      "greeting": "Welcome back, {name}",
+      "debugInformation": "Debug Information",
       "calendarOverlay": {
         "title": "New Event",
         "fields": {
@@ -55,7 +63,8 @@
         },
         "buttons": {
           "save": "Save",
-          "cancel": "Cancel"
+          "cancel": "Cancel",
+          "remove": "Remove"
         },
         "errors": {
           "fillAllFields": "Please fill in all fields",
@@ -64,6 +73,10 @@
           "availabilityOverlap": "One or more time slots overlap with existing events",
           "invalidMaxStudents": "Maximum students must be at least 1",
           "titleRequired": "Please enter a class title"
+        },
+        "removeSlot": {
+          "title": "Remove Time Slot",
+          "confirmation": "Are you sure you want to remove this time slot?"
         }
       },
       "fields": {
@@ -82,38 +95,58 @@
       }
     },
     "Student": {
-      "title": "Bookings",
+      "title": "Your Classes",
+      "selectTeacherPrompt": "Select a teacher to view their availability",
+      "teacherRate": "Classes with {price}$ per hour",
+      "greeting": "Welcome back",
+      "profile": "Profile",
+      "selectTeacher": "Select Teacher",
       "tabs": {
         "upcoming": "Upcoming",
         "past": "Past"
       },
       "status": {
-        "upcoming": "Upcoming",
-        "past": "Past"
+        "confirmed": "Confirmed",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+        "upcoming": "Upcoming classes",
+        "past": "Past classes"
       },
       "lessonCount": {
-        "lesson": "Lesson",
+        "lesson": "Class",
         "of": "of"
       },
       "student": "Student",
       "teacher": "Teacher",
+      "feedback": {
+        "title": "Student Feedback",
+        "rating": "Rating",
+        "comment": "Comment",
+        "created": "Created",
+        "updated": "Last updated",
+        "none": "No feedback yet"
+      },
       "buttons": {
         "meet": "Join Meeting",
         "uploadHomework": "Upload Homework",
         "updateHomework": "Update Homework",
         "viewHomework": "View Homework",
         "addFeedback": "Add Feedback",
-        "editFeedback": "Edit Feedback"
+        "editFeedback": "Edit Feedback",
+        "viewFeedback": "View Feedback"
       },
-      "noUpcoming": "No upcoming bookings",
-      "noPast": "No past bookings",
-      "noBookings": "No bookings available"
+      "noUpcoming": "No upcoming classes",
+      "noPast": "No past classes",
+      "noBookings": "No classes available"
     },
     "Teacher": {
+      "welcome": "Welcome to Your Dashboard",
       "title": "Edit Profile",
       "nickname": "Nickname",
       "description": "Description",
       "pricing": "Pricing ($ per hour)",
+      "profile": "Profile",
+      "addEvent": "Add Event",
       "buttons": {
         "save": "Save",
         "cancel": "Cancel"
@@ -144,13 +177,24 @@
     "teachingStylePlaceholder": "Describe your teaching approach",
     "pricing": "Hourly Rate",
     "pricingPlaceholder": "Enter your hourly rate",
+    "buttons": {
+      "save": "Save",
+      "cancel": "Cancel"
+    },
     "updateSuccess": "Profile updated successfully",
-    "updateError": "Failed to update profile"
+    "updateError": "Failed to update profile",
+    "imageUploadSuccess": "Profile image uploaded successfully",
+    "imageUploadError": "Failed to upload profile image"
   },
   "Calendar": {
     "navigation": {
+      "today": "Today",
       "previousWeek": "Previous Week",
       "nextWeek": "Next Week"
+    },
+    "view": {
+      "week": "Week",
+      "day": "Day"
     },
     "months": {
       "january": "January",
@@ -166,5 +210,38 @@
       "november": "November",
       "december": "December"
     }
+  },
+  "CalendarOverlay": {
+    "title": "Create New Course",
+    "fields": {
+      "title": "Course Title",
+      "titlePlaceholder": "Enter course title",
+      "date": "Select Date",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "selectTime": "Select time",
+      "repeating": "Repeating Course",
+      "repeatingDescription": "Enable to create weekly recurring classes",
+      "repeatingClasses": "Will create {count} classes",
+      "meetLink": "Meeting Link",
+      "meetLinkPlaceholder": "Enter Zoom meeting link",
+      "maxStudents": "Maximum Students",
+      "maxStudentsPlaceholder": "Enter maximum number of students"
+    },
+    "buttons": {
+      "save": "Save",
+      "saving": "Saving...",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "fillAllFields": "Please fill in all fields",
+      "endTimeLater": "End time must be later than start time",
+      "bookingOverlap": "One or more time slots overlap with existing bookings",
+      "availabilityOverlap": "One or more time slots overlap with existing events",
+      "invalidMaxStudents": "Maximum students must be at least 1",
+      "titleRequired": "Please enter a course title"
+    },
+    "eventAddedSuccess": "Course added successfully",
+    "bulkEventsAddedSuccess": "{count} classes added successfully"
   }
 }
