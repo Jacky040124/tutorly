@@ -1,15 +1,8 @@
 import { useState, useMemo } from "react";
 import { useUser } from "@/hooks/useUser";
 import { getRepeatingDates } from "@/utils/dateUtils";
-import { useTranslations } from 'next-intl';
-import { 
-  checkOverlap, 
-  CALENDAR_CONFIG, 
-  formatDate, 
-  generateTimeOptions,
-  isValidEvent 
-} from "@/utils/calendarUtil";
-import { useBooking } from "@/hooks/useBooking";
+import { useTranslations } from "next-intl";
+import { checkOverlap, CALENDAR_CONFIG, formatDate, generateTimeOptions, isValidEvent } from "@/utils/calendarUtil";
 import { useNotification } from "@/hooks/useNotification";
 import { useOverlay } from "@/hooks/useOverlay";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
@@ -19,27 +12,66 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useForm, Controller } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const formSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  startTime: z.string().min(1, "Start time is required"),
+  endTime: z.string().min(1, "End time is required"),
+  maxStudents: z.number().min(1, "At least 1 student required"),
+  isRepeating: z.boolean(),
+  meetingLinks: z.record(z.string().url("Invalid meeting link").or(z.string().length(0))),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 export default function AddEventOverlay() {
   const { availability, updateAvailability } = useUser();
   const { setShowAddEventOverlay } = useOverlay();
   const { showSuccess } = useNotification();
-  const t = useTranslations('CalendarOverlay');
-  const { bookings } = useBooking();
-
-  // Basic event fields
-  const [title, setTitle] = useState("");
+  const t = useTranslations("CalendarOverlay");
   const [date, setDate] = useState<Date | null>(null);
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [meetingLinks, setMeetingLinks] = useState<Record<string, string>>({});
-  
-  // Student enrollment fields
-  const [maxStudents, setMaxStudents] = useState(1);
-  
-  // Repeating event fields
-  const [isRepeating, setIsRepeating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      startTime: "",
+      endTime: "",
+      maxStudents: 1,
+      isRepeating: false,
+      meetingLinks: {},
+    },
+  });
+
+  const isRepeating = watch("isRepeating");
+  const startTime = watch("startTime");
+  const endTime = watch("endTime");
+
+  const timeOptions = useMemo(() => generateTimeOptions(CALENDAR_CONFIG), []);
+
+  const filteredStartTimeOptions = useMemo(() => {
+    if (endTime) {
+      return timeOptions.filter((option) => parseInt(option.value) < parseInt(endTime));
+    }
+    return timeOptions;
+  }, [timeOptions, endTime]);
+
+  const filteredEndTimeOptions = useMemo(() => {
+    if (startTime) {
+      return timeOptions.filter((option) => parseInt(option.value) > parseInt(startTime));
+    }
+    return timeOptions;
+  }, [timeOptions, startTime]);
 
   // Calculate repeating dates when date changes
   const repeatDates = useMemo(() => {
@@ -47,74 +79,28 @@ export default function AddEventOverlay() {
     const dates = getRepeatingDates({
       year: date.getFullYear(),
       month: date.getMonth() + 1,
-      day: date.getDate()
+      day: date.getDate(),
     });
-    console.log('Calculated repeat dates:', dates);
     return dates;
   }, [date, isRepeating]);
 
-  // Initialize meeting links when repeat dates change
-  const initializeMeetingLinks = (dates: Array<{ year: number; month: number; day: number }>) => {
-    const newLinks: Record<string, string> = {};
-    dates.forEach((date, index) => {
-      const dateKey = `${date.year}-${date.month}-${date.day}`;
-      if (!meetingLinks[dateKey]) {
-        newLinks[dateKey] = "";
-      } else {
-        newLinks[dateKey] = meetingLinks[dateKey];
-      }
-    });
-    console.log('Initialized meeting links:', newLinks);
-    setMeetingLinks(newLinks);
-  };
-
-  // Update meeting links when repeat dates change
-  useMemo(() => {
-    if (isRepeating && repeatDates.length > 0) {
-      initializeMeetingLinks(repeatDates);
-    } else {
-      setMeetingLinks({});
-    }
-  }, [repeatDates, isRepeating]);
-
-  const isValid = () => {
-    const valid = isValidEvent({
-      title,
-      date,
-      startTime,
-      endTime,
-      maxStudents,
-      meetingLinks,
-      isRepeating
-    });
-    console.log('Form validation:', { valid, formState: { title, date, startTime, endTime, maxStudents, meetingLinks, isRepeating }});
-    return valid;
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: FormValues) => {
+    if (!date) return;
     setIsSubmitting(true);
-    console.log('Starting save process...');
 
     try {
       const newEvents = [];
-      
       if (isRepeating) {
-        console.log('Creating repeating events...');
-        console.log('Repeat dates:', repeatDates);
-        
         const repeatGroupId = `group_${Date.now()}`;
-        
-        // Create an event for each date in the repeating sequence
         repeatDates.forEach((repeatDate, index) => {
           const dateKey = `${repeatDate.year}-${repeatDate.month}-${repeatDate.day}`;
           const event = {
             date: repeatDate,
-            startTime: parseInt(startTime),
-            endTime: parseInt(endTime),
-            meeting_link: meetingLinks[dateKey],
-            title: title,
-            maxStudents: maxStudents,
+            startTime: parseInt(data.startTime),
+            endTime: parseInt(data.endTime),
+            meeting_link: data.meetingLinks[dateKey],
+            title: data.title,
+            maxStudents: data.maxStudents,
             enrolledStudentIds: [],
             isRepeating: true,
             repeatGroupId,
@@ -122,12 +108,9 @@ export default function AddEventOverlay() {
             totalClasses: repeatDates.length,
             createdAt: new Date().toISOString(),
           };
-          console.log(`Creating event ${index + 1}/${repeatDates.length}:`, event);
           newEvents.push(event);
         });
       } else {
-        console.log('Creating single event...');
-        if (!date) return;
         const dateKey = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
         const event = {
           date: {
@@ -135,11 +118,11 @@ export default function AddEventOverlay() {
             month: date.getMonth() + 1,
             day: date.getDate(),
           },
-          startTime: parseInt(startTime),
-          endTime: parseInt(endTime),
-          meeting_link: meetingLinks[dateKey],
-          title: title,
-          maxStudents: parseInt(maxStudents.toString()),
+          startTime: parseInt(data.startTime),
+          endTime: parseInt(data.endTime),
+          meeting_link: data.meetingLinks[dateKey],
+          title: data.title,
+          maxStudents: data.maxStudents,
           enrolledStudentIds: [],
           isRepeating: false,
           repeatGroupId: `single_${Date.now()}`,
@@ -147,37 +130,22 @@ export default function AddEventOverlay() {
           totalClasses: 1,
           createdAt: new Date().toISOString(),
         };
-        console.log('Single event:', event);
         newEvents.push(event);
       }
 
-      console.log('All new events:', newEvents);
-      console.log('Current availability:', availability);
-      console.log('Current bookings:', bookings);
-
-      // Only check overlaps against availability
       const existingAvailability = availability || [];
-      
-      // Check for overlaps with all new events
       for (const event of newEvents) {
-        const { hasOverlap, conflictingEvent } = checkOverlap(existingAvailability, event);
-        console.log('Overlap check for event:', { event, hasOverlap, conflictingEvent });
-        
+        const { hasOverlap } = checkOverlap(existingAvailability, event);
         if (hasOverlap) {
-          console.error(t('errors.availabilityOverlap'));
+          console.error(t("errors.availabilityOverlap"));
           setIsSubmitting(false);
           return;
         }
       }
 
-      // If no overlaps, proceed with adding all events
-      console.log('No overlaps found, updating availability with:', newEvents);
       await updateAvailability(newEvents);
       setShowAddEventOverlay(false);
-      showSuccess(isRepeating ? 
-        t('bulkEventsAddedSuccess', { count: newEvents.length }) : 
-        t('eventAddedSuccess')
-      );
+      showSuccess(isRepeating ? t("bulkEventsAddedSuccess", { count: newEvents.length }) : t("eventAddedSuccess"));
     } catch (error) {
       console.error("Error adding event:", error);
     } finally {
@@ -185,169 +153,240 @@ export default function AddEventOverlay() {
     }
   };
 
-  const timeOptions = useMemo(() => generateTimeOptions(CALENDAR_CONFIG), []);
-
   return (
     <Sheet open={true} onOpenChange={() => setShowAddEventOverlay(false)}>
-      <SheetContent className="sm:max-w-lg">
+      <SheetContent className="sm:max-w-lg overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>{t('title')}</SheetTitle>
+          <SheetTitle>{t("title")}</SheetTitle>
         </SheetHeader>
 
-        <div className="space-y-6 py-6">
-          {/* Title Input */}
-          <div className="space-y-2">
-            <Label>{t('fields.title')}</Label>
-            <Input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={t('fields.titlePlaceholder')}
-            />
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 py-6">
+          {/* Calendar stays at the top */}
+          <div className="space-y-2 w-full">
+            <Label>{t("fields.date")}</Label>
+            <div className="w-full">
+              <Calendar
+                mode="single"
+                selected={date || undefined}
+                onSelect={(date: Date | undefined) => setDate(date ?? null)}
+                className="rounded-md border w-full"
+              />
+            </div>
           </div>
 
-          {/* Date Picker */}
+          {/* Title Input */}
           <div className="space-y-2">
-            <Label>{t('fields.date')}</Label>
-            <Calendar
-              mode="single"
-              selected={date || undefined}
-              onSelect={(date: Date | undefined) => setDate(date ?? null)}
-              className="rounded-md border"
+            <Label>{t("fields.title")}</Label>
+            <Controller
+              name="title"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  type="text"
+                  placeholder={t("fields.titlePlaceholder")}
+                  className={errors.title ? "border-red-500" : ""}
+                />
+              )}
             />
+            {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
           </div>
 
           {/* Time Selection */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>{t('fields.startTime')}</Label>
-              <Select 
-                value={startTime} 
-                onValueChange={setStartTime}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('fields.selectTime')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {timeOptions.map(option => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>{t("fields.startTime")}</Label>
+              <Controller
+                name="startTime"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      if (endTime && parseInt(endTime) <= parseInt(value)) {
+                        setValue("endTime", "");
+                      }
+                    }}
+                  >
+                    <SelectTrigger className={errors.startTime ? "border-red-500" : ""}>
+                      <SelectValue placeholder={t("fields.selectTime")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredStartTimeOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.startTime && <p className="text-sm text-red-500">{errors.startTime.message}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label>{t('fields.endTime')}</Label>
-              <Select 
-                value={endTime} 
-                onValueChange={setEndTime}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('fields.selectTime')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {timeOptions.map(option => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>{t("fields.endTime")}</Label>
+              <Controller
+                name="endTime"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      if (startTime && parseInt(startTime) >= parseInt(value)) {
+                        setValue("startTime", "");
+                      }
+                    }}
+                  >
+                    <SelectTrigger className={errors.endTime ? "border-red-500" : ""}>
+                      <SelectValue placeholder={t("fields.selectTime")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredEndTimeOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.endTime && <p className="text-sm text-red-500">{errors.endTime.message}</p>}
             </div>
           </div>
 
           {/* Meeting Links */}
-          <div className="space-y-4">
-            <Label>{t('fields.meetLink')}</Label>
-            {isRepeating ? (
-              repeatDates.map((repeatDate, index) => {
-                const dateKey = `${repeatDate.year}-${repeatDate.month}-${repeatDate.day}`;
-                return (
-                  <div key={dateKey} className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">
-                      Class {index + 1} - {formatDate(repeatDate)}
-                    </Label>
+          {date && (
+            <div className="space-y-4">
+              <Label>{t("fields.meetLink")}</Label>
+              {isRepeating ? (
+                repeatDates.map((repeatDate, index) => {
+                  const dateKey = `${repeatDate.year}-${repeatDate.month}-${repeatDate.day}`;
+                  return (
+                    <div key={dateKey} className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">
+                        Class {index + 1} - {formatDate(repeatDate)}
+                      </Label>
+                      <Controller
+                        name={`meetingLinks.${dateKey}`}
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            type="url"
+                            placeholder={t("fields.meetLinkPlaceholder")}
+                            className={errors.meetingLinks?.[dateKey] ? "border-red-500" : ""}
+                          />
+                        )}
+                      />
+                      {errors.meetingLinks?.[dateKey] && (
+                        <p className="text-sm text-red-500">{errors.meetingLinks[dateKey]?.message}</p>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <Controller
+                  name={`meetingLinks.${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`}
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
                     <Input
+                      {...field}
                       type="url"
-                      value={meetingLinks[dateKey] || ""}
-                      onChange={(e) => {
-                        setMeetingLinks(prev => ({
-                          ...prev,
-                          [dateKey]: e.target.value
-                        }));
-                      }}
-                      placeholder={t('fields.meetLinkPlaceholder')}
+                      placeholder={t("fields.meetLinkPlaceholder")}
+                      className={
+                        errors.meetingLinks?.[`${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`]
+                          ? "border-red-500"
+                          : ""
+                      }
                     />
-                  </div>
-                );
-              })
-            ) : (
-              date && (
-                <Input
-                  type="url"
-                  value={meetingLinks[`${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`] || ""}
-                  onChange={(e) => {
-                    const dateKey = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-                    setMeetingLinks(prev => ({
-                      ...prev,
-                      [dateKey]: e.target.value
-                    }));
-                  }}
-                  placeholder={t('fields.meetLinkPlaceholder')}
+                  )}
                 />
-              )
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {/* Max Students */}
           <div className="space-y-2">
-            <Label>{t('fields.maxStudents')}</Label>
-            <Input
-              type="number"
-              min="1"
-              value={maxStudents}
-              onChange={(e) => setMaxStudents(parseInt(e.target.value))}
-              placeholder={t('fields.maxStudentsPlaceholder')}
+            <Label>{t("fields.maxStudents")}</Label>
+            <Controller
+              name="maxStudents"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  type="number"
+                  min="1"
+                  onChange={(e) => field.onChange(parseInt(e.target.value))}
+                  placeholder={t("fields.maxStudentsPlaceholder")}
+                  className={errors.maxStudents ? "border-red-500" : ""}
+                />
+              )}
             />
+            {errors.maxStudents && <p className="text-sm text-red-500">{errors.maxStudents.message}</p>}
           </div>
 
           {/* Repeating Event Toggle */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label className="text-sm font-medium">
-                {t('fields.repeating')}
-              </Label>
-              <div className="text-sm text-muted-foreground">
-                {isRepeating && date ? 
-                  t('fields.repeatingClasses', { count: repeatDates.length }) : 
-                  t('fields.repeatingDescription')}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-base font-medium">{isRepeating ? t("fields.repeating") : "Trial Course"}</Label>
+                <div className="text-sm text-muted-foreground">
+                  {isRepeating ? (
+                    date ? (
+                      <div className="space-y-1">
+                        <p>{t("fields.repeatingClasses", { count: repeatDates.length })}</p>
+                        <p className="text-xs">
+                          Weekly recurring classes every {date.toLocaleDateString("en-US", { weekday: "long" })}
+                        </p>
+                      </div>
+                    ) : (
+                      "Select a date to see the recurring schedule"
+                    )
+                  ) : (
+                    "One-time trial class. Toggle switch for weekly recurring classes."
+                  )}
+                </div>
               </div>
+              <Controller
+                name="isRepeating"
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    className="data-[state=checked]:bg-green-600"
+                  />
+                )}
+              />
             </div>
-            <Switch
-              checked={isRepeating}
-              onCheckedChange={setIsRepeating}
-              className="data-[state=checked]:bg-green-600"
-            />
+            {isRepeating && date && (
+              <div className="rounded-md bg-muted p-3 text-sm">
+                <div className="font-medium mb-2">Recurring Schedule:</div>
+                <div className="space-y-1">
+                  {repeatDates.map((date, index) => (
+                    <div key={index} className="text-muted-foreground">
+                      Class {index + 1}: {formatDate(date)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
 
-        <SheetFooter>
-          <Button
-            onClick={() => setShowAddEventOverlay(false)}
-            variant="outline"
-          >
-            {t('buttons.cancel')}
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={!isValid() || isSubmitting}
-            className="bg-green-600 hover:bg-green-700"
-          >
-            {isSubmitting ? t('buttons.saving') : t('buttons.save')}
-          </Button>
-        </SheetFooter>
+          <SheetFooter>
+            <Button type="button" onClick={() => setShowAddEventOverlay(false)} variant="outline">
+              {t("buttons.cancel")}
+            </Button>
+            <Button type="submit" disabled={isSubmitting || !date} className="bg-green-600 hover:bg-green-700">
+              {isSubmitting ? t("buttons.saving") : t("buttons.save")}
+            </Button>
+          </SheetFooter>
+        </form>
       </SheetContent>
     </Sheet>
   );

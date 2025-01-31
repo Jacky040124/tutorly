@@ -189,11 +189,15 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
       const isBooking = event.calendarId === "bookings";
       const bgColor = isBooking ? "bg-blue-500" : "bg-emerald-500";
 
+      // Add trial class label for non-repeating events
+      const isTrialClass = !event.raw?.isRepeating;
+      const title = isTrialClass ? "Trial Class" : event.title;
+
       return `
         <div class="px-2 py-1.5 ${bgColor} flex flex-col min-h-[70px]">
           <div class="flex items-start justify-between">
             <div class="flex flex-col flex-1">
-              <div class="text-sm font-medium text-white">${event.title}</div>
+              <div class="text-sm font-medium text-white">${title}</div>
               <div class="text-xs text-white/90">${formattedDate}</div>
               <div class="text-xs text-white/90">${new Date(event.start).getHours()}:00 - ${new Date(
         event.end

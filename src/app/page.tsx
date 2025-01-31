@@ -10,7 +10,6 @@ import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge";
 import { useTranslations } from "next-intl";
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
-import { Spinner } from "@/components/ui/spinner";
 
 // Available subject filters with their translation keys
 const subjects = [
@@ -110,11 +109,6 @@ export default function App() {
         </section>
 
         {/* Tutors Grid Section */}
-        {loading ? (
-          <div className="flex justify-center items-center min-h-[800px]">
-            <Spinner size="lg" />
-          </div>
-        ) : (
           <div className="container mx-auto max-w-7xl px-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-h-[800px]">
               {paginatedTeachers.map((teacher) => (
@@ -184,7 +178,6 @@ export default function App() {
               </div>
             )}
           </div>
-        )}
       </main>
     </div>
   );

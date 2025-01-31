@@ -100,12 +100,12 @@ export default function BookingOverlay(prop: { selectedTeacher: number }) {
 
   return (
     <Sheet open={true} onOpenChange={() => setShowBookingOverlay(false)}>
-      <SheetContent className="sm:max-w-lg">
+      <SheetContent className="sm:max-w-lg flex flex-col">
         <SheetHeader className="space-y-1 mb-6">
           <SheetTitle>Confirm Booking</SheetTitle>
         </SheetHeader>
 
-        <ScrollArea className="h-[calc(100vh-8rem)]">
+        <ScrollArea className="flex-1 -mr-6 pr-6">
           <div className="space-y-6">
             <Card className="shadow-sm">
               <CardContent className="pt-6 space-y-6">
@@ -210,14 +210,16 @@ export default function BookingOverlay(prop: { selectedTeacher: number }) {
           </div>
         </ScrollArea>
 
-        <SheetFooter className="flex justify-end gap-2 mt-6">
-          <Button variant="outline" onClick={() => setShowBookingOverlay(false)} disabled={isSubmitting}>
-            Cancel
-          </Button>
-          <Button onClick={handleConfirm} disabled={isSubmitting} className="bg-green-600 hover:bg-green-700">
-            {isSubmitting ? "Confirming..." : "Confirm Booking"}
-          </Button>
-        </SheetFooter>
+        <div className="py-3">
+          <SheetFooter className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowBookingOverlay(false)} disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button onClick={handleConfirm} disabled={isSubmitting} className="bg-green-600 hover:bg-green-700">
+              {isSubmitting ? "Confirming..." : "Confirm Booking"}
+            </Button>
+          </SheetFooter>
+        </div>
       </SheetContent>
     </Sheet>
   );

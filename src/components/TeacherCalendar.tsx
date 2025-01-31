@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, forwardRef, ForwardedRef } from 'react';
 import dynamic from 'next/dynamic';
 import '@toast-ui/calendar/dist/toastui-calendar.min.css';
 import { useUser } from '@/hooks/useUser';
@@ -19,15 +19,6 @@ import { Booking } from "@/types/booking";
 import { CalendarEvent } from "@/types/event";
 import { useTranslations } from 'next-intl';
 
-const Calendar = dynamic<any>(() => import('@toast-ui/react-calendar').then(mod => mod.default), {
-  ssr: false,
-  loading: () => (
-    <div className="flex items-center justify-center h-full">
-      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-500"></div>
-    </div>
-  ),
-});
-
 type CalendarInstance = {
   getInstance: () => {
     today: () => void;
@@ -37,12 +28,34 @@ type CalendarInstance = {
   };
 };
 
+const DynamicCalendar = dynamic(
+  () =>
+    import("@toast-ui/react-calendar").then((mod) => {
+      const Calendar = mod.default;
+      return ({ forwardedRef, ...props }: any) => <Calendar {...props} ref={forwardedRef} />;
+    }),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-500"></div>
+      </div>
+    ),
+  }
+);
+
+const CalendarWrapper = forwardRef((props: any, ref: ForwardedRef<CalendarInstance>) => {
+  return <DynamicCalendar {...props} forwardedRef={ref} />;
+});
+
+CalendarWrapper.displayName = "CalendarWrapper";
+
 type EventClickData = {
   event: CalendarEvent;
 };
 
 export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
-  const calendarRef = useRef<CalendarInstance | null>(null);
+  const calendarRef = useRef<CalendarInstance>(null);
   const { user, availability, removeAvailability, fetchUserNickname } = useUser();
   const [showUpcoming, setShowUpcoming] = useState(true);
   const [studentNames, setStudentNames] = useState<{ [key: string]: string }>({});
@@ -186,11 +199,15 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
       const isBooking = event.calendarId === "bookings";
       const bgColor = isBooking ? "bg-blue-500" : "bg-emerald-500";
 
+      // Add trial class label for non-repeating events
+      const isTrialClass = !event.raw?.isRepeating;
+      const title = isTrialClass ? "Trial Class" : event.title;
+
       return `
         <div class="px-2 py-1.5 ${bgColor} flex flex-col min-h-[70px]">
           <div class="flex items-start justify-between">
             <div class="flex flex-col flex-1">
-              <div class="text-sm font-medium text-white">${event.title}</div>
+              <div class="text-sm font-medium text-white">${title}</div>
               <div class="text-xs text-white/90">${formattedDate}</div>
               <div class="text-xs text-white/90">${new Date(event.start).getHours()}:00 - ${new Date(
         event.end
@@ -301,7 +318,7 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
             </div>
 
             <div className="flex-1 overflow-auto">
-              <Calendar
+              <CalendarWrapper
                 ref={calendarRef}
                 height="100%"
                 view="week"
