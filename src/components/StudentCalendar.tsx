@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, forwardRef, ForwardedRef } from "react";
+import { useRef, useState, forwardRef, ForwardedRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import "@toast-ui/calendar/dist/toastui-calendar.min.css";
 import { useBooking } from "@/hooks/useBooking";
@@ -57,13 +57,13 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [feedbackToDelete, setFeedbackToDelete] = useState("");
 
-  const handleDeleteFeedback = async (booking: Booking) => {
+  const handleDeleteFeedback = useCallback(async (booking: Booking) => {
     if (booking.feedback) {
       setFeedbackToDelete(booking.id);
     }
-  };
+  }, []);
 
-  const confirmDeleteFeedback = async () => {
+  const confirmDeleteFeedback = useCallback(async () => {
     if (!feedbackToDelete) return;
 
     try {
@@ -77,7 +77,7 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
     } finally {
       setFeedbackToDelete("");
     }
-  };
+  }, [feedbackToDelete, bookings, setBookings]);
 
   // Filter bookings based on upcoming/past
   const filteredBookings = bookings.filter((booking) => {
@@ -155,7 +155,7 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
 
   const events = [...availabilityEvents, ...bookingEvents];
 
-  const handleEventClick = (event: any) => {
+  const handleEventClick = useCallback((event: any) => {
     if (event.event.calendarId === "availability") {
       const slot = teachers[selectedTeacher]?.availability.find(
         (s) =>
@@ -173,7 +173,7 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
         setShowBookingOverlay(true);
       }
     }
-  };
+  }, [selectedTeacher, teachers, setSelectedSlot, setShowBookingOverlay]);
 
   const template = {
     time(event: any) {
@@ -258,20 +258,20 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
     },
   };
 
-  const handleToday = () => {
+  const handleToday = useCallback(() => {
     setWeekOffset(0);
     calendarRef.current?.getInstance()?.today();
-  };
+  }, [setWeekOffset]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     setWeekOffset((prev: number) => prev - 1);
     calendarRef.current?.getInstance()?.prev();
-  };
+  }, [setWeekOffset]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     setWeekOffset((prev: number) => prev + 1);
     calendarRef.current?.getInstance()?.next();
-  };
+  }, [setWeekOffset]);
 
   return (
     <>

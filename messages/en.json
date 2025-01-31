@@ -26,11 +26,13 @@
       },
       "Teacher": {
         "title": "Create your teacher account",
-        "subtitle": "Already have an account? Sign in",
+        "subtitle": "Already have an account?",
+        "signInLink": "Sign in",
         "nickname": "Nickname",
         "description": "Description",
         "email": "Email address",
         "password": "Password",
+        "signupCode": "Sign-up Code",
         "button": "Sign up as teacher →",
         "studentLink": "Sign up as a student instead",
         "banner": {

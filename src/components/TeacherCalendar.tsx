@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, forwardRef, ForwardedRef } from 'react';
+import { useEffect, useRef, useState, forwardRef, ForwardedRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import '@toast-ui/calendar/dist/toastui-calendar.min.css';
 import { useUser } from '@/hooks/useUser';
@@ -68,7 +68,7 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
   const tCalendar = useTranslations('Calendar');
   const tStudent = useTranslations('Dashboard.Student');
 
-  const handleBookingStatusChange = async (bookingId: string, newStatus: "completed" | "confirmed" | "cancelled") => {
+  const handleBookingStatusChange = useCallback(async (bookingId: string, newStatus: "completed" | "confirmed" | "cancelled") => {
     try {
       await updateBookingStatus(bookingId, newStatus);
     } catch (error) {
@@ -76,9 +76,9 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
         console.error(`Error updating booking status: ${error.message}`);
       }
     }
-  };
+  }, []);
 
-  const handleHomeworkSubmit = async (bookingId: string) => {
+  const handleHomeworkSubmit = useCallback(async (bookingId: string) => {
     try {
       await updateBookingHomework(bookingId, homeworkLink);
       setHomeworkLink(""); // Reset input
@@ -87,7 +87,7 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
         console.error(`Error updating homework: ${error.message}`);
       }
     }
-  };
+  }, [homeworkLink]);
 
   // Fetch student names
   useEffect(() => {
@@ -104,7 +104,9 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
             }
           }
         }
-        setStudentNames(prev => ({ ...prev, ...names }));
+        if (Object.keys(names).length > 0) {
+          setStudentNames(prev => ({ ...prev, ...names }));
+        }
       } catch (error) {
         if (error instanceof Error) {
           console.error(`Error fetching student names: ${error.message}`);
@@ -113,7 +115,7 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
     };
 
     fetchNames();
-  }, [user, bookings, fetchUserNickname, studentNames]);
+  }, [user?.uid, bookings, fetchUserNickname]);
 
   // Filter bookings based on upcoming/past
   const filteredBookings = filterBookingsByTime(bookings, showUpcoming);
@@ -230,32 +232,34 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
     },
   };
 
-  const handleToday = () => {
-    if (calendarRef.current) {
-      calendarRef.current.getInstance().today();
+  const handleToday = useCallback(() => {
+    const instance = calendarRef.current?.getInstance();
+    if (instance) {
+      instance.today();
     }
-  };
+  }, []);
 
-  const handlePrev = () => {
-    if (calendarRef.current) {
-      calendarRef.current.getInstance().prev();
+  const handlePrev = useCallback(() => {
+    const instance = calendarRef.current?.getInstance();
+    if (instance) {
+      instance.prev();
     }
-  };
+  }, []);
 
-  const handleNext = () => {
-    if (calendarRef.current) {
-      calendarRef.current.getInstance().next();
+  const handleNext = useCallback(() => {
+    const instance = calendarRef.current?.getInstance();
+    if (instance) {
+      instance.next();
     }
-  };
+  }, []);
 
-  const handleEventClick = async (event: EventClickData) => {
-    // Only allow deletion of availability slots
+  const handleEventClick = useCallback(async (event: EventClickData) => {
     if (event.event.calendarId === "availability") {
       setSlotToDelete(event.event);
     }
-  };
+  }, []);
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = useCallback(async () => {
     if (!slotToDelete) return;
 
     try {
@@ -285,7 +289,7 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
     } finally {
       setSlotToDelete(null);
     }
-  };
+  }, [slotToDelete, removeAvailability, availability]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
