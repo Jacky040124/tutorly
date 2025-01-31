@@ -11,9 +11,7 @@ import LanguageSwitcher from "@/lib/LanguageSwitcher";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, UserCircle, Code2 } from "lucide-react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { CalendarIcon, UserCircle } from "lucide-react";
 import { useTeachers } from "@/hooks/useTeacher";
 import { getWeekBounds } from "@/utils/timeUtils";
 
@@ -150,50 +148,6 @@ export default function StudentDashboard({ params }: StudentDashboardProps) {
         weekOffset={weekOffset}
         setWeekOffset={setWeekOffset}
       />
-
-      <Card className="rounded-xl shadow-md">
-        <CardContent className="p-0">
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="debug" className="border-none">
-              <AccordionTrigger className="text-sm hover:no-underline px-4 py-2">
-                <div className="flex items-center space-x-2">
-                  <Code2 className="h-4 w-4" />
-                  <span>{tCommon("debugInformation")}</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <ScrollArea className="h-[300px] w-full rounded-lg border m-4 p-4">
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="font-medium mb-2">User Info:</h3>
-                      <pre className="text-xs bg-muted p-2 rounded">
-                        {JSON.stringify({ uid: user.uid, nickname: user.nickname }, null, 2)}
-                      </pre>
-                    </div>
-
-                    <div>
-                      <h3 className="font-medium mb-2">Selected Teacher:</h3>
-                      <pre className="text-xs bg-muted p-2 rounded">
-                        {JSON.stringify(selectedTeacher ? findTeacherById(selectedTeacher) : null, null, 2)}
-                      </pre>
-                    </div>
-
-                    <div>
-                      <h3 className="font-medium mb-2">Future Bookings:</h3>
-                      <pre className="text-xs bg-muted p-2 rounded">{JSON.stringify(futureBookings, null, 2)}</pre>
-                    </div>
-
-                    <div>
-                      <h3 className="font-medium mb-2">All Bookings:</h3>
-                      <pre className="text-xs bg-muted p-2 rounded">{JSON.stringify(bookings, null, 2)}</pre>
-                    </div>
-                  </div>
-                </ScrollArea>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </CardContent>
-      </Card>
 
       {showStudentProfileOverlay && <StudentProfileOverlay />}
     </div>

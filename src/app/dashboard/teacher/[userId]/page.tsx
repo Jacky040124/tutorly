@@ -7,9 +7,9 @@ import TeacherProfileOverlay from "@/components/TeacherProfileOverlay";
 import { useOverlay } from "@/hooks/useOverlay";
 import { useTranslations } from 'next-intl';
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, UserCircle, ChevronUpIcon, Plus } from "lucide-react";
+import { CalendarIcon, UserCircle, Plus } from "lucide-react";
 import AddEventOverlay from "@/components/AddEventOverlay";
 import { getTeacherBookings } from "@/services/booking.service";
 import { Booking } from "@/types/booking";
@@ -27,7 +27,6 @@ export default function TeacherDashboard({ params }: TeacherDashboardProps) {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const { showTeacherProfileOverlay, setShowTeacherProfileOverlay, showAddEventOverlay, setShowAddEventOverlay } =
     useOverlay();
-  const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -109,30 +108,6 @@ export default function TeacherDashboard({ params }: TeacherDashboardProps) {
 
       {/* Add Event Overlay */}
       {showAddEventOverlay && <AddEventOverlay />}
-
-      {/* Debug Information */}
-      <Card className="rounded-xl shadow-sm">
-        <CardHeader className="cursor-pointer select-none" onClick={() => setShowDebug(!showDebug)}>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium">{tCommon("debugInformation")}</CardTitle>
-            <ChevronUpIcon className={`h-4 w-4 transition-transform ${showDebug ? "rotate-0" : "rotate-180"}`} />
-          </div>
-        </CardHeader>
-        {showDebug && (
-          <CardContent className="text-xs font-mono">
-            <pre className="whitespace-pre-wrap">
-              {JSON.stringify(
-                {
-                  teacher: user,
-                  bookings: bookings,
-                },
-                null,
-                2
-              )}
-            </pre>
-          </CardContent>
-        )}
-      </Card>
     </div>
   );
 }
