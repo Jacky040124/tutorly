@@ -37,28 +37,18 @@ export default function StudentDashboard({ params }: StudentDashboardProps) {
 
   // initialization
   useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        if (user?.uid) {
-          const allBookings = await getStudentBookings(user.uid);
-          const futureBookings = allBookings.filter((booking) => {
-            const bookingDate = new Date(booking.date.year, booking.date.month - 1, booking.date.day);
-            return bookingDate >= new Date();
-          });
-          setFutureBookings(futureBookings);
-          setBookings(allBookings);
-        }
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          console.error(`Error fetching data: ${error.message}`);
-        } else {
-          console.error("Unknown error:", error);
-        }
-      }
+    const fetchBookings = async () => {
+      if (!user?.uid) return;
+      const bookings = await getStudentBookings(user.uid);
+      setBookings(bookings);
+      setFutureBookings(bookings.filter(booking => {
+        const bookingDate = new Date(booking.date.year, booking.date.month - 1, booking.date.day);
+        return bookingDate >= new Date();
+      }));
     };
 
-    fetchInitialData();
-  }, [user, showBookingOverlay]);
+    fetchBookings();
+  }, [user?.uid, setBookings, setFutureBookings]);
 
   const handleSelect = (value: string) => {
     setSelectedTeacher(value);

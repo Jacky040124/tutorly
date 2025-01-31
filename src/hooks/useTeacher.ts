@@ -9,20 +9,17 @@ export function useTeachers() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const load = async () => {
+    const loadTeachers = async () => {
       try {
-        const data = await fetchTeachers();
-        // parse the data
-        setTeachers(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load teachers");
-      } finally {
-        setLoading(false);
+        const teacherData = await fetchTeachers();
+        setTeachers(teacherData);
+      } catch (error) {
+        console.error('Error loading teachers:', error);
       }
     };
 
-    load();
-  }, [fetchTeachers]);
+    loadTeachers();
+  }, []);
 
   return { teachers, loading, error, refresh: () => setLoading(true) };
 };

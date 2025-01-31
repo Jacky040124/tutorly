@@ -10,6 +10,7 @@ import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge";
 import { useTranslations } from "next-intl";
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
+import Image from 'next/image';
 
 // Available subject filters with their translation keys
 const subjects = [
@@ -114,9 +115,11 @@ export default function App() {
               {paginatedTeachers.map((teacher) => (
                 <Card key={teacher.uid} className="overflow-hidden">
                   <CardHeader className="relative p-0">
-                    <img
+                    <Image
                       src={teacher.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${teacher.nickname}`}
                       alt={teacher.nickname}
+                      width={500}
+                      height={300}
                       className="w-full h-48 object-cover bg-muted"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
