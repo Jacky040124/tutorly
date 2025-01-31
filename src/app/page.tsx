@@ -1,19 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTeachers } from "@/hooks/useTeacher";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useTranslations } from "next-intl";
+import LanguageSwitcher from "@/lib/LanguageSwitcher";
+import { Spinner } from "@/components/ui/spinner";
 
-const subjects = ["ALL", "MATH", "PHYS", "CHEM", "ENGL", "ECON", "CPSC"];
+// Available subject filters with their translation keys
+const subjects = [
+  { key: "all", value: "ALL" },
+  { key: "math", value: "MATH" },
+  { key: "physics", value: "PHYS" },
+  { key: "chemistry", value: "CHEM" },
+  { key: "english", value: "ENGL" },
+  { key: "economics", value: "ECON" },
+  { key: "computerScience", value: "CPSC" }
+];
+const ITEMS_PER_PAGE = 6;
 
 export default function App() {
+  const t = useTranslations("Landing");
   const [selectedSubject, setSelectedSubject] = useState("ALL");
-  const { teachers, loading, error } = useTeachers();
+  const [currentPage, setCurrentPage] = useState(1);
+  const { teachers, loading } = useTeachers();
   const router = useRouter();
 
   const filteredTeachers =
@@ -21,115 +36,156 @@ export default function App() {
       ? teachers
       : teachers.filter((teacher) => teacher.expertise?.toLowerCase().includes(selectedSubject.toLowerCase()));
 
-  if (loading) {
-    return <h2> Loading </h2>;
-  }
-
-  if (error) {
-    console.error(error);
-  }
+  const totalPages = Math.ceil(filteredTeachers.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedTeachers = filteredTeachers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   return (
-    <div>
-      <header className="bg-white border-b border-gray-200">
+    <div className="min-h-screen flex flex-col">
+      {/* Navigation Bar */}
+      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 py-4">
-          <nav className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <span className="text-2xl font-bold text-[#58cc02]">Tutorly</span>
+          <div className="flex justify-between items-center">
+            {/* Brand Logo */}
+            <div>
+              <span className="text-2xl font-bold text-primary">{t("header.title")}</span>
             </div>
 
-            <div className="flex items-center space-x-6">
-              <Button
-                onClick={() => router.push("/auth/signupteacher")}
-                className="bg-[#58cc02] text-white hover:bg-[#46a302]"
-              >
-                Become a Tutor
-              </Button>
-              <Button
-                onClick={() => router.push("/auth/signin")}
-                variant="outline"
-                className="border-[#58cc02] text-[#58cc02] hover:bg-[#58cc02] hover:text-white"
-              >
-                Log In
-              </Button>
+            {/* Right Side: Language Switcher and Auth Buttons */}
+            <div className="flex items-center gap-6">
+              <LanguageSwitcher />
+              <div className="flex items-center space-x-4">
+                <Button
+                  onClick={() => router.push("/auth/signin")}
+                  variant="outline"
+                  size="sm"
+                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                >
+                  {t("header.login")}
+                </Button>
+                <Button
+                  onClick={() => router.push("/auth/signupteacher")}
+                  size="sm"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  {t("header.becomeTutor")}
+                </Button>
+              </div>
             </div>
-          </nav>
+          </div>
         </div>
       </header>
 
-      <div className="bg-[#fff] min-h-screen flex flex-col items-center">
-        <div className="text-center mb-12 pt-10">
-          <h1 className="text-4xl font-bold text-[#58cc02] pb-4">Find The Perfect Tutor</h1>
-          <p className="text-gray-600 text-xl">Learn from the best, achieve your goals</p>
-        </div>
+      {/* Main Content */}
+      <main className="flex-1 py-8">
+        {/* Hero Section */}
+        <section className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-primary pb-4">{t("hero.title")}</h1>
+          <p className="text-muted-foreground text-xl">{t("hero.subtitle")}</p>
+        </section>
 
-        <div className="mb-8 relative w-full max-w-xl px-4">
-          <Input
-            type="text"
-            placeholder="Search for your tutor"
-            className="pl-12"
-          />
-          <Search className="absolute left-8 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-        </div>
+        {/* Search Section */}
+        <section className="mb-8 relative w-full max-w-xl px-4 mx-auto">
+          <Input type="text" placeholder={t("search.placeholder")} className="pl-12" />
+          <Search className="absolute left-8 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+        </section>
 
-        <div className="mb-8">
-          <div className="flex flex-wrap gap-2 p-2">
-            {subjects.map((subject) => (
+        {/* Subject Filter Section */}
+        <section className="mb-8" aria-label="Subject filters">
+          <div className="flex flex-wrap gap-2 p-2 justify-center">
+            {subjects.map(({ key, value }) => (
               <Button
-                key={subject}
-                onClick={() => setSelectedSubject(subject)}
-                variant={selectedSubject === subject ? "default" : "secondary"}
-                className={selectedSubject === subject ? "bg-[#58cc02] hover:bg-[#46a302]" : ""}
+                key={value}
+                onClick={() => {
+                  setSelectedSubject(value);
+                  setCurrentPage(1);
+                }}
+                variant={selectedSubject === value ? "default" : "secondary"}
+                size="sm"
               >
-                {subject}
+                {t(`subjects.${key}`)}
               </Button>
             ))}
           </div>
-        </div>
+        </section>
 
-        <div className="container mx-auto px-4 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-            {filteredTeachers.map((teacher) => (
-              <Card key={teacher.uid} className="overflow-hidden">
-                <div className="relative">
-                  <img
-                    src={teacher.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${teacher.nickname}`}
-                    alt={teacher.nickname}
-                    className="w-full h-48 object-cover bg-[#f7f7f7]"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${teacher.nickname}`;
-                    }}
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 p-4">
-                    <h3 className="text-xl font-bold text-white">{teacher.nickname}</h3>
-                  </div>
-                </div>
-
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-[#58cc02] font-bold text-lg">${teacher.pricing}/hr</span>
-                  </div>
-
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">{teacher.description}</p>
-
-                  <div className="flex flex-wrap gap-2">
-                    {teacher.expertise?.split(",").map((skill, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="bg-[#f7f7f7] text-gray-700 hover:bg-[#f7f7f7]"
-                      >
-                        {skill.trim()}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+        {/* Tutors Grid Section */}
+        {loading ? (
+          <div className="flex justify-center items-center min-h-[800px]">
+            <Spinner size="lg" />
           </div>
-        </div>
-      </div>
+        ) : (
+          <div className="container mx-auto max-w-7xl px-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-h-[800px]">
+              {paginatedTeachers.map((teacher) => (
+                <Card key={teacher.uid} className="overflow-hidden">
+                  <CardHeader className="relative p-0">
+                    <img
+                      src={teacher.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${teacher.nickname}`}
+                      alt={teacher.nickname}
+                      className="w-full h-48 object-cover bg-muted"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${teacher.nickname}`;
+                      }}
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 p-4">
+                      <h3 className="text-xl font-bold text-white">{teacher.nickname}</h3>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-primary font-bold text-lg">
+                        {t("tutors.pricePerHour", { price: teacher.pricing })}
+                      </span>
+                    </div>
+
+                    <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{teacher.description}</p>
+                  </CardContent>
+
+                  <CardFooter className="px-6 pb-6 pt-0">
+                    <div className="flex flex-wrap gap-2">
+                      {teacher.expertise?.split(",").map((skill, index) => (
+                        <Badge key={index} variant="secondary">
+                          {skill.trim()}
+                        </Badge>
+                      ))}
+                    </div>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-4 mt-8 pb-8">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  {t("pagination.previous")}
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  {t("pagination.pageInfo", { current: currentPage, total: totalPages })}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  {t("pagination.next")}
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </main>
     </div>
   );
 }

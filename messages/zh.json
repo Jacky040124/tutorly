@@ -248,5 +248,36 @@
     },
     "eventAddedSuccess": "课程添加成功",
     "bulkEventsAddedSuccess": "{count} 节课程添加成功"
+  },
+  "Landing": {
+    "header": {
+      "title": "Tutorly",
+      "login": "登录",
+      "becomeTutor": "成为导师"
+    },
+    "hero": {
+      "title": "找到最适合的导师",
+      "subtitle": "向最优秀的导师学习，实现你的目标"
+    },
+    "search": {
+      "placeholder": "搜索导师"
+    },
+    "subjects": {
+      "all": "全部",
+      "math": "数学",
+      "physics": "物理",
+      "chemistry": "化学",
+      "english": "英语",
+      "economics": "经济",
+      "computerScience": "计算机"
+    },
+    "tutors": {
+      "pricePerHour": "每小时 ${price}"
+    },
+    "pagination": {
+      "previous": "上一页",
+      "next": "下一页",
+      "pageInfo": "第 {current} 页，共 {total} 页"
+    }
   }
 }

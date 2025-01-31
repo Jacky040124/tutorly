@@ -243,5 +243,36 @@
     },
     "eventAddedSuccess": "Course added successfully",
     "bulkEventsAddedSuccess": "{count} classes added successfully"
+  },
+  "Landing": {
+    "header": {
+      "title": "Tutorly",
+      "login": "Log In",
+      "becomeTutor": "Become a Tutor"
+    },
+    "hero": {
+      "title": "Find The Perfect Tutor",
+      "subtitle": "Learn from the best, achieve your goals"
+    },
+    "search": {
+      "placeholder": "Search for your tutor"
+    },
+    "subjects": {
+      "all": "ALL",
+      "math": "MATH",
+      "physics": "PHYS",
+      "chemistry": "CHEM",
+      "english": "ENGL",
+      "economics": "ECON",
+      "computerScience": "CPSC"
+    },
+    "tutors": {
+      "pricePerHour": "${price}/hr"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageInfo": "Page {current} of {total}"
+    }
   }
 }

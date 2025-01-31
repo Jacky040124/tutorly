@@ -6,6 +6,8 @@ import "@/app/globals.css";
 import ClientLayout from "@/components/ClientLayout";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
+import { Suspense } from "react";
+import Loading from "./loading";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -44,7 +46,7 @@ export default async function RootLayout({ children, params }: RootLayoutProp) {
       <body className="flex h-full flex-col">
         <ClientLayout>
           <NextIntlClientProvider messages={messages}>
-            {children}
+            <Suspense fallback={<Loading/>}>{children}</Suspense>
           </NextIntlClientProvider>
         </ClientLayout>
       </body>
