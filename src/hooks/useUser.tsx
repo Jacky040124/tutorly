@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 import { doc, setDoc, runTransaction } from "firebase/firestore";
-import { db } from "../lib/firebase";
+import { db } from "../services/firebase";
 import { User } from "../../types/user";
 import { Event } from "../../types/event";
 

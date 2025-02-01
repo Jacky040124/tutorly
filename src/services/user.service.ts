@@ -1,6 +1,6 @@
 import { doc, setDoc, getDoc, collection, getDocs } from "firebase/firestore";
-import { db } from "../lib/firebase";
-import { Teacher, Student, User } from "@/types/user";
+import { db } from "./firebase";
+import { Teacher, Student } from "@/types/user";
 
 interface AcademicDetails {
   gradeLevel: string;

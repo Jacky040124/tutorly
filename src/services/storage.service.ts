@@ -1,5 +1,5 @@
-import { ref, uploadBytes, getDownloadURL, getStorage } from "firebase/storage";
-import { storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "@/services/firebase";
 
 interface UploadImageResult {
   downloadUrl: string;

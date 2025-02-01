@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from 'next-intl';
-import LanguageSwitcher from "@/lib/LanguageSwitcher";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function AuthLayout({
   children,

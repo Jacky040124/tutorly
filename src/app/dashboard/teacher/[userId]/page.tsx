@@ -5,7 +5,7 @@ import TeacherCalendar from "@/components/TeacherCalendar";
 import TeacherProfileOverlay from "@/components/TeacherProfileOverlay";
 import { useOverlay } from "@/hooks/useOverlay";
 import { useTranslations } from "next-intl";
-import LanguageSwitcher from "@/lib/LanguageSwitcher";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, UserCircle, Plus } from "lucide-react";

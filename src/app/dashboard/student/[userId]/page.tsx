@@ -7,7 +7,7 @@ import StudentCalendar from "@/components/StudentCalendar";
 import StudentProfileOverlay from "@/components/StudentProfileOverlay";
 import { useOverlay } from "@/hooks/useOverlay";
 import { useTranslations } from 'next-intl';
-import LanguageSwitcher from "@/lib/LanguageSwitcher";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

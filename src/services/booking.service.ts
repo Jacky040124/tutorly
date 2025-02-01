@@ -1,5 +1,5 @@
 import { doc, runTransaction, collection, query, where, getDocs, setDoc } from "firebase/firestore";
-import { db } from "../lib/firebase";
+import { db } from "./firebase";
 import { sendMail, generateBookingConfirmationEmail } from "./mail.service";
 import { Booking } from "../../types/booking";
 import { Event } from "../../types/event";

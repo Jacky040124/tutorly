@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useTranslations } from "next-intl";
-import LanguageSwitcher from "@/lib/LanguageSwitcher";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Image from "next/image";
 import Link from "next/link";
 
