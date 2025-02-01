@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,29 +10,31 @@ import { signUpTeacher } from "@/services/auth.service";
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
+type SignUpTeacherData = {
+  email: string;
+  password: string;
+  nickname: string;
+  description: string;
+  passcode: string;
+};
+
 export default function SignUpTeacher() {
   const t = useTranslations('Auth.SignUp.Teacher');
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [nickname, setNickname] = useState("");
-  const [description, setDescription] = useState("");
-  const [passcode, setPasscode] = useState("");
   const { showSuccess } = useNotification();
   const router = useRouter();
+  const { handleSubmit, control } = useForm<SignUpTeacherData>();
 
-  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
+  const onSubmit = async (data: SignUpTeacherData) => {
     try {
-      if (!email || !password || !nickname || !description || !passcode) {
-        throw new Error("All fields are required");
-      }
-
-      if (passcode !== "david2025") {
+      if (data.passcode !== "david2025") {
         throw new Error("Invalid teacher registration code");
       }
 
-      await signUpTeacher(email, password, nickname, description);
+      await signUpTeacher(data.email, data.password, data.nickname, data.description);
+      
+      // Store email for auto-fill on sign-in page
+      window.localStorage.setItem("emailForSignIn", data.email);
+      
       showSuccess("Sign Up Successful! Please sign in.");
       setTimeout(() => router.push('/auth/signin'), 2000);
     } catch (error) {
@@ -55,61 +57,91 @@ export default function SignUpTeacher() {
           </p>
         </div>
 
-        <form onSubmit={handleSignup} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="nickname">{t('nickname')}</Label>
-            <Input
-              id="nickname"
+            <Controller
               name="nickname"
-              type="text"
-              onChange={(e) => setNickname(e.target.value)}
-              required
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Input
+                  id="nickname"
+                  type="text"
+                  {...field}
+                  required
+                />
+              )}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="description">{t('description')}</Label>
-            <Input
-              id="description"
+            <Controller
               name="description"
-              type="text"
-              onChange={(e) => setDescription(e.target.value)}
-              required
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Input
+                  id="description"
+                  type="text"
+                  {...field}
+                  required
+                />
+              )}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="email">{t('email')}</Label>
-            <Input
-              id="email"
+            <Controller
               name="email"
-              type="email"
-              autoComplete="email"
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  {...field}
+                  required
+                />
+              )}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="password">{t('password')}</Label>
-            <Input
-              id="password"
+            <Controller
               name="password"
-              type="password"
-              autoComplete="new-password"
-              onChange={(e) => setPassword(e.target.value)}
-              required
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete="new-password"
+                  {...field}
+                  required
+                />
+              )}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="passcode">{t('signupCode')}</Label>
-            <Input
-              id="passcode"
+            <Controller
               name="passcode"
-              type="password"
-              onChange={(e) => setPasscode(e.target.value)}
-              required
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Input
+                  id="passcode"
+                  type="password"
+                  {...field}
+                  required
+                />
+              )}
             />
           </div>
 

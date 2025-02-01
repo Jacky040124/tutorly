@@ -26,7 +26,7 @@ export default function StudentDashboard({ params }: StudentDashboardProps) {
   const [selectedTeacher, setSelectedTeacher] = useState<string>("default");
   const [weekOffset, setWeekOffset] = useState<number>(0);
   const { teachers } = useTeachers();
-  const { setFutureBookings, setBookings, showBookingOverlay, bookings, futureBookings } = useBooking();
+  const { setFutureBookings, setBookings} = useBooking();
   const { showStudentProfileOverlay, setShowStudentProfileOverlay } = useOverlay();
   const t = useTranslations("Dashboard.Student");
   const tCommon = useTranslations("Dashboard.Common");
@@ -36,6 +36,7 @@ export default function StudentDashboard({ params }: StudentDashboardProps) {
   const startDate = new Date(currentWeek.monday.year, currentWeek.monday.month - 1, currentWeek.monday.day);
 
   // initialization
+  //TODO: handle future booking
   useEffect(() => {
     const fetchBookings = async () => {
       if (!user?.uid) return;
@@ -46,7 +47,6 @@ export default function StudentDashboard({ params }: StudentDashboardProps) {
         return bookingDate >= new Date();
       }));
     };
-
     fetchBookings();
   }, [user?.uid, setBookings, setFutureBookings]);
 

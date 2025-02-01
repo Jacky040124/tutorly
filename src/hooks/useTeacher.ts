@@ -5,8 +5,6 @@ import { Teacher } from "@/types/user";
 
 export function useTeachers() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadTeachers = async () => {
@@ -21,5 +19,5 @@ export function useTeachers() {
     loadTeachers();
   }, []);
 
-  return { teachers, loading, error, refresh: () => setLoading(true) };
+  return { teachers };
 };

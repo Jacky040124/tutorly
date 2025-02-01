@@ -21,22 +21,17 @@ export default function SignIn() {
   const t = useTranslations("Auth.SignIn");
   const router = useRouter();
   const { setUser } = useUser();
-  const { handleSubmit, control, register } = useForm<SignInData>();
+  const { handleSubmit, control, setValue } = useForm<SignInData>();
 
   useEffect(() => {
     const savedEmail = window.localStorage.getItem("emailForSignIn");
-    const savedPassword = window.localStorage.getItem("tempPassword");
-
     if (savedEmail) {
-      register("email", { value: savedEmail });
+      setValue("email", savedEmail);
+      window.localStorage.removeItem("emailForSignIn");
     }
-    if (savedPassword) {
-      register("password", { value: savedPassword });
-      window.localStorage.removeItem("tempPassword");
-    }
-  }, [register]);
+  }, [setValue]);
 
-  const handleSignIn = async (data: SignInData) => {
+  const onSubmit = async (data: SignInData) => {
     try {
       const { user, redirectTo } = await signIn(data.email, data.password);
       setUser(user as User);
@@ -59,13 +54,22 @@ export default function SignIn() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(handleSignIn)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">{t("email")}</Label>
             <Controller
               name="email"
               control={control}
-              render={({ field }) => <Input id="email" type="email" autoComplete="email" {...field} required />}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Input 
+                  id="email" 
+                  type="email" 
+                  autoComplete="email" 
+                  {...field} 
+                  required 
+                />
+              )}
             />
           </div>
 
@@ -74,8 +78,15 @@ export default function SignIn() {
             <Controller
               name="password"
               control={control}
+              rules={{ required: true }}
               render={({ field }) => (
-                <Input id="password" type="password" autoComplete="current-password" {...field} required />
+                <Input 
+                  id="password" 
+                  type="password" 
+                  autoComplete="current-password" 
+                  {...field} 
+                  required 
+                />
               )}
             />
           </div>

@@ -18,20 +18,16 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
   const [showAddEventOverlay, setShowAddEventOverlay] = useState(false);
   const [showStudentProfileOverlay, setShowStudentProfileOverlay] = useState(false);
 
-  return (
-    <OverlayContext.Provider
-      value={{
-        showTeacherProfileOverlay,
-        setShowTeacherProfileOverlay,
-        showAddEventOverlay,
-        setShowAddEventOverlay,
-        showStudentProfileOverlay,
-        setShowStudentProfileOverlay,
-      }}
-    >
-      {children}
-    </OverlayContext.Provider>
-  );
+  const value = {
+    showTeacherProfileOverlay,
+    setShowTeacherProfileOverlay,
+    showAddEventOverlay,
+    setShowAddEventOverlay,
+    showStudentProfileOverlay,
+    setShowStudentProfileOverlay,
+  };
+
+  return <OverlayContext.Provider value={value}>{children}</OverlayContext.Provider>;
 }
 
 export const useOverlay = () => useContext(OverlayContext);
