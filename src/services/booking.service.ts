@@ -1,4 +1,4 @@
-import { doc, runTransaction, collection, query, where, getDocs, orderBy, setDoc } from "firebase/firestore";
+import { doc, runTransaction, collection, query, where, getDocs, setDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { sendMail, generateBookingConfirmationEmail } from "./mail.service";
 import { Booking } from "../../types/booking";

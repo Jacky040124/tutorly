@@ -1,6 +1,6 @@
 import { doc, setDoc, getDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "../lib/firebase";
-import { Teacher, Student } from "@/types/user";
+import { Teacher, Student, User } from "@/types/user";
 
 interface AcademicDetails {
   gradeLevel: string;
@@ -23,10 +23,7 @@ interface StudentProfileUpdate {
   goals?: string;
 }
 
-export async function updateTeacherProfile(
-  userId: string,
-  profileData: TeacherProfileUpdate
-) {
+export async function updateTeacherProfile(userId: string, profileData: TeacherProfileUpdate) {
   try {
     // First verify the user exists and is a teacher
     const userRef = doc(db, "users", userId);
@@ -54,16 +51,11 @@ export async function updateTeacherProfile(
     return true;
   } catch (error) {
     console.error("Failed to update teacher profile:", error);
-    throw error instanceof Error
-      ? error
-      : new Error("Failed to update teacher profile");
+    throw error instanceof Error ? error : new Error("Failed to update teacher profile");
   }
 }
 
-export async function updateStudentAcademicDetails(
-  userId: string,
-  academicDetails: AcademicDetails
-) {
+export async function updateStudentAcademicDetails(userId: string, academicDetails: AcademicDetails) {
   console.log("Updating academic details:", { userId, academicDetails });
 
   try {
@@ -87,10 +79,7 @@ export async function updateStudentAcademicDetails(
   }
 }
 
-export async function updateStudentProfile(
-  userId: string,
-  profileData: StudentProfileUpdate
-) {
+export async function updateStudentProfile(userId: string, profileData: StudentProfileUpdate) {
   try {
     // First verify the user exists and is a student
     const userRef = doc(db, "users", userId);
@@ -118,9 +107,7 @@ export async function updateStudentProfile(
     return true;
   } catch (error) {
     console.error("Failed to update student profile:", error);
-    throw error instanceof Error
-      ? error
-      : new Error("Failed to update student profile");
+    throw error instanceof Error ? error : new Error("Failed to update student profile");
   }
 }
 
@@ -155,3 +142,23 @@ export async function fetchTeachers(): Promise<Teacher[]> {
 
   return teachers;
 }
+
+export const fetchUserNickname = async (userId: string) => {
+  if (!userId) return null;
+
+  try {
+    const docRef = doc(db, "users", userId);
+    const docSnap = await getDoc(docRef);
+
+    if (!docSnap.exists()) {
+      console.error("User not found:", userId);
+      return null;
+    }
+
+    const userData = docSnap.data();
+    return userData.nickname || userId;
+  } catch (error) {
+    console.error("Error fetching user nickname:", error);
+    return userId;
+  }
+};

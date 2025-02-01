@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { filterBookingsByTime } from "@/utils/calendarUtils";
 import { Booking } from "@/types/booking";
 import { CalendarEvent } from "@/types/event";
+import { fetchUserNickname } from '@/services/user.service';
 import { useTranslations } from 'next-intl';
 
 type CalendarInstance = {
@@ -58,7 +59,7 @@ type EventClickData = {
 
 export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
   const calendarRef = useRef<CalendarInstance>(null);
-  const { user, availability, removeAvailability, fetchUserNickname } = useUser();
+  const { user, availability, removeAvailability } = useUser();
   const [showUpcoming, setShowUpcoming] = useState(true);
   const [studentNames, setStudentNames] = useState<{ [key: string]: string }>({});
   const [homeworkLink, setHomeworkLink] = useState("");

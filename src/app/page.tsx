@@ -1,18 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Search, ChevronLeft, ChevronRight, Link } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTeachers } from "@/hooks/useTeacher";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useTranslations } from "next-intl";
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
-import Image from 'next/image';
+import Image from "next/image";
+import Link from "next/link";
 
-// Available subject filters with their translation keys
 const subjects = [
   { key: "all", value: "ALL" },
   { key: "math", value: "MATH" },
@@ -20,7 +19,7 @@ const subjects = [
   { key: "chemistry", value: "CHEM" },
   { key: "english", value: "ENGL" },
   { key: "economics", value: "ECON" },
-  { key: "computerScience", value: "CPSC" }
+  { key: "computerScience", value: "CPSC" },
 ];
 const ITEMS_PER_PAGE = 6;
 
@@ -28,8 +27,7 @@ export default function App() {
   const t = useTranslations("Landing");
   const [selectedSubject, setSelectedSubject] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
-  const { teachers, loading } = useTeachers();
-  const router = useRouter();
+  const { teachers } = useTeachers();
 
   const filteredTeachers =
     selectedSubject === "ALL"
@@ -65,10 +63,7 @@ export default function App() {
                   </Button>
                 </Link>
                 <Link href="/auth/signupteacher">
-                  <Button
-                    size="sm"
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
-                  >
+                  <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
                     {t("header.becomeTutor")}
                   </Button>
                 </Link>

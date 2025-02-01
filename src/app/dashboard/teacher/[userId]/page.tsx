@@ -1,18 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useUser } from '@/hooks/useUser';
+import { useUser } from "@/hooks/useUser";
 import TeacherCalendar from "@/components/TeacherCalendar";
 import TeacherProfileOverlay from "@/components/TeacherProfileOverlay";
 import { useOverlay } from "@/hooks/useOverlay";
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, UserCircle, Plus } from "lucide-react";
 import AddEventOverlay from "@/components/AddEventOverlay";
-import { getTeacherBookings } from "@/services/booking.service";
-import { Booking } from "@/types/booking";
+import { useBooking } from "@/hooks/useBooking";
 
 interface TeacherDashboardProps {
   params: {
@@ -24,34 +22,16 @@ export default function TeacherDashboard({ params }: TeacherDashboardProps) {
   const { user } = useUser();
   const t = useTranslations("Dashboard.Teacher");
   const tCommon = useTranslations("Dashboard.Common");
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const { bookings } = useBooking();
   const { showTeacherProfileOverlay, setShowTeacherProfileOverlay, showAddEventOverlay, setShowAddEventOverlay } =
     useOverlay();
-
-  useEffect(() => {
-    const fetchBookings = async () => {
-      if (!user?.uid) return;
-
-      try {
-        const fetchedBookings = await getTeacherBookings(user.uid);
-        setBookings(fetchedBookings);
-      } catch (error) {
-        if (error instanceof Error) {
-          console.error(`Error fetching bookings: ${error.message}`);
-        } else {
-          console.error("Unknown error fetching bookings");
-        }
-      }
-    };
-
-    fetchBookings();
-  }, [user]);
 
   const currentDate = new Date().toLocaleString("en-US", {
     month: "long",
     year: "numeric",
   });
 
+  // use window.userid to handle this
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
