@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Link } from "lucide-react";
 import { useTeachers } from "@/hooks/useTeacher";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -55,21 +55,23 @@ export default function App() {
             <div className="flex items-center gap-6">
               <LanguageSwitcher />
               <div className="flex items-center space-x-4">
-                <Button
-                  onClick={() => router.push("/auth/signin")}
-                  variant="outline"
-                  size="sm"
-                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                >
-                  {t("header.login")}
-                </Button>
-                <Button
-                  onClick={() => router.push("/auth/signupteacher")}
-                  size="sm"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  {t("header.becomeTutor")}
-                </Button>
+                <Link href="/auth/signin">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                  >
+                    {t("header.login")}
+                  </Button>
+                </Link>
+                <Link href="/auth/signupteacher">
+                  <Button
+                    size="sm"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    {t("header.becomeTutor")}
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
@@ -110,77 +112,77 @@ export default function App() {
         </section>
 
         {/* Tutors Grid Section */}
-          <div className="container mx-auto max-w-7xl px-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-h-[800px]">
-              {paginatedTeachers.map((teacher) => (
-                <Card key={teacher.uid} className="overflow-hidden">
-                  <CardHeader className="relative p-0">
-                    {teacher.photoURL ? (
-                      <Image
-                        src={teacher.photoURL}
-                        alt={teacher.nickname}
-                        width={500}
-                        height={300}
-                        className="w-full h-48 object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-48 bg-muted" />
-                    )}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 p-4">
-                      <h3 className="text-xl font-bold text-white">{teacher.nickname}</h3>
-                    </div>
-                  </CardHeader>
+        <div className="container mx-auto max-w-7xl px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-h-[800px]">
+            {paginatedTeachers.map((teacher) => (
+              <Card key={teacher.uid} className="overflow-hidden">
+                <CardHeader className="relative p-0">
+                  {teacher.photoURL ? (
+                    <Image
+                      src={teacher.photoURL}
+                      alt={teacher.nickname}
+                      width={500}
+                      height={300}
+                      className="w-full h-48 object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-48 bg-muted" />
+                  )}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 p-4">
+                    <h3 className="text-xl font-bold text-white">{teacher.nickname}</h3>
+                  </div>
+                </CardHeader>
 
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-primary font-bold text-lg">
-                        {t("tutors.pricePerHour", { price: teacher.pricing })}
-                      </span>
-                    </div>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-primary font-bold text-lg">
+                      {t("tutors.pricePerHour", { price: teacher.pricing })}
+                    </span>
+                  </div>
 
-                    <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{teacher.description}</p>
-                  </CardContent>
+                  <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{teacher.description}</p>
+                </CardContent>
 
-                  <CardFooter className="px-6 pb-6 pt-0">
-                    <div className="flex flex-wrap gap-2">
-                      {teacher.expertise?.split(",").map((skill, index) => (
-                        <Badge key={index} variant="secondary">
-                          {skill.trim()}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-8 pb-8">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  {t("pagination.previous")}
-                </Button>
-                <span className="text-sm text-muted-foreground">
-                  {t("pagination.pageInfo", { current: currentPage, total: totalPages })}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages}
-                >
-                  {t("pagination.next")}
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
+                <CardFooter className="px-6 pb-6 pt-0">
+                  <div className="flex flex-wrap gap-2">
+                    {teacher.expertise?.split(",").map((skill, index) => (
+                      <Badge key={index} variant="secondary">
+                        {skill.trim()}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardFooter>
+              </Card>
+            ))}
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-8 pb-8">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                {t("pagination.previous")}
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                {t("pagination.pageInfo", { current: currentPage, total: totalPages })}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+              >
+                {t("pagination.next")}
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
