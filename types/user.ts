@@ -15,7 +15,7 @@ export interface Teacher extends BaseUser {
   education?: string;
   experience?: string;
   teachingStyle?: string;
-  availability: any[]; // TODO: Define availability type
+  availability: any[];
   pricing: number;
 }
 
