@@ -22,6 +22,18 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "tutor-website-5528f.web.app",
+      },
+      {
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
+      },
+      {
+        protocol: "https",
+        hostname: "placehold.co",
+      },
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
       }
     ]
   },
