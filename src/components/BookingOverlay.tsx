@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTeachers } from "@/hooks/useTeacher";
 import { Booking } from "@/types/booking";
 import { Teacher } from "@/types/user";
+import { useToast } from "@/hooks/use-toast";
 
 export default function BookingOverlay(prop: { selectedTeacher: number }) {
   const { selectedSlot, setShowBookingOverlay, setBookingConfirmed } = useBooking();
@@ -21,6 +22,7 @@ export default function BookingOverlay(prop: { selectedTeacher: number }) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showTeacherDetails, setShowTeacherDetails] = useState<boolean>(false);
   const teacher: Teacher = teachers[prop.selectedTeacher];
+  const { toast } = useToast();
 
   const handleClose = () => {
     setShowBookingOverlay(false);
@@ -93,6 +95,11 @@ export default function BookingOverlay(prop: { selectedTeacher: number }) {
       }
     } catch (error) {
       console.error("Booking error:", error);
+      toast({
+        variant: "destructive",
+        title: "Booking Failed",
+        description: error instanceof Error ? error.message : "Failed to create booking. Please try again.",
+      });
     } finally {
       setIsSubmitting(false);
     }

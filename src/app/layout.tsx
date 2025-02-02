@@ -9,6 +9,7 @@ import { getLocale, getMessages } from "next-intl/server";
 import { Suspense } from "react";
 import Loading from "./loading";
 import FeedbackButton from '@/components/FeedbackButton';
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -51,6 +52,7 @@ export default async function RootLayout({ children, params }: RootLayoutProp) {
             <FeedbackButton />
           </NextIntlClientProvider>
         </ClientLayout>
+        <Toaster />
       </body>
     </html>
   );

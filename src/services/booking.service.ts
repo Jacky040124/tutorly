@@ -19,9 +19,34 @@ interface FeedbackData {
   studentId: string;
 }
 
+async function checkForExistingBooking(booking: Booking) {
+  const bookingsRef = collection(db, "bookings");
+  const q = query(
+    bookingsRef,
+    where("studentId", "==", booking.studentId),
+    where("teacherId", "==", booking.teacherId),
+    where("date.year", "==", booking.date.year),
+    where("date.month", "==", booking.date.month),
+    where("date.day", "==", booking.date.day),
+    where("startTime", "==", booking.startTime),
+    where("status", "==", "confirmed")
+  );
+
+  const querySnapshot = await getDocs(q);
+  return !querySnapshot.empty;
+}
+
 export async function confirmBooking(bookings : Booking[], availability: Event[]) {
   try {
     const bookingsArray = Array.isArray(bookings) ? bookings : [bookings];
+
+    // Check for duplicate bookings before starting transaction
+    for (const booking of bookingsArray) {
+      const hasExistingBooking = await checkForExistingBooking(booking);
+      if (hasExistingBooking) {
+        throw new Error(`You have already booked this time slot on ${booking.date.day}/${booking.date.month}/${booking.date.year} at ${booking.startTime}:00`);
+      }
+    }
 
     return await runTransaction(db, async (transaction) => {
       let updatedAvailability = availability;
