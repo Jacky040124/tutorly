@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode } from "react";
-import { doc, setDoc, runTransaction } from "firebase/firestore";
+import { doc, runTransaction } from "firebase/firestore";
 import { db } from "../services/firebase";
 import { User } from "../../types/user";
 import { Event } from "../../types/event";
@@ -20,45 +20,20 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [availability, setAvailability] = useState<Event[]>([]);
 
-  const updateAvailability = async (newAvailability: Event[]) => {
-    if (!user?.uid) return;
+  const updateAvailability = async (newEvents: Event[]) => {
+    if (!user) return;
+
     try {
       await runTransaction(db, async (transaction) => {
         const docRef = doc(db, "users", user.uid);
         const docSnap = await transaction.get(docRef);
-
-        if (!docSnap.exists()) {
-          transaction.set(docRef, { availability: newAvailability });
-          setAvailability(newAvailability);
-        } else {
-          const existingAvailability = docSnap.data().availability || [];
-
-          // If it's a repeating event group, remove any existing events with the same repeatGroupId
-          const isRepeatingGroup = newAvailability.length > 0 && newAvailability[0].isRepeating;
-          let filteredExisting = existingAvailability;
-
-          if (isRepeatingGroup) {
-            const repeatGroupId = newAvailability[0].repeatGroupId;
-            filteredExisting = existingAvailability.filter((event: Event) => event.repeatGroupId !== repeatGroupId);
-          }
-
-          // Combine existing and new events, ensuring uniqueness based on date and time
-          const uniqueAvailability = [...filteredExisting, ...newAvailability].filter(
-            (event: Event, index: number, self: Event[]) =>
-              index ===
-              self.findIndex(
-                (e: Event) =>
-                  e.date.year === event.date.year &&
-                  e.date.month === event.date.month &&
-                  e.date.day === event.date.day &&
-                  e.startTime === event.startTime &&
-                  e.endTime === event.endTime
-              )
-          );
-
-          transaction.update(docRef, { availability: uniqueAvailability });
-          setAvailability(uniqueAvailability);
-        }
+        const firebaseAvailability = docSnap.data()?.availability || [];
+        const updatedAvailability = [...firebaseAvailability, ...newEvents];
+        console.log(updatedAvailability);
+        
+        transaction.set(docRef, { availability: updatedAvailability }, { merge: true });
+        setAvailability(updatedAvailability);
+        
       });
     } catch (error) {
       console.error("Error updating availability:", error);

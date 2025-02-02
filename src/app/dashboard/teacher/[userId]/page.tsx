@@ -31,7 +31,7 @@ export default function TeacherDashboard({ params }: TeacherDashboardProps) {
     year: "numeric",
   });
 
-  // use window.userid to handle this
+  // TODO: use window.userid to handle this
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">

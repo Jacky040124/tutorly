@@ -34,7 +34,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-, "src/components/ClientLayout.tsx", "src/components/TeacherCalendar.tsx", "src/utils/dateUtils.jsx", "src/components/ui/button.jsx", "src/components/HomeworkLinkOverlay.tsx", "src/components/FeedbackOverlay.tsx", "src/components/StudentProfileOverlay.tsx", "src/components/TeacherProfileOverlay.tsx", "src/components/common/Button.tsx", "src/components/common/Container.jsx", "src/components/common/ErrorMessage.jsx", "src/components/Fields.tsx", "src/components/LanguageSwitcher.jsx", "src/components/common/NavLink.jsx", "src/components/common/Logo.jsx", "src/components/StudentCalendar.tsx", "src/components/ui/card.jsx"  ],
+, "src/components/ClientLayout.tsx", "src/components/TeacherCalendar.tsx", "src/lib/utils/dateUtils.jsx", "src/components/ui/button.jsx", "src/components/HomeworkLinkOverlay.tsx", "src/components/FeedbackOverlay.tsx", "src/components/StudentProfileOverlay.tsx", "src/components/TeacherProfileOverlay.tsx", "src/components/common/Button.tsx", "src/components/common/Container.jsx", "src/components/common/ErrorMessage.jsx", "src/components/Fields.tsx", "src/components/LanguageSwitcher.jsx", "src/components/common/NavLink.jsx", "src/components/common/Logo.jsx", "src/components/StudentCalendar.tsx", "src/components/ui/card.jsx"  ],
   "exclude": [
     "node_modules"
   ]

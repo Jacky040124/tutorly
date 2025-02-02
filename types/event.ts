@@ -31,5 +31,20 @@ export type CalendarEvent = {
   raw: Event;          // Raw event data
 };
 
+// This type is used in the calendar utility functions
+export type TimeSlot = {
+  hour: number;
+  displayHour: number;
+  ampm: string;
+};
+
+// This represents the configuration for calendar display
+export type CalendarConfig = {
+  START_HOUR: number;
+  END_HOUR: number;
+  HOURS_TO_DISPLAY: number;
+  INTERVALS_PER_HOUR: number;
+};
+
 export {};
 

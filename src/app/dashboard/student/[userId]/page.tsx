@@ -1,8 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useUser } from "@/hooks/useUser";
-import { useBooking } from "@/hooks/useBooking";
-import { getStudentBookings } from "@/services/booking.service";
 import StudentCalendar from "@/components/StudentCalendar";
 import StudentProfileOverlay from "@/components/StudentProfileOverlay";
 import { useOverlay } from "@/hooks/useOverlay";
@@ -13,7 +11,7 @@ import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/c
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, UserCircle } from "lucide-react";
 import { useTeachers } from "@/hooks/useTeacher";
-import { getWeekBounds } from "@/utils/timeUtils";
+import { getWeekBounds } from "@/lib/utils/timeUtils";
 
 interface StudentDashboardProps {
   params: {
@@ -26,7 +24,6 @@ export default function StudentDashboard({ params }: StudentDashboardProps) {
   const [selectedTeacher, setSelectedTeacher] = useState<string>("default");
   const [weekOffset, setWeekOffset] = useState<number>(0);
   const { teachers } = useTeachers();
-  const { setFutureBookings, setBookings} = useBooking();
   const { showStudentProfileOverlay, setShowStudentProfileOverlay } = useOverlay();
   const t = useTranslations("Dashboard.Student");
   const tCommon = useTranslations("Dashboard.Common");
@@ -34,21 +31,6 @@ export default function StudentDashboard({ params }: StudentDashboardProps) {
   // Get the current week's dates based on offset
   const currentWeek = getWeekBounds(weekOffset);
   const startDate = new Date(currentWeek.monday.year, currentWeek.monday.month - 1, currentWeek.monday.day);
-
-  // initialization
-  //TODO: handle future booking
-  useEffect(() => {
-    const fetchBookings = async () => {
-      if (!user?.uid) return;
-      const bookings = await getStudentBookings(user.uid);
-      setBookings(bookings);
-      setFutureBookings(bookings.filter(booking => {
-        const bookingDate = new Date(booking.date.year, booking.date.month - 1, booking.date.day);
-        return bookingDate >= new Date();
-      }));
-    };
-    fetchBookings();
-  }, [user?.uid, setBookings, setFutureBookings]);
 
   const handleSelect = (value: string) => {
     setSelectedTeacher(value);
@@ -59,6 +41,7 @@ export default function StudentDashboard({ params }: StudentDashboardProps) {
     return teachers.find((teacher) => teacher.uid === teacherId);
   };
 
+  // TODO: use window.userid to handle this
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
