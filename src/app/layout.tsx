@@ -9,7 +9,8 @@ import { getLocale, getMessages } from "next-intl/server";
 import { Suspense } from "react";
 import Loading from "./loading";
 import FeedbackButton from '@/components/FeedbackButton';
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/toaster";
+import { UserProvider } from "@/hooks/useUser";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -46,12 +47,14 @@ export default async function RootLayout({ children, params }: RootLayoutProp) {
   return (
     <html lang={locale} className={clsx("h-full scroll-smooth bg-white antialiased", inter.variable, lexend.variable)}>
       <body className="flex h-full flex-col">
-        <ClientLayout>
-          <NextIntlClientProvider messages={messages}>
-            <Suspense fallback={<Loading/>}>{children}</Suspense>
-            <FeedbackButton />
-          </NextIntlClientProvider>
-        </ClientLayout>
+        <UserProvider>
+          <ClientLayout>
+            <NextIntlClientProvider messages={messages}>
+              <Suspense fallback={<Loading/>}>{children}</Suspense>
+              <FeedbackButton />
+            </NextIntlClientProvider>
+          </ClientLayout>
+        </UserProvider>
         <Toaster />
       </body>
     </html>

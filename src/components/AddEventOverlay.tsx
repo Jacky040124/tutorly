@@ -151,7 +151,6 @@ export default function AddEventOverlay() {
 
     try {
       const newEvents = createEvents(date, data, isRepeating, repeatDates);
-      console.log("newEvents:", newEvents);
 
       if (isOverlap(availability, newEvents)) {
         console.error(t("errors.availabilityOverlap"));
