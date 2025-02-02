@@ -280,5 +280,13 @@
       "next": "下一页",
       "pageInfo": "第 {current} 页，共 {total} 页"
     }
+  },
+  "BugReport": {
+    "title": "报告问题",
+    "placeholder": "请描述您遇到的问题...",
+    "sendButton": "发送反馈",
+    "sending": "发送中...",
+    "success": "反馈发送成功！",
+    "error": "发送失败，请重试。"
   }
 }

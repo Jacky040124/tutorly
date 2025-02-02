@@ -29,19 +29,22 @@ export async function sendMail({ content, from, to, subject }: MailParams) {
             }),
         });
 
-        const data = await response.json();
-        console.log('Email API response:', data);
-        
         if (!response.ok) {
-            console.error('Email API error:', data);
-            throw new Error(data.error || 'Failed to send email');
+            const errorData = await response.json();
+            console.error('Email API error details:', {
+                status: response.status,
+                statusText: response.statusText,
+                data: errorData
+            });
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }
 
-        console.log('Email sent successfully');
+        const data = await response.json();
+        console.log('Email API response:', data);
         return data;
 
     } catch (error) {
-        console.error("sendMail error:", error);
+        console.error("sendMail error details:", error);
         throw error;
     }
 }

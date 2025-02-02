@@ -276,5 +276,13 @@
       "next": "Next",
       "pageInfo": "Page {current} of {total}"
     }
+  },
+  "BugReport": {
+    "title": "Report Bug",
+    "placeholder": "Tell us what's on your mind...",
+    "sendButton": "Send Feedback",
+    "sending": "Sending...",
+    "success": "Feedback sent successfully!",
+    "error": "Failed to send. Please try again."
   }
 }
