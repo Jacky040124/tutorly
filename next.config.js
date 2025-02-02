@@ -1,4 +1,4 @@
-import createNextIntlPlugin from 'next-intl/plugin';
+const createNextIntlPlugin = require('next-intl/plugin');
 
 const withNextIntl = createNextIntlPlugin();
 
@@ -21,18 +21,10 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "placehold.co",
-      },
-      {
-        protocol: "https",
-        hostname: "api.dicebear.com",
-      },
-      {
-        protocol: "https",
-        hostname: "firebasestorage.googleapis.com",
-      },
-    ],
+        hostname: "tutor-website-5528f.web.app",
+      }
+    ]
   },
 };
 
-export default withNextIntl(nextConfig); 
+module.exports = withNextIntl(nextConfig); 

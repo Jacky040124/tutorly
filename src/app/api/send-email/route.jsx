@@ -12,7 +12,13 @@ export async function POST(request) {
       from: 'onboarding@resend.dev',
       to,
       subject,
-      html: content,
+      _html: content,
+      get html() {
+          return this._html;
+      },
+      set html(value) {
+          this._html = value;
+      },
     });
 
     return NextResponse.json({ success: true });
