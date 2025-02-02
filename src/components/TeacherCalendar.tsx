@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, forwardRef, ForwardedRef, useCallback } from 'react';
-import dynamic from 'next/dynamic';
-import '@toast-ui/calendar/dist/toastui-calendar.min.css';
-import { useUser } from '@/hooks/useUser';
+import { useEffect, useRef, useState, forwardRef, ForwardedRef, useCallback } from "react";
+import dynamic from "next/dynamic";
+import "@toast-ui/calendar/dist/toastui-calendar.min.css";
+import { useUser } from "@/hooks/useUser";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,11 +14,12 @@ import { Badge } from "@/components/ui/badge";
 import { updateBookingStatus, updateBookingHomework } from "@/services/booking.service";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { filterBookingsByTime } from "@/utils/calendarUtils";
+import { filterBookingsByTime, convertToCalendarDate } from "@/lib/utils/calendarUtil";
 import { Booking } from "@/types/booking";
 import { CalendarEvent } from "@/types/event";
-import { fetchUserNickname } from '@/services/user.service';
-import { useTranslations } from 'next-intl';
+import { fetchUserNickname } from "@/services/user.service";
+import { useTranslations } from "next-intl";
+import { Teacher } from "@/types/user";
 
 type CalendarInstance = {
   getInstance: () => {
@@ -29,15 +30,34 @@ type CalendarInstance = {
   };
 };
 
+const calendars = [
+  {
+    id: "availability",
+    name: "Available Slots",
+    backgroundColor: "#10B981",
+    borderColor: "#059669",
+    dragBackgroundColor: "#A7F3D0",
+    color: "#065F46",
+  },
+  {
+    id: "bookings",
+    name: "Booked Classes",
+    backgroundColor: "#3B82F6",
+    borderColor: "#2563EB",
+    dragBackgroundColor: "#BFDBFE",
+    color: "#1E40AF",
+  },
+];
+
 const DynamicCalendar = dynamic(
   () =>
     import("@toast-ui/react-calendar").then((mod) => {
       const Calendar = mod.default;
       const WrappedCalendar = ({ forwardedRef, ...props }: any) => <Calendar {...props} ref={forwardedRef} />;
-      WrappedCalendar.displayName = 'WrappedCalendar';
+      WrappedCalendar.displayName = "WrappedCalendar";
       return WrappedCalendar;
     }),
-  { 
+  {
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-full">
@@ -65,30 +85,36 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
   const [homeworkLink, setHomeworkLink] = useState("");
   const [slotToDelete, setSlotToDelete] = useState<CalendarEvent | null>(null);
 
-  const t = useTranslations('Dashboard.Common');
-  const tCalendar = useTranslations('Calendar');
-  const tStudent = useTranslations('Dashboard.Student');
+  const t = useTranslations("Dashboard.Common");
+  const tCalendar = useTranslations("Calendar");
+  const tStudent = useTranslations("Dashboard.Student");
 
-  const handleBookingStatusChange = useCallback(async (bookingId: string, newStatus: "completed" | "confirmed" | "cancelled") => {
-    try {
-      await updateBookingStatus(bookingId, newStatus);
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(`Error updating booking status: ${error.message}`);
+  const handleBookingStatusChange = useCallback(
+    async (bookingId: string, newStatus: "completed" | "confirmed" | "cancelled") => {
+      try {
+        await updateBookingStatus(bookingId, newStatus);
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error(`Error updating booking status: ${error.message}`);
+        }
       }
-    }
-  }, []);
+    },
+    []
+  );
 
-  const handleHomeworkSubmit = useCallback(async (bookingId: string) => {
-    try {
-      await updateBookingHomework(bookingId, homeworkLink);
-      setHomeworkLink(""); // Reset input
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(`Error updating homework: ${error.message}`);
+  const handleHomeworkSubmit = useCallback(
+    async (bookingId: string) => {
+      try {
+        await updateBookingHomework(bookingId, homeworkLink);
+        setHomeworkLink(""); // Reset input
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error(`Error updating homework: ${error.message}`);
+        }
       }
-    }
-  }, [homeworkLink]);
+    },
+    [homeworkLink]
+  );
 
   // Fetch student names
   useEffect(() => {
@@ -106,7 +132,7 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
           }
         }
         if (Object.keys(names).length > 0) {
-          setStudentNames(prev => ({ ...prev, ...names }));
+          setStudentNames((prev) => ({ ...prev, ...names }));
         }
       } catch (error) {
         if (error instanceof Error) {
@@ -121,75 +147,40 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
   // Filter bookings based on upcoming/past
   const filteredBookings = filterBookingsByTime(bookings, showUpcoming);
 
-  const calendars = [
-    {
-      id: "availability",
-      name: "Available Slots",
-      backgroundColor: "#10B981",
-      borderColor: "#059669",
-      dragBackgroundColor: "#A7F3D0",
-      color: "#065F46",
-    },
-    {
-      id: "bookings",
-      name: "Booked Classes",
-      backgroundColor: "#3B82F6",
-      borderColor: "#2563EB",
-      dragBackgroundColor: "#BFDBFE",
-      color: "#1E40AF",
-    },
-  ];
-
   // Convert availability to events
-  const availabilityEvents =
-    user?.type === "teacher" ? user.availability?.map((slot) => {
-      const year = slot.date.year;
-      const month = String(slot.date.month).padStart(2, "0");
-      const day = String(slot.date.day).padStart(2, "0");
-
-      const start = `${year}-${month}-${day}T${String(slot.startTime).padStart(2, "0")}:00:00`;
-      const end = `${year}-${month}-${day}T${String(slot.endTime).padStart(2, "0")}:00:00`;
-
-      return {
-        id: slot.createdAt,
-        calendarId: "availability",
-        title: "Available",
-        category: "time",
-        start,
-        end,
-        isReadOnly: true,
-        raw: {
-          ...slot,
-          isAvailability: true,
-        },
-      };
-    }) || [] : [];
+  const availabilityEvents = ((user as Teacher)?.availability?.map((slot) => ({
+    id: slot.createdAt,
+    calendarId: "availability",
+    title: "Available",
+    category: "time",
+    start: convertToCalendarDate(slot.date, slot.startTime),
+    end: convertToCalendarDate(slot.date, slot.endTime),
+    isReadOnly: true,
+    raw: { ...slot, isAvailability: true },
+  })) || []) as CalendarEvent[];
 
   // Convert bookings to events
-  const bookingEvents = bookings.map((booking) => {
-    const year = booking.date.year;
-    const month = String(booking.date.month).padStart(2, "0");
-    const day = String(booking.date.day).padStart(2, "0");
+  const bookingEvents = bookings.map((booking) => ({
+    id: booking.id,
+    calendarId: "bookings",
+    title: booking.title || "Booked",
+    category: "time",
+    start: convertToCalendarDate(booking.date, booking.startTime),
+    end: convertToCalendarDate(booking.date, booking.endTime),
+    isReadOnly: true,
+    raw: {
+      ...booking,
+      meeting_link: booking.link || "",
+      maxStudents: 1,
+      enrolledStudentIds: [],
+      isRepeating: !!booking.bulkId,
+      repeatGroupId: booking.bulkId || `single_${booking.id}`,
+      repeatIndex: booking.lessonNumber || 0,
+      totalClasses: booking.totalLessons || 1,
+    },
+  })) as unknown as CalendarEvent[];
 
-    const start = `${year}-${month}-${day}T${String(booking.startTime).padStart(2, "0")}:00:00`;
-    const end = `${year}-${month}-${day}T${String(booking.endTime).padStart(2, "0")}:00:00`;
-
-    return {
-      id: booking.id,
-      calendarId: "bookings",
-      title: booking.title || "Booked",
-      category: "time",
-      start,
-      end,
-      isReadOnly: true,
-      raw: {
-        ...booking,
-        isBooking: true,
-      },
-    };
-  });
-
-  const events = [...availabilityEvents, ...bookingEvents];
+  const events: CalendarEvent[] = [...availabilityEvents, ...bookingEvents];
 
   const template = {
     time(event: CalendarEvent) {
@@ -315,7 +306,7 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
                 onValueChange={(value) => calendarRef.current?.getInstance().changeView(value)}
               >
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder={t('fields.placeholder.select')} />
+                  <SelectValue placeholder={t("fields.placeholder.select")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="week">{tCalendar("view.week")}</SelectItem>
@@ -399,18 +390,16 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
         <CardHeader>
           <div className="flex flex-col space-y-4">
             <div>
-              <CardTitle className="text-lg font-medium">{tStudent('title')}</CardTitle>
-              <CardDescription>
-                {showUpcoming ? tStudent('status.upcoming') : tStudent('status.past')}
-              </CardDescription>
+              <CardTitle className="text-lg font-medium">{tStudent("title")}</CardTitle>
+              <CardDescription>{showUpcoming ? tStudent("status.upcoming") : tStudent("status.past")}</CardDescription>
             </div>
             <Tabs defaultValue="upcoming" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="upcoming" onClick={() => setShowUpcoming(true)}>
-                  {tStudent('tabs.upcoming')}
+                  {tStudent("tabs.upcoming")}
                 </TabsTrigger>
                 <TabsTrigger value="past" onClick={() => setShowUpcoming(false)}>
-                  {tStudent('tabs.past')}
+                  {tStudent("tabs.past")}
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -446,7 +435,7 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
                             className="flex items-center gap-1 text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
                           >
                             <ExternalLink className="h-3 w-3" />
-                            {tStudent('buttons.meet')}
+                            {tStudent("buttons.meet")}
                           </a>
                         )}
                       </div>
@@ -454,20 +443,22 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
                         <Badge variant="outline">
-                          {tStudent('student')}: {studentNames[booking.studentId] || "Loading..."}
+                          {tStudent("student")}: {studentNames[booking.studentId] || "Loading..."}
                         </Badge>
                         {!showUpcoming && (
                           <Select
                             value={booking.status}
-                            onValueChange={(value) => handleBookingStatusChange(booking.id, value as "completed" | "confirmed" | "cancelled")}
+                            onValueChange={(value) =>
+                              handleBookingStatusChange(booking.id, value as "completed" | "confirmed" | "cancelled")
+                            }
                           >
                             <SelectTrigger className="w-[130px] h-7">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="confirmed">{tStudent('status.confirmed')}</SelectItem>
-                              <SelectItem value="completed">{tStudent('status.completed')}</SelectItem>
-                              <SelectItem value="cancelled">{tStudent('status.cancelled')}</SelectItem>
+                              <SelectItem value="confirmed">{tStudent("status.confirmed")}</SelectItem>
+                              <SelectItem value="completed">{tStudent("status.completed")}</SelectItem>
+                              <SelectItem value="cancelled">{tStudent("status.cancelled")}</SelectItem>
                             </SelectContent>
                           </Select>
                         )}
@@ -484,28 +475,28 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
                               className="flex items-center gap-1 text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors"
                             >
                               <ExternalLink className="h-3 w-3" />
-                              {tStudent('buttons.viewHomework')}
+                              {tStudent("buttons.viewHomework")}
                             </a>
                           ) : (
                             <Dialog>
                               <DialogTrigger asChild>
                                 <Button variant="outline" size="sm" className="h-7">
                                   <Plus className="h-3 w-3 mr-1" />
-                                  {tStudent('buttons.uploadHomework')}
+                                  {tStudent("buttons.uploadHomework")}
                                 </Button>
                               </DialogTrigger>
                               <DialogContent>
                                 <DialogHeader>
-                                  <DialogTitle>{tStudent('buttons.uploadHomework')}</DialogTitle>
+                                  <DialogTitle>{tStudent("buttons.uploadHomework")}</DialogTitle>
                                 </DialogHeader>
                                 <div className="flex gap-2">
                                   <Input
-                                    placeholder={t('fields.placeholder.enter')}
+                                    placeholder={t("fields.placeholder.enter")}
                                     value={homeworkLink}
                                     onChange={(e) => setHomeworkLink(e.target.value)}
                                   />
                                   <Button onClick={() => handleHomeworkSubmit(booking.id)}>
-                                    {t('calendarOverlay.buttons.save')}
+                                    {t("calendarOverlay.buttons.save")}
                                   </Button>
                                 </div>
                               </DialogContent>
@@ -518,16 +509,16 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
                                 <DialogTrigger asChild>
                                   <Button variant="outline" size="sm" className="h-7">
                                     <Star className="h-3 w-3 mr-1" />
-                                    {tStudent('buttons.viewFeedback')}
+                                    {tStudent("buttons.viewFeedback")}
                                   </Button>
                                 </DialogTrigger>
                                 <DialogContent>
                                   <DialogHeader>
-                                    <DialogTitle>{tStudent('feedback.title')}</DialogTitle>
+                                    <DialogTitle>{tStudent("feedback.title")}</DialogTitle>
                                   </DialogHeader>
                                   <div className="space-y-3">
                                     <div className="flex items-center gap-1">
-                                      <span>{tStudent('feedback.rating')}:</span>
+                                      <span>{tStudent("feedback.rating")}:</span>
                                       <div className="flex">
                                         {Array.from({ length: 5 }).map((_, i) => (
                                           <Star
@@ -545,14 +536,20 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
                                     </div>
                                     {booking.feedback.comment && (
                                       <div>
-                                        <span className="font-medium">{tStudent('feedback.comment')}:</span>
+                                        <span className="font-medium">{tStudent("feedback.comment")}:</span>
                                         <p className="text-sm mt-1">{booking.feedback.comment}</p>
                                       </div>
                                     )}
                                     <div className="text-xs text-gray-500">
-                                      <p>{tStudent('feedback.created')}: {new Date(booking.feedback.createdAt).toLocaleDateString()}</p>
+                                      <p>
+                                        {tStudent("feedback.created")}:{" "}
+                                        {new Date(booking.feedback.createdAt).toLocaleDateString()}
+                                      </p>
                                       {booking.feedback.updatedAt && (
-                                        <p>{tStudent('feedback.updated')}: {new Date(booking.feedback.updatedAt).toLocaleDateString()}</p>
+                                        <p>
+                                          {tStudent("feedback.updated")}:{" "}
+                                          {new Date(booking.feedback.updatedAt).toLocaleDateString()}
+                                        </p>
                                       )}
                                     </div>
                                   </div>
@@ -577,7 +574,7 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
                             <div className="flex items-center gap-2">
                               <span className="text-xs text-gray-500 flex items-center gap-1">
                                 <Star className="h-3 w-3" />
-                                {tStudent('feedback.none')}
+                                {tStudent("feedback.none")}
                               </span>
                             </div>
                           )}
@@ -585,7 +582,7 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
                         {booking.bulkId && (
                           <div className="text-xs text-gray-500 flex items-center gap-1">
                             <RefreshCw className="h-3 w-3" />
-                            {booking.lessonNumber} {tStudent('lessonCount.of')} {booking.totalLessons}
+                            {booking.lessonNumber} {tStudent("lessonCount.of")} {booking.totalLessons}
                           </div>
                         )}
                       </div>
@@ -595,7 +592,7 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
               </div>
             ) : (
               <div className="text-center text-gray-500 py-4">
-                {showUpcoming ? tStudent('noUpcoming') : tStudent('noPast')}
+                {showUpcoming ? tStudent("noUpcoming") : tStudent("noPast")}
               </div>
             )}
           </ScrollArea>
@@ -605,15 +602,15 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
       <Dialog open={!!slotToDelete} onOpenChange={(open) => !open && setSlotToDelete(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('calendarOverlay.removeSlot.title')}</DialogTitle>
+            <DialogTitle>{t("calendarOverlay.removeSlot.title")}</DialogTitle>
           </DialogHeader>
-          <p>{t('calendarOverlay.removeSlot.confirmation')}</p>
+          <p>{t("calendarOverlay.removeSlot.confirmation")}</p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSlotToDelete(null)}>
-              {t('calendarOverlay.buttons.cancel')}
+              {t("calendarOverlay.buttons.cancel")}
             </Button>
             <Button variant="destructive" onClick={handleConfirmDelete}>
-              {t('calendarOverlay.buttons.remove')}
+              {t("calendarOverlay.buttons.remove")}
             </Button>
           </DialogFooter>
         </DialogContent>

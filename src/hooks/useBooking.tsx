@@ -10,8 +10,6 @@ interface BookingContextType {
   setSelectedSlot: React.Dispatch<React.SetStateAction<any | null>>;
   showBookingOverlay: boolean;
   setShowBookingOverlay: React.Dispatch<React.SetStateAction<boolean>>;
-  futureBookings: Booking[];
-  setFutureBookings: React.Dispatch<React.SetStateAction<Booking[]>>;
   bookings: Booking[];
   setBookings: React.Dispatch<React.SetStateAction<Booking[]>>;
   bookingConfirmed: boolean;
@@ -24,7 +22,6 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   const { user } = useUser();
   const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
   const [showBookingOverlay, setShowBookingOverlay] = useState(false);
-  const [futureBookings, setFutureBookings] = useState<Booking[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
 
@@ -39,14 +36,6 @@ export function BookingProvider({ children }: { children: ReactNode }) {
           : await getStudentBookings(user.uid);
         
         setBookings(fetchedBookings);
-
-        // Set future bookings
-        const now = new Date();
-        const future = fetchedBookings.filter((booking: any) => {
-          const bookingDate = new Date(booking.date.year, booking.date.month - 1, booking.date.day);
-          return bookingDate >= now;
-        });
-        setFutureBookings(future);
       } catch (error) {
         console.error('Error fetching bookings:', error);
       }
@@ -60,8 +49,6 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     setSelectedSlot,
     showBookingOverlay,
     setShowBookingOverlay,
-    futureBookings,
-    setFutureBookings,
     bookings,
     setBookings,
     bookingConfirmed,

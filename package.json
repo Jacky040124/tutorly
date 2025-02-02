@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
     "test": "vitest",
@@ -12,6 +12,7 @@
   "dependencies": {
     "@google-apps/meet": "^0.3.0",
     "@headlessui/react": "^2.2.0",
+    "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-avatar": "^1.1.2",
     "@radix-ui/react-dialog": "^1.1.5",
@@ -31,6 +32,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^2.30.0",
     "dotenv": "^16.4.5",
+    "firebase": "^11.2.0",
     "firebase-admin": "^12.6.0",
     "firebase-functions": "^6.1.0",
     "framer-motion": "^11.15.0",

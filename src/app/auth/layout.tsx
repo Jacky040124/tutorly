@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { useTranslations } from 'next-intl';
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
-
-// TODO: Refactor auth to have a single page + conditional stylign to shift forms
 export default function AuthLayout({
   children,
 }: {

@@ -6,7 +6,7 @@ interface BaseUser {
   type: "teacher" | "student";
   createdAt?: string;
 }
-
+// TODO: availability by definition is a list of evnents
 export interface Teacher extends BaseUser {
   type: 'teacher';
   description: string;

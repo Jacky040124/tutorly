@@ -1,8 +1,10 @@
+"use client";
+
 import { useState, useMemo } from "react";
 import { useUser } from "@/hooks/useUser";
-import { getRepeatingDates } from "@/utils/dateUtils";
+import { getRepeatingDates } from "@/lib/utils/dateUtils";
 import { useTranslations } from "next-intl";
-import { checkOverlap, CALENDAR_CONFIG, formatDate, generateTimeOptions, isValidEvent } from "@/utils/calendarUtil";
+import { isOverlap, CALENDAR_CONFIG, formatDate, generateTimeOptions } from "@/lib/utils/calendarUtil";
 import { useNotification } from "@/hooks/useNotification";
 import { useOverlay } from "@/hooks/useOverlay";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
@@ -15,6 +17,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Event } from "@/types/event";
+
+type DateObject = {
+  year: number;
+  month: number;
+  day: number;
+};
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -26,6 +35,58 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+const createEvents = (
+  date: Date | null,
+  formData: FormValues,
+  isRepeating: boolean,
+  repeatDates: DateObject[]
+): Event[] => {
+  if (!date) return [];
+  
+  const repeatGroupId = `group_${Date.now()}`;
+  
+  const createSingleEvent = (
+    eventDate: Date | DateObject,
+    config?: { groupId: string; index: number; total: number }
+  ): Event => {
+    // Normalize the date format
+    const normalizedDate = eventDate instanceof Date
+      ? {
+          year: eventDate.getFullYear(),
+          month: eventDate.getMonth() + 1,
+          day: eventDate.getDate(),
+        }
+      : eventDate;
+
+    // Create date key for meeting link
+    const dateKey = `${normalizedDate.year}-${normalizedDate.month}-${normalizedDate.day}`;
+
+    return {
+      date: normalizedDate,
+      title: formData.title,
+      startTime: parseInt(formData.startTime),
+      endTime: parseInt(formData.endTime),
+      meeting_link: formData.meetingLinks[dateKey] || "",
+      maxStudents: formData.maxStudents,
+      enrolledStudentIds: [],
+      isRepeating: !!config,
+      repeatGroupId: config?.groupId || `single_${Date.now()}`,
+      repeatIndex: config?.index || 0,
+      totalClasses: config?.total || 1,
+    };
+  };
+
+  return isRepeating
+    ? repeatDates.map((repeatDate, index) =>
+        createSingleEvent(repeatDate, {
+          groupId: repeatGroupId,
+          index,
+          total: repeatDates.length,
+        })
+      )
+    : [createSingleEvent(date)];
+};
 
 export default function AddEventOverlay() {
   const { availability, updateAvailability } = useUser();
@@ -89,63 +150,19 @@ export default function AddEventOverlay() {
     setIsSubmitting(true);
 
     try {
-      const newEvents = [];
-      if (isRepeating) {
-        const repeatGroupId = `group_${Date.now()}`;
-        repeatDates.forEach((repeatDate, index) => {
-          const dateKey = `${repeatDate.year}-${repeatDate.month}-${repeatDate.day}`;
-          const event = {
-            date: repeatDate,
-            startTime: parseInt(data.startTime),
-            endTime: parseInt(data.endTime),
-            meeting_link: data.meetingLinks[dateKey],
-            title: data.title,
-            maxStudents: data.maxStudents,
-            enrolledStudentIds: [],
-            isRepeating: true,
-            repeatGroupId,
-            repeatIndex: index,
-            totalClasses: repeatDates.length,
-            createdAt: new Date().toISOString(),
-          };
-          newEvents.push(event);
-        });
-      } else {
-        const dateKey = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-        const event = {
-          date: {
-            year: date.getFullYear(),
-            month: date.getMonth() + 1,
-            day: date.getDate(),
-          },
-          startTime: parseInt(data.startTime),
-          endTime: parseInt(data.endTime),
-          meeting_link: data.meetingLinks[dateKey],
-          title: data.title,
-          maxStudents: data.maxStudents,
-          enrolledStudentIds: [],
-          isRepeating: false,
-          repeatGroupId: `single_${Date.now()}`,
-          repeatIndex: 0,
-          totalClasses: 1,
-          createdAt: new Date().toISOString(),
-        };
-        newEvents.push(event);
-      }
+      const newEvents = createEvents(date, data, isRepeating, repeatDates);
+      console.log("newEvents:", newEvents);
 
-      const existingAvailability = availability || [];
-      for (const event of newEvents) {
-        const { hasOverlap } = checkOverlap(existingAvailability, event);
-        if (hasOverlap) {
-          console.error(t("errors.availabilityOverlap"));
-          setIsSubmitting(false);
-          return;
-        }
+      if (isOverlap(availability, newEvents)) {
+        console.error(t("errors.availabilityOverlap"));
+        setIsSubmitting(false);
+        return;
       }
 
       await updateAvailability(newEvents);
       setShowAddEventOverlay(false);
       showSuccess(isRepeating ? t("bulkEventsAddedSuccess", { count: newEvents.length }) : t("eventAddedSuccess"));
+
     } catch (error) {
       console.error("Error adding event:", error);
     } finally {

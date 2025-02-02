@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useBooking } from "@/hooks/useBooking";
-import { formatTime } from "@/utils/timeUtils";
+import { formatTime } from "@/lib/utils/timeUtils";
 import { handleBookingConfirmed } from "@/services/booking.service";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
