@@ -2,16 +2,18 @@
 
 import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 export default function LanguageSwitcher() {
   const locale = useLocale();
   const router = useRouter();
+  const pathname = usePathname();
 
   const changeLanguage = (newLocale) => {
     // Set the locale cookie
     document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000`; // 1 year
     
-    // Refresh the page to load new translations
+    // Use router.refresh() to trigger a soft navigation that updates translations
     router.refresh();
   };
 
