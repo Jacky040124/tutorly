@@ -13,40 +13,30 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranslations } from 'next-intl';
-import { Teacher } from "@/types/user";
+import { Teacher, isTeacher } from "@/types/user";
 import { Camera } from "lucide-react";
 
 export default function TeacherProfileOverlay() {
-  const { user, setUser } = useUser();
+  const { user, updateTeacherProfile } = useUser();
   const { showTeacherProfileOverlay, setShowTeacherProfileOverlay } = useOverlay();
   const { showSuccess, showError } = useNotification();
   const t = useTranslations('Profile');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const [formData, setFormData] = useState({
-    nickname: user?.nickname || "",
-    introduction: (user as Teacher)?.introduction || "",
-    expertise: (user as Teacher)?.expertise || "",
-    education: (user as Teacher)?.education || "",
-    experience: (user as Teacher)?.experience || "",
-    teachingStyle: (user as Teacher)?.teachingStyle || "",
-    photoURL: user?.photoURL || "",
-  });
+  if (!user || !isTeacher(user)) {
+    return null;
+  }
 
-  useEffect(() => {
-    if (user) {
-      setFormData((prevData) => ({
-        nickname: user.nickname ?? prevData.nickname,
-        introduction: user.introduction ?? prevData.introduction,
-        expertise: (user as Teacher).expertise ?? prevData.expertise,
-        education: (user as Teacher).education ?? prevData.education,
-        experience: (user as Teacher).experience ?? prevData.experience,
-        teachingStyle: (user as Teacher).teachingStyle ?? prevData.teachingStyle,
-        photoURL: user.photoURL ?? prevData.photoURL,
-      }));
-    }
-  }, [user]);
+  const [formData, setFormData] = useState({
+    nickname: user.nickname,
+    introduction: user.introduction || "",
+    expertise: user.expertise || "",
+    education: user.education || "",
+    experience: user.experience || "",
+    teachingStyle: user.teachingStyle || "",
+    photoURL: user.photoURL || "",
+  });
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -71,12 +61,9 @@ export default function TeacherProfileOverlay() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      if (user) {
-        await updateTeacherProfile(user.uid, formData);
-        setUser({ ...user, ...formData });
-        showSuccess(t('updateSuccess'));
-        setShowTeacherProfileOverlay(false);
-      }
+      await updateTeacherProfile(formData);
+      showSuccess(t('updateSuccess'));
+      setShowTeacherProfileOverlay(false);
     } catch (error) {
       showError(t('updateError'));
     }

@@ -4,22 +4,57 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { doc, runTransaction, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from "../services/firebase";
-import { User } from "../../types/user";
+import { User, Teacher, isTeacher, Student } from "../../types/user";
 import { Event } from "../../types/event";
 import Loading from "@/app/loading";
-import { Teacher } from "../../types/user";
 
 interface UserContextType {
   user: User | null;
   loading: boolean;
   authLoading: boolean;
   setUser: (user: User | null) => void;
-  availability: Event[]; // Keep for backwards compatibility
+  updateTeacherProfile: (teacherData: Partial<Teacher>) => Promise<void>;
   updateAvailability: (newAvailability: Event[]) => Promise<void>;
   removeAvailability: (availabilityToRemove: Event) => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | null>(null);
+
+const constructUserFromFirebase = (firebaseUser: any, userData: any): User => {
+  const baseUser = {
+    uid: firebaseUser.uid,
+    email: firebaseUser.email || '',
+    nickname: firebaseUser.displayName || '',
+    photoURL: firebaseUser.photoURL,
+    type: userData?.type || 'student',
+    introduction: userData?.introduction || '',
+  };
+
+  if (userData?.type === 'teacher') {
+    return {
+      ...baseUser,
+      type: 'teacher',
+      expertise: userData.expertise || '',
+      education: userData.education || '',
+      experience: userData.experience || '',
+      teachingStyle: userData.teachingStyle || '',
+      pricing: userData.pricing || 0,
+      availability: (userData.availability || []).sort((a: Event, b: Event) => {
+        const dateA = new Date(a.date.year, a.date.month - 1, a.date.day);
+        const dateB = new Date(b.date.year, b.date.month - 1, b.date.day);
+        return dateA.getTime() - dateB.getTime() || a.startTime - b.startTime;
+      }),
+    } as Teacher;
+  }
+
+  return {
+    ...baseUser,
+    type: 'student',
+    balance: userData?.balance || 0,
+    interests: userData?.interests || [],
+    goals: userData?.goals || [],
+  } as Student;
+};
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -34,24 +69,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
         const userData = userDoc.data();
         
-        const constructedUser = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email || '',
-          nickname: firebaseUser.displayName || '',
-          type: userData?.type || 'student',
-          balance: userData?.balance || 0,
-          introduction: userData?.introduction || '',
-          interests: userData?.interests || [],
-          goals: userData?.goals || [],
-          availability: (userData?.availability || []).sort((a: Event, b: Event) => {
-            const dateA = new Date(a.date.year, a.date.month - 1, a.date.day);
-            const dateB = new Date(b.date.year, b.date.month - 1, b.date.day);
-            if (dateA.getTime() !== dateB.getTime()) {
-              return dateA.getTime() - dateB.getTime();
-            }
-            return a.startTime - b.startTime;
-          }),
-        };
+        const constructedUser = constructUserFromFirebase(firebaseUser, userData);
 
         setUser(constructedUser);
         localStorage.setItem('user', JSON.stringify(constructedUser));
@@ -65,6 +83,26 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     return () => unsubscribe();
   }, []);
+
+  const updateTeacherProfile = async (teacherData: Partial<Teacher>) => {
+    if (!user || !isTeacher(user)) {
+      throw new Error("Only teachers can update their profile");
+    }
+
+    try {
+      const updatedUser = { ...user, ...teacherData };
+      await runTransaction(db, async (transaction) => {
+        const docRef = doc(db, "users", user.uid);
+        transaction.set(docRef, teacherData, { merge: true });
+      });
+
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    } catch (error) {
+      console.error("Error updating teacher profile:", error);
+      throw error;
+    }
+  };
 
   const updateAvailability = async (newEvents: Event[]) => {
     if (!user || user.type !== 'teacher') return;
@@ -160,7 +198,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     loading,
     authLoading,
     setUser,
-    availability: user?.type === 'teacher' ? user.availability : [],
+    updateTeacherProfile,
     updateAvailability,
     removeAvailability,
   };
