@@ -12,16 +12,19 @@ import { CalendarDays, Clock, User, CreditCard, AlertCircle, ChevronDown, Chevro
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTeachers } from "@/hooks/useTeacher";
 import { Booking } from "@/types/booking";
-import { Teacher } from "@/types/user";
 import { useToast } from "@/hooks/use-toast";
 
-export default function BookingOverlay(prop: { selectedTeacher: number }) {
+interface BookingOverlayProps {
+  selectedTeacher: number;
+}
+
+export default function BookingOverlay({ selectedTeacher }: BookingOverlayProps) {
   const { selectedSlot, setShowBookingOverlay, setBookingConfirmed } = useBooking();
   const { user } = useUser();
   const { teachers } = useTeachers();
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showTeacherDetails, setShowTeacherDetails] = useState<boolean>(false);
-  const teacher: Teacher = teachers[prop.selectedTeacher];
+  const selectedTeacherData = selectedTeacher >= 0 ? teachers[selectedTeacher] : null;
   const { toast } = useToast();
 
   const handleClose = () => {
@@ -34,12 +37,12 @@ export default function BookingOverlay(prop: { selectedTeacher: number }) {
 
     const baseBooking: Omit<Booking, 'id'> = {
       studentId: user!.uid,
-      teacherId: teacher.uid,
+      teacherId: selectedTeacherData?.uid || '',
       startTime: selectedSlot.startTime,
       endTime: selectedSlot.startTime + 1,
       status: "confirmed",
       createdAt: new Date().toISOString(),
-      price: teacher.pricing,
+      price: selectedTeacherData?.pricing || 0,
       link: selectedSlot.meeting_link || '',
       title: selectedSlot.title || '',
       date: {
@@ -81,12 +84,12 @@ export default function BookingOverlay(prop: { selectedTeacher: number }) {
         const bookings = createBookingObject() as Array<Omit<Booking, 'id'>>;
         await handleBookingConfirmed(
           bookings as any,
-          teacher.availability,
+          selectedTeacherData?.availability || [],
           {
-            email: teacher.email || '',
-            availability: teacher.availability,
-            nickname: teacher.nickname,
-            pricing: teacher.pricing
+            email: selectedTeacherData?.email || '',
+            availability: selectedTeacherData?.availability || [],
+            nickname: selectedTeacherData?.nickname || '',
+            pricing: selectedTeacherData?.pricing || 0
           },
           user.email,
           setShowBookingOverlay,
@@ -122,41 +125,41 @@ export default function BookingOverlay(prop: { selectedTeacher: number }) {
                 >
                   <div className="flex items-center gap-3">
                     <User className="h-5 w-5" />
-                    <span>Teacher: {teacher?.nickname}</span>
+                    <span>Teacher: {selectedTeacherData?.nickname}</span>
                   </div>
                   {showTeacherDetails ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                 </button>
 
                 {showTeacherDetails && (
                   <div className="border-t pt-4 space-y-4">
-                    {teacher?.introduction && (
+                    {selectedTeacherData?.introduction && (
                       <div className="space-y-1">
                         <h4 className="font-medium">Introduction</h4>
-                        <p className="text-sm text-muted-foreground">{teacher?.introduction}</p>
+                        <p className="text-sm text-muted-foreground">{selectedTeacherData?.introduction}</p>
                       </div>
                     )}
-                    {teacher?.expertise && (
+                    {selectedTeacherData?.expertise && (
                       <div className="space-y-1">
                         <h4 className="font-medium">Expertise</h4>
-                        <p className="text-sm text-muted-foreground">{teacher?.expertise}</p>
+                        <p className="text-sm text-muted-foreground">{selectedTeacherData?.expertise}</p>
                       </div>
                     )}
-                    {teacher?.education && (
+                    {selectedTeacherData?.education && (
                       <div className="space-y-1">
                         <h4 className="font-medium">Education</h4>
-                        <p className="text-sm text-muted-foreground">{teacher?.education}</p>
+                        <p className="text-sm text-muted-foreground">{selectedTeacherData?.education}</p>
                       </div>
                     )}
-                    {teacher?.experience && (
+                    {selectedTeacherData?.experience && (
                       <div className="space-y-1">
                         <h4 className="font-medium">Experience</h4>
-                        <p className="text-sm text-muted-foreground">{teacher?.experience}</p>
+                        <p className="text-sm text-muted-foreground">{selectedTeacherData?.experience}</p>
                       </div>
                     )}
-                    {teacher?.teachingStyle && (
+                    {selectedTeacherData?.teachingStyle && (
                       <div className="space-y-1">
                         <h4 className="font-medium">Teaching Style</h4>
-                        <p className="text-sm text-muted-foreground">{teacher?.teachingStyle}</p>
+                        <p className="text-sm text-muted-foreground">{selectedTeacherData?.teachingStyle}</p>
                       </div>
                     )}
                   </div>
@@ -179,11 +182,11 @@ export default function BookingOverlay(prop: { selectedTeacher: number }) {
                 <div className="flex items-center gap-3 border-t pt-4">
                   <CreditCard className="h-5 w-5" />
                   <div>
-                    <p className="font-medium">Price per lesson: ${teacher?.pricing}</p>
+                    <p className="font-medium">Price per lesson: ${selectedTeacherData?.pricing || 0}</p>
                     {selectedSlot.totalClasses && (
                       <p className="text-primary mt-1">
                         Total for {selectedSlot.totalClasses} lessons: $
-                        {teacher?.pricing * selectedSlot.totalClasses}
+                        {(selectedTeacherData?.pricing || 0) * selectedSlot.totalClasses}
                       </p>
                     )}
                   </div>
@@ -208,7 +211,7 @@ export default function BookingOverlay(prop: { selectedTeacher: number }) {
                 <AlertDescription>
                   <div className="space-y-2">
                     <p className="font-semibold">Bulk Booking: {selectedSlot.totalClasses} lessons</p>
-                    <p>Total Price: ${teacher?.pricing * selectedSlot.totalClasses}</p>
+                    <p>Total Price: ${(selectedTeacherData?.pricing || 0) * selectedSlot.totalClasses}</p>
                     <p className="text-sm opacity-90">Weekly lessons for {selectedSlot.totalClasses} weeks</p>
                   </div>
                 </AlertDescription>

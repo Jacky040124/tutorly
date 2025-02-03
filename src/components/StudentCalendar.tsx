@@ -57,6 +57,37 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [feedbackToDelete, setFeedbackToDelete] = useState("");
 
+  // Get the selected teacher data
+  const selectedTeacherData = selectedTeacher >= 0 ? teachers[selectedTeacher] : null;
+
+  // Helper function to find teacher by ID
+  const findTeacherById = (teacherId: string) => {
+    return teachers.find((teacher) => teacher.uid === teacherId);
+  };
+
+  // Convert teacher availability to TUI calendar events
+  const availabilityEvents = selectedTeacherData?.availability?.map((slot) => ({
+    id: `${slot.date.year}_${slot.date.month}_${slot.date.day}_${slot.startTime}`,
+    calendarId: "availability",
+    title: "Available",
+    category: "time",
+    start: new Date(slot.date.year, slot.date.month - 1, slot.date.day, slot.startTime),
+    end: new Date(slot.date.year, slot.date.month - 1, slot.date.day, slot.endTime),
+    isReadOnly: true,
+    raw: {
+      isRepeating: slot.isRepeating,
+      totalClasses: slot.totalClasses,
+      link: slot.link,
+      date: slot.date,
+      startTime: slot.startTime,
+    },
+  })) || [];
+
+  // Debug logs
+  console.log("selectedTeacher index:", selectedTeacher);
+  console.log("selectedTeacherData:", selectedTeacherData);
+  console.log("availabilityEvents:", availabilityEvents);
+
   const handleDeleteFeedback = useCallback(async (booking: Booking) => {
     if (booking.feedback) {
       setFeedbackToDelete(booking.id);
@@ -105,36 +136,6 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
     },
   ];
 
-  // Convert teacher availability to TUI calendar events
-  const availabilityEvents = selectedTeacher
-    ? teachers[selectedTeacher]?.availability.map((slot) => ({
-        id: `${slot.date.year}_${slot.date.month}_${slot.date.day}_${slot.startTime}`,
-        calendarId: "availability",
-        title: "Available",
-        category: "time",
-        start: new Date(slot.date.year, slot.date.month - 1, slot.date.day, slot.startTime),
-        end: new Date(slot.date.year, slot.date.month - 1, slot.date.day, slot.endTime),
-        isReadOnly: true,
-        raw: {
-          isRepeating: slot.isRepeating,
-          totalClasses: slot.totalClasses,
-          link: slot.link,
-          date: slot.date,
-          startTime: slot.startTime,
-        },
-      })) || []
-    : [];
-
-  console.log("teachers:", teachers);
-  console.log("selectedTeacher Index:", selectedTeacher);
-  console.log("selectedTeacher:", teachers[selectedTeacher]);
-  console.log("availabilityEvents:", availabilityEvents);
-
-  // Helper function to find teacher by ID
-  const findTeacherById = (teacherId: string) => {
-    return teachers.find((teacher) => teacher.uid === teacherId);
-  };
-
   // Convert bookings to TUI calendar events
   const bookingEvents = bookings.map((booking) => {
     const teacher = findTeacherById(booking.teacherId);
@@ -156,8 +157,8 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
   const events = [...availabilityEvents, ...bookingEvents];
 
   const handleEventClick = useCallback((event: any) => {
-    if (event.event.calendarId === "availability") {
-      const slot = teachers[selectedTeacher]?.availability.find(
+    if (event.event.calendarId === "availability" && selectedTeacherData) {
+      const slot = selectedTeacherData.availability.find(
         (s) =>
           s.date.year === event.event.raw.date.year &&
           s.date.month === event.event.raw.date.month &&
@@ -168,12 +169,12 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
       if (slot) {
         setSelectedSlot({
           ...slot,
-          title: `Class with ${teachers[selectedTeacher]?.nickname}`,
+          title: `Class with ${selectedTeacherData.nickname}`,
         });
         setShowBookingOverlay(true);
       }
     }
-  }, [selectedTeacher, teachers, setSelectedSlot, setShowBookingOverlay]);
+  }, [selectedTeacherData, setSelectedSlot, setShowBookingOverlay]);
 
   const template = {
     time(event: any) {
@@ -432,7 +433,7 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
                           <Badge variant="outline">
-                            Teacher: {findTeacherById(booking.teacherId)?.nickname || "Unknown Teacher"}
+                            Teacher: {selectedTeacherData?.nickname || "Unknown Teacher"}
                           </Badge>
                         </div>
                         {booking.bulkId && (
