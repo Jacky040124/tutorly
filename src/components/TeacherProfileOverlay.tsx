@@ -23,20 +23,33 @@ export default function TeacherProfileOverlay() {
   const t = useTranslations('Profile');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [formData, setFormData] = useState({
+    nickname: "",
+    introduction: "",
+    expertise: "",
+    education: "",
+    experience: "",
+    teachingStyle: "",
+    photoURL: "",
+  });
+
+  useEffect(() => {
+    if (user && isTeacher(user)) {
+      setFormData({
+        nickname: user.nickname,
+        introduction: user.introduction || "",
+        expertise: user.expertise || "",
+        education: user.education || "",
+        experience: user.experience || "",
+        teachingStyle: user.teachingStyle || "",
+        photoURL: user.photoURL || "",
+      });
+    }
+  }, [user]);
 
   if (!user || !isTeacher(user)) {
     return null;
   }
-
-  const [formData, setFormData] = useState({
-    nickname: user.nickname,
-    introduction: user.introduction || "",
-    expertise: user.expertise || "",
-    education: user.education || "",
-    experience: user.experience || "",
-    teachingStyle: user.teachingStyle || "",
-    photoURL: user.photoURL || "",
-  });
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
