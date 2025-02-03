@@ -18,6 +18,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Event } from "@/types/event";
+import { isTeacher } from "@/lib/utils/userUtils";
 
 type DateObject = {
   year: number;
@@ -89,7 +90,7 @@ const createEvents = (
 };
 
 export default function AddEventOverlay() {
-  const { availability, updateAvailability } = useUser();
+  const { availability, updateAvailability, user } = useUser();
   const { setShowAddEventOverlay } = useOverlay();
   const { showSuccess } = useNotification();
   const t = useTranslations("CalendarOverlay");
@@ -144,6 +145,11 @@ export default function AddEventOverlay() {
     });
     return dates;
   }, [date, isRepeating]);
+
+  // Add a guard clause
+  if (!user || !isTeacher(user)) {
+    return null;
+  }
 
   const onSubmit = async (data: FormValues) => {
     if (!date) return;

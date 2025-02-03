@@ -16,6 +16,7 @@ interface UserContextType {
   updateTeacherProfile: (teacherData: Partial<Teacher>) => Promise<void>;
   updateAvailability: (newAvailability: Event[]) => Promise<void>;
   removeAvailability: (availabilityToRemove: Event) => Promise<void>;
+  availability: Event[];
 }
 
 const UserContext = createContext<UserContextType | null>(null);
@@ -201,6 +202,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     updateTeacherProfile,
     updateAvailability,
     removeAvailability,
+    availability: user && isTeacher(user) ? user.availability : [],
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
