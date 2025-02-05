@@ -1,14 +1,14 @@
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signUpStudent } from "@/services/auth.service";
+import { signUpStudent } from "@/app/action";
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useNotification } from "@/hooks/useNotification";
+import { useActionState, useEffect } from "react";
+import { authState } from "@/app/action";
 
 type SignUpData = {
   email: string;
@@ -20,27 +20,14 @@ type SignUpData = {
 export default function SignUp() {
   const t = useTranslations('Auth.SignUp.Student');
   const tCommon = useTranslations('Auth.SignIn');
-  const { showSuccess } = useNotification();
   const router = useRouter();
-  const { handleSubmit, control } = useForm<SignUpData>();
+  const [state, formAction, isPending] = useActionState(signUpStudent, { error: null, user: null } as authState);
 
-  const onSubmit = async (data: SignUpData) => {
-    try {
-      if (data.signupCode !== "david0324") {
-        throw new Error("Invalid sign-up code");
-      }
-
-      await signUpStudent(data.email, data.password, data.nickname);
-      
-      // Store email for auto-fill on sign-in page
-      window.localStorage.setItem("emailForSignIn", data.email);
-      
-      showSuccess("Sign Up Successful! Please sign in.");
-      router.push("/auth/signin")
-    } catch (error) {
-      console.error("Signup error:", error);
+  useEffect(() => {
+    if (state.user) {
+      router.push(`/auth/signin`);
     }
-  };
+  }, [state]);
 
   return (
     <div className="flex-1 flex flex-col justify-center items-center px-4">
@@ -55,79 +42,49 @@ export default function SignUp() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form action={formAction} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="nickname">{t('nickname')}</Label>
-            <Controller
+            <Input
+              id="nickname"
+              type="text"
               name="nickname"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <Input
-                  id="nickname"
-                  type="text"
-                  {...field}
-                  required
-                />
-              )}
+              required
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="email">{t('email')}</Label>
-            <Controller
+            <Input
+              id="email"
+              type="email"
               name="email"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  {...field}
-                  required
-                />
-              )}
+              required
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="password">{t('password')}</Label>
-            <Controller
+            <Input
+              id="password"
+              type="password"
               name="password"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete="new-password"
-                  {...field}
-                  required
-                />
-              )}
+              required
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="signupCode">{t('signupCode')}</Label>
-            <Controller
+            <Input
+              id="signupCode"
+              type="text"
               name="signupCode"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <Input
-                  id="signupCode"
-                  type="text"
-                  {...field}
-                  required
-                />
-              )}
+              required
             />
           </div>
 
           <div className="space-y-4">
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={isPending}>
               {t('button')}
             </Button>
             <Link

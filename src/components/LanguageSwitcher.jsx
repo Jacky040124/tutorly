@@ -2,18 +2,23 @@
 
 import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { usePathname } from 'next/navigation';
+import { useUser } from '@/hooks/useUser';
 
 export default function LanguageSwitcher() {
   const locale = useLocale();
   const router = useRouter();
-  const pathname = usePathname();
+  const { user, updateUserSettings } = useUser();
 
-  const changeLanguage = (newLocale) => {
-    // Set the locale cookie
-    document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000`; // 1 year
+  const changeLanguage = async (newLocale) => {
+    // Set the locale in user settings if logged in
+    if (user) {
+      await updateUserSettings({ locale: newLocale });
+    }
     
-    // Use router.refresh() to trigger a soft navigation that updates translations
+    // Set the locale in localStorage for persistence
+    localStorage.setItem('locale', newLocale);
+    
+    // Refresh the page to update translations
     router.refresh();
   };
 

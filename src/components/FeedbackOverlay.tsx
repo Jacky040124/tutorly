@@ -1,76 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useUser } from '@/hooks/useUser';
 import { Star } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { handleFeedbackSubmit } from "@/services/booking.service";
+import { addFeedback, FeedbackState } from "@/app/action";
 import { useTranslation } from 'react-i18next';
 import { Booking } from '@/types/booking';
+import { useActionState } from 'react';
+
 
 interface FeedbackOverlayProp {
   booking: Booking;
   onClose: () => void;
-  onFeedbackSubmitted: () => void;
 }
 
-export default function FeedbackOverlay({ booking, onClose, onFeedbackSubmitted }: FeedbackOverlayProp) {
+export default function FeedbackOverlay({ booking, onClose }: FeedbackOverlayProp) {
   const { user } = useUser();
   const [feedbackText, setFeedbackText] = useState("");
   const [rating, setRating] = useState(0);
   const { t } = useTranslation();
+  const [state, formAction, isPending] = useActionState(addFeedback, { message: "" } as FeedbackState);
 
-  // Reset feedback form when booking changes
-  useEffect(() => {
-    if (booking) {
-      setFeedbackText(booking.feedback?.comment || "");
-      setRating(booking.feedback?.rating || 0);
-    } else {
-      setFeedbackText("");
-      setRating(0);
-    }
-  }, [booking]);
-
-  const handleSaveFeedback = async () => {
-    // Validate required data before proceeding
-    if (!user) {
-      console.error("User is not authenticated");
-      alert(t("errors.not_authenticated"));
-      return;
-    }
-
-    if (!booking) {
-      console.error("Booking information is missing");
-      alert(t("errors.booking_missing"));
-      return;
-    }
-
-    if (!rating) {
-      console.error("Rating is required");
-      alert(t("errors.rating_required"));
-      return;
-    }
-
-    try {
-      await handleFeedbackSubmit(
-        booking.id,
-        {
-          rating,
-          comment: feedbackText?.trim() || "",
-          studentId: user.uid,
-        },
-        !!booking.feedback
-      );
-
-      onFeedbackSubmitted();
-      onClose();
-    } catch (error) {
-      console.error("Error saving feedback:", error);
-      alert(t("errors.feedback_save_failed"));
-    }
-  };
-
-  if (!booking) return null;
 
   return (
     <Dialog open={true} onOpenChange={() => onClose()}>
@@ -79,6 +30,13 @@ export default function FeedbackOverlay({ booking, onClose, onFeedbackSubmitted 
           <DialogTitle>{booking.feedback ? "Edit Feedback" : "Add Feedback"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-4">
+          <form action={formAction}>
+            <input type="hidden" name="bookingId" value={booking.id} />
+            <input type="hidden" name="studentId" value={user?.uid} />
+            <input type="hidden" name="rating" value={rating} />
+            <input type="hidden" name="comment" value={feedbackText} />
+            {state && <p>{state.message}</p>}
+
           <div className="flex items-center gap-1">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
@@ -100,10 +58,13 @@ export default function FeedbackOverlay({ booking, onClose, onFeedbackSubmitted 
             <Button variant="outline" onClick={onClose}>
               {t("profile.buttons.cancel")}
             </Button>
-            <Button onClick={handleSaveFeedback} disabled={!rating}>
-              Save
+            
+            <Button type="submit" disabled={!rating || isPending}>
+              {isPending ? "Saving..." : "Save"}
             </Button>
+
           </div>
+          </form>
         </div>
       </DialogContent>
     </Dialog>

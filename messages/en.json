@@ -12,7 +12,7 @@
     "SignUp": {
       "Student": {
         "title": "Create your account",
-        "subtitle": "Already have an account? Sign in",
+        "subtitle": "Already have an account?",
         "nickname": "Nickname",
         "email": "Email address",
         "password": "Password",

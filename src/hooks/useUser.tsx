@@ -14,6 +14,7 @@ interface UserContextType {
   authLoading: boolean;
   setUser: (user: User | null) => void;
   updateTeacherProfile: (teacherData: Partial<Teacher>) => Promise<void>;
+  updateUserSettings: (settings: { locale?: string }) => Promise<void>;
   updateAvailability: (newAvailability: Event[]) => Promise<void>;
   removeAvailability: (availabilityToRemove: Event) => Promise<void>;
   availability: Event[];
@@ -101,6 +102,26 @@ export function UserProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('user', JSON.stringify(updatedUser));
     } catch (error) {
       console.error("Error updating teacher profile:", error);
+      throw error;
+    }
+  };
+
+  const updateUserSettings = async (settings: { locale?: string }) => {
+    if (!user) {
+      throw new Error("No user logged in");
+    }
+
+    try {
+      const updatedUser = { ...user, ...settings };
+      await runTransaction(db, async (transaction) => {
+        const docRef = doc(db, "users", user.uid);
+        transaction.set(docRef, settings, { merge: true });
+      });
+
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    } catch (error) {
+      console.error("Error updating user settings:", error);
       throw error;
     }
   };
@@ -200,6 +221,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     authLoading,
     setUser,
     updateTeacherProfile,
+    updateUserSettings,
     updateAvailability,
     removeAvailability,
     availability: user && isTeacher(user) ? user.availability : [],

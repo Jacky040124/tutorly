@@ -12,7 +12,7 @@
     "SignUp": {
       "Student": {
         "title": "创建账户",
-        "subtitle": "已有账户？登录",
+        "subtitle": "已有账户?",
         "nickname": "昵称",
         "email": "电子邮箱",
         "password": "密码",

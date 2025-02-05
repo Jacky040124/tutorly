@@ -336,34 +336,6 @@ export async function updateBookingStatus(bookingId: string, newStatus: "complet
   }
 }
 
-export async function handleFeedbackSubmit(
-  bookingId: string,
-  feedback: {
-    rating: number;
-    comment: string;
-    studentId: string;
-  },
-  existingFeedback: boolean
-) {
-  try {
-    if (existingFeedback) {
-      await updateFeedback(bookingId, feedback);
-    } else {
-      await addFeedback(bookingId, feedback);
-    }
-
-    return {
-      ...feedback,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      meetingId: bookingId,
-    };
-  } catch (error) {
-    console.error("Error submitting feedback:", error);
-    throw error;
-  }
-}
-
 export async function updateBookingHomework(bookingId: string, homeworkLink: string) {
   try {
     const bookingRef = doc(db, "bookings", bookingId);

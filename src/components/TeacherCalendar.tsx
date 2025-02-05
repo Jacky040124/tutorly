@@ -1,8 +1,6 @@
 "use client";
-
-import { useEffect, useRef, useState, forwardRef, ForwardedRef, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
-import "@toast-ui/calendar/dist/toastui-calendar.min.css";
 import { useUser } from "@/hooks/useUser";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,48 +14,50 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { filterBookingsByTime, convertToCalendarDate } from "@/lib/utils/calendarUtil";
 import { Booking } from "@/types/booking";
-import { CalendarEvent } from "@/types/event";
 import { fetchUserNickname } from "@/services/user.service";
 import { useTranslations } from "next-intl";
 import { Teacher } from "@/types/user";
+import { EventClickArg } from '@fullcalendar/core';
 
-type CalendarInstance = {
-  getInstance: () => {
-    today: () => void;
-    prev: () => void;
-    next: () => void;
-    changeView: (view: string) => void;
-  };
-};
 
-const calendars = [
-  {
-    id: "availability",
-    name: "Available Slots",
-    backgroundColor: "#10B981",
-    borderColor: "#059669",
-    dragBackgroundColor: "#A7F3D0",
-    color: "#065F46",
-  },
-  {
-    id: "bookings",
-    name: "Booked Classes",
-    backgroundColor: "#3B82F6",
-    borderColor: "#2563EB",
-    dragBackgroundColor: "#BFDBFE",
-    color: "#1E40AF",
-  },
-];
+// Import plugins statically
+import timeGridPlugin from '@fullcalendar/timegrid';
+import dayGridPlugin from '@fullcalendar/daygrid';
 
-const DynamicCalendar = dynamic(
-  () =>
-    import("@toast-ui/react-calendar").then((mod) => {
-      const Calendar = mod.default;
-      const WrappedCalendar = ({ forwardedRef, ...props }: any) => <Calendar {...props} ref={forwardedRef} />;
-      WrappedCalendar.displayName = "WrappedCalendar";
-      return WrappedCalendar;
-    }),
-  {
+// Add custom styles
+const calendarStyles = `
+.fc-timegrid-slot {
+  height: 48px !important;
+}
+.fc-timegrid-event {
+  background-color: #3B82F6 !important;
+  border: none !important;
+  padding: 2px !important;
+}
+.fc-timegrid-event .fc-event-main {
+  padding: 2px !important;
+}
+.fc-timegrid-event .fc-event-time {
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+}
+.fc-timegrid-event .fc-event-title {
+  font-size: 0.75rem !important;
+}
+.fc-theme-standard td, .fc-theme-standard th {
+  border-color: #e5e7eb !important;
+}
+`;
+
+const FullCalendar = dynamic(() => 
+  import('@fullcalendar/react').then((mod) => {
+    // Inject custom styles
+    const style = document.createElement('style');
+    style.textContent = calendarStyles;
+    document.head.appendChild(style);
+    return mod.default;
+  }), 
+  { 
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-full">
@@ -67,23 +67,13 @@ const DynamicCalendar = dynamic(
   }
 );
 
-const CalendarWrapper = forwardRef((props: any, ref: ForwardedRef<CalendarInstance>) => {
-  return <DynamicCalendar {...props} forwardedRef={ref} />;
-});
-
-CalendarWrapper.displayName = "CalendarWrapper";
-
-type EventClickData = {
-  event: CalendarEvent;
-};
-
 export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
-  const calendarRef = useRef<CalendarInstance>(null);
+  const calendarRef = useRef<any>(null);
   const { user, availability, removeAvailability } = useUser();
   const [showUpcoming, setShowUpcoming] = useState(true);
   const [studentNames, setStudentNames] = useState<{ [key: string]: string }>({});
   const [homeworkLink, setHomeworkLink] = useState("");
-  const [slotToDelete, setSlotToDelete] = useState<CalendarEvent | null>(null);
+  const [slotToDelete, setSlotToDelete] = useState<any | null>(null);
 
   const t = useTranslations("Dashboard.Common");
   const tCalendar = useTranslations("Calendar");
@@ -142,33 +132,35 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
     };
 
     fetchNames();
-  }, [user?.uid, bookings, fetchUserNickname]);
+  }, [user?.uid, bookings, studentNames]);
 
   // Filter bookings based on upcoming/past
   const filteredBookings = filterBookingsByTime(bookings, showUpcoming);
 
   // Convert availability to events
-  const availabilityEvents = ((user as Teacher)?.availability?.map((slot) => ({
-    id: slot.createdAt,
-    calendarId: "availability",
+  const availabilityEvents = ((user as Teacher)?.availability?.map((slot, index) => ({
+    id: `availability_${index}`,
     title: "Available",
-    category: "time",
     start: convertToCalendarDate(slot.date, slot.startTime),
     end: convertToCalendarDate(slot.date, slot.endTime),
-    isReadOnly: true,
-    raw: { ...slot, isAvailability: true },
-  })) || []) as CalendarEvent[];
+    backgroundColor: '#10B981',
+    borderColor: '#059669',
+    extendedProps: {
+      ...slot,
+      isAvailability: true,
+      type: 'availability'
+    }
+  })) || []);
 
   // Convert bookings to events
   const bookingEvents = bookings.map((booking) => ({
     id: booking.id,
-    calendarId: "bookings",
     title: booking.title || "Booked",
-    category: "time",
     start: convertToCalendarDate(booking.date, booking.startTime),
     end: convertToCalendarDate(booking.date, booking.endTime),
-    isReadOnly: true,
-    raw: {
+    backgroundColor: '#3B82F6',
+    borderColor: '#2563EB',
+    extendedProps: {
       ...booking,
       meeting_link: booking.link || "",
       maxStudents: 1,
@@ -177,77 +169,34 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
       repeatGroupId: booking.bulkId || `single_${booking.id}`,
       repeatIndex: booking.lessonNumber || 0,
       totalClasses: booking.totalLessons || 1,
-    },
-  })) as unknown as CalendarEvent[];
+      type: 'booking'
+    }
+  }));
 
-  const events: CalendarEvent[] = [...availabilityEvents, ...bookingEvents];
-
-  const template = {
-    time(event: CalendarEvent) {
-      const date = new Date(event.start);
-      const formattedDate = !isNaN(date.getTime())
-        ? date.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          })
-        : "";
-
-      const isBooking = event.calendarId === "bookings";
-      const bgColor = isBooking ? "bg-blue-500" : "bg-emerald-500";
-
-      // Add trial class label for non-repeating events
-      const isTrialClass = !event.raw?.isRepeating;
-      const title = isTrialClass ? "Trial Class" : event.title;
-
-      return `
-        <div class="px-2 py-1.5 ${bgColor} flex flex-col min-h-[70px]">
-          <div class="flex items-start justify-between">
-            <div class="flex flex-col flex-1">
-              <div class="text-sm font-medium text-white">${title}</div>
-              <div class="text-xs text-white/90">${formattedDate}</div>
-              <div class="text-xs text-white/90">${new Date(event.start).getHours()}:00 - ${new Date(
-        event.end
-      ).getHours()}:00</div>
-            </div>
-            ${
-              event.raw?.meeting_link
-                ? `<div class="text-xs text-white/90 flex items-center ml-2">
-                <svg class="inline-block w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-              </div>`
-                : ""
-            }
-          </div>
-        </div>
-      `;
-    },
-  };
+  const handleEventClick = useCallback((info: EventClickArg) => {
+    if (info.event.extendedProps.type === 'availability') {
+      setSlotToDelete(info.event);
+    }
+  }, []);
 
   const handleToday = useCallback(() => {
-    const instance = calendarRef.current?.getInstance();
-    if (instance) {
-      instance.today();
+    const api = calendarRef.current?.getApi();
+    if (api) {
+      api.today();
     }
   }, []);
 
   const handlePrev = useCallback(() => {
-    const instance = calendarRef.current?.getInstance();
-    if (instance) {
-      instance.prev();
+    const api = calendarRef.current?.getApi();
+    if (api) {
+      api.prev();
     }
   }, []);
 
   const handleNext = useCallback(() => {
-    const instance = calendarRef.current?.getInstance();
-    if (instance) {
-      instance.next();
-    }
-  }, []);
-
-  const handleEventClick = useCallback(async (event: EventClickData) => {
-    if (event.event.calendarId === "availability") {
-      setSlotToDelete(event.event);
+    const api = calendarRef.current?.getApi();
+    if (api) {
+      api.next();
     }
   }, []);
 
@@ -257,8 +206,8 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
     try {
       const eventData = slotToDelete;
 
-      if (eventData.raw) {
-        await removeAvailability(eventData.raw);
+      if (eventData.extendedProps) {
+        await removeAvailability(eventData.extendedProps);
       } else {
         const startDate = new Date(eventData.start);
 
@@ -285,101 +234,71 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-      {/* Calendar Card - Takes up 9 columns on large screens */}
       <Card className="lg:col-span-9 rounded-xl shadow-md">
         <CardContent className="p-4 h-[800px]">
           <div className="h-full flex flex-col">
             <div className="flex justify-between p-4 border-b">
               <div className="space-x-2">
-                <Button onClick={handleToday} variant="outline" size="sm">
-                  {tCalendar("navigation.today")}
-                </Button>
-                <Button onClick={handlePrev} variant="outline" size="sm">
-                  {tCalendar("navigation.previousWeek")}
-                </Button>
-                <Button onClick={handleNext} variant="outline" size="sm">
-                  {tCalendar("navigation.nextWeek")}
-                </Button>
+                <button
+                  onClick={handleToday}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md hover:bg-gray-50"
+                >
+                  Today
+                </button>
+                <button
+                  onClick={handlePrev}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md hover:bg-gray-50"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border rounded-md hover:bg-gray-50"
+                >
+                  Next
+                </button>
               </div>
-              <Select
-                defaultValue="week"
-                onValueChange={(value) => calendarRef.current?.getInstance().changeView(value)}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder={t("fields.placeholder.select")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="week">{tCalendar("view.week")}</SelectItem>
-                  <SelectItem value="day">{tCalendar("view.day")}</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
 
             <div className="flex-1 overflow-auto">
-              <CalendarWrapper
-                ref={calendarRef}
-                height="100%"
-                view="week"
-                week={{
-                  startDayOfWeek: 1,
-                  hourStart: 6,
-                  hourEnd: 22,
-                  taskView: false,
-                  eventView: ["time"],
-                }}
-                calendars={calendars}
-                events={events}
-                isReadOnly={true}
-                template={template}
-                onClickEvent={handleEventClick}
-                theme={{
-                  common: {
-                    backgroundColor: "white",
-                    border: "1px solid #e5e7eb",
-                    holiday: { color: "#059669" },
-                    saturday: { color: "#059669" },
-                    dayName: { color: "#059669" },
-                    today: { color: "#059669" },
-                    gridSelection: { backgroundColor: "rgba(16, 185, 129, 0.1)" },
-                  },
-                  week: {
-                    dayName: {
-                      borderLeft: "1px solid #e5e7eb",
-                      backgroundColor: "white",
-                      color: "#374151",
-                      fontWeight: "600",
-                    },
-                    timeGrid: {
-                      borderRight: "1px solid #e5e7eb",
-                    },
-                    timeGridLeft: {
-                      fontSize: "12px",
-                      backgroundColor: "white",
-                      color: "#374151",
-                      fontWeight: "500",
-                    },
-                    today: {
-                      backgroundColor: "rgba(16, 185, 129, 0.05)",
-                      color: "#059669",
-                    },
-                    weekend: {
-                      backgroundColor: "rgba(16, 185, 129, 0.02)",
-                    },
-                    nowIndicatorLabel: {
-                      color: "#059669",
-                    },
-                    nowIndicatorPast: {
-                      border: "1px dashed #10B981",
-                    },
-                    nowIndicatorBullet: {
-                      backgroundColor: "#10B981",
-                    },
-                    nowIndicatorLine: {
-                      border: "1px solid #10B981",
-                    },
-                  },
-                }}
-              />
+              <div ref={calendarRef}>
+                <FullCalendar
+                  plugins={[timeGridPlugin, dayGridPlugin]}
+                  initialView="timeGridWeek"
+                  headerToolbar={{
+                    left: "prev,next today",
+                    center: "title",
+                    right: "timeGridWeek,timeGridDay",
+                  }}
+                  slotMinTime="06:00:00"
+                  slotMaxTime="22:00:00"
+                  events={[...availabilityEvents, ...bookingEvents]}
+                  eventClick={handleEventClick}
+                  editable={false}
+                  height="100%"
+                  allDaySlot={false}
+                  slotDuration="01:00:00"
+                  slotLabelFormat={{
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: false
+                  }}
+                  dayHeaderFormat={{
+                    weekday: 'short',
+                    month: 'numeric',
+                    day: 'numeric',
+                    omitCommas: true
+                  }}
+                  eventTimeFormat={{
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: false
+                  }}
+                  expandRows={true}
+                  stickyHeaderDates={true}
+                  firstDay={1}
+                />
+              </div>
             </div>
           </div>
         </CardContent>

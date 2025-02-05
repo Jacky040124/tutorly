@@ -7,7 +7,7 @@ import { getStorage } from "firebase/storage";
 import { config } from "dotenv";
 import { createUserFromData, createNewStudent, createNewTeacher } from "@/types/user";
 import { User } from "@/types/user";
-
+import { Feedback } from "@/types/booking";
 // Firebase Service
 
 config();
@@ -102,5 +102,62 @@ export const signOut = async () => {
   await firebaseSignOut(auth);
 };
 
-
 // Booking Service
+
+export async function updateFeedback(bookingId: string, feedback: Feedback) {
+  try {
+    const bookingRef = doc(db, "bookings", bookingId);
+    await setDoc(
+      bookingRef,
+      {
+        feedback: {
+          rating: feedback.rating,
+          comment: feedback.comment,
+          studentId: feedback.studentId,
+          updatedAt: new Date().toISOString(),
+        },
+      },
+      { merge: true }
+    );
+
+    console.log("Successfully updated feedback");
+    return true;
+  } catch (error) {
+    console.error("Error updating feedback:", error);
+    throw error;
+  }
+}
+
+export interface FeedbackState {
+  message: string;
+  error: string | null;
+}
+
+export async function addFeedback(prevState: FeedbackState, formData: FormData): Promise<FeedbackState> {
+  try {
+    const bookingId = formData.get("bookingId") as string;
+    const studentId = formData.get("studentId") as string;
+    const rating = formData.get("rating") as string;
+    const comment = formData.get("comment") as string;
+
+    const bookingRef = doc(db, "bookings", bookingId);
+    await setDoc(
+      bookingRef,
+      {
+        feedback: {
+          rating: rating,
+          comment: comment,
+          studentId: studentId,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          meetingId: bookingId,
+        },
+      },
+      { merge: true }
+    );
+
+    return { message: "Feedback added successfully", error: null };
+  } catch (error) {
+    return { message: "Error adding feedback", error: error as string };
+  }
+}

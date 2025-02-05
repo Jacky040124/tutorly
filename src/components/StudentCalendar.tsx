@@ -1,8 +1,7 @@
 "use client";
 
-import { useRef, useState, forwardRef, ForwardedRef, useCallback } from "react";
+import { useRef, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
-import "@toast-ui/calendar/dist/toastui-calendar.min.css";
 import { useBooking } from "@/hooks/useBooking";
 import BookingOverlay from "./BookingOverlay";
 import FeedbackOverlay from "@/components/FeedbackOverlay";
@@ -17,31 +16,14 @@ import { deleteFeedback } from "@/services/booking.service";
 import { useTeachers } from "@/hooks/useTeacher";
 import { Booking } from "@/types/booking";
 
-type CalendarInstance = {
-  getInstance: () => {
-    today: () => void;
-    prev: () => void;
-    next: () => void;
-    changeView: (view: string) => void;
-  };
-};
+// Import plugins statically
+import timeGridPlugin from '@fullcalendar/timegrid';
+import dayGridPlugin from '@fullcalendar/daygrid';
 
-const DynamicCalendar = dynamic(
-  () =>
-    import("@toast-ui/react-calendar").then((mod) => {
-      const Calendar = mod.default;
-      const WrappedCalendar = ({ forwardedRef, ...props }: any) => <Calendar {...props} ref={forwardedRef} />;
-      WrappedCalendar.displayName = 'WrappedCalendar';
-      return WrappedCalendar;
-    }),
+const FullCalendar = dynamic(() => 
+  import('@fullcalendar/react').then((mod) => mod.default), 
   { ssr: false }
 );
-
-const CalendarWrapper = forwardRef((props: any, ref: ForwardedRef<CalendarInstance>) => {
-  return <DynamicCalendar {...props} forwardedRef={ref} />;
-});
-
-CalendarWrapper.displayName = "CalendarWrapper";
 
 interface StudentCalendarProps {
   selectedTeacher: number;
@@ -50,7 +32,7 @@ interface StudentCalendarProps {
 }
 
 export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOffset }: StudentCalendarProps) {
-  const calendarRef = useRef<CalendarInstance>(null);
+  const calendarRef = useRef<any>(null);
   const { teachers } = useTeachers();
   const { setSelectedSlot, showBookingOverlay, setShowBookingOverlay, bookings, setBookings } = useBooking();
   const [showUpcoming, setShowUpcoming] = useState<boolean>(true);
@@ -65,28 +47,58 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
     return teachers.find((teacher) => teacher.uid === teacherId);
   };
 
-  // Convert teacher availability to TUI calendar events
+  // Convert teacher availability to calendar events
   const availabilityEvents = selectedTeacherData?.availability?.map((slot) => ({
     id: `${slot.date.year}_${slot.date.month}_${slot.date.day}_${slot.startTime}`,
-    calendarId: "availability",
     title: "Available",
-    category: "time",
     start: new Date(slot.date.year, slot.date.month - 1, slot.date.day, slot.startTime),
     end: new Date(slot.date.year, slot.date.month - 1, slot.date.day, slot.endTime),
-    isReadOnly: true,
-    raw: {
+    backgroundColor: '#10B981',
+    borderColor: '#059669',
+    extendedProps: {
       isRepeating: slot.isRepeating,
       totalClasses: slot.totalClasses,
       link: slot.link,
       date: slot.date,
       startTime: slot.startTime,
-    },
+      type: 'availability'
+    }
   })) || [];
 
-  // Debug logs
-  console.log("selectedTeacher index:", selectedTeacher);
-  console.log("selectedTeacherData:", selectedTeacherData);
-  console.log("availabilityEvents:", availabilityEvents);
+  // Convert bookings to calendar events
+  const bookingEvents = bookings.map((booking) => ({
+    id: booking.id,
+    title: booking.title || `Class with ${findTeacherById(booking.teacherId)?.nickname || "Unknown Teacher"}`,
+    start: new Date(booking.date.year, booking.date.month - 1, booking.date.day, booking.startTime),
+    end: new Date(booking.date.year, booking.date.month - 1, booking.date.day, booking.endTime),
+    backgroundColor: '#3B82F6',
+    borderColor: '#2563EB',
+    extendedProps: {
+      link: booking.link,
+      teacherId: booking.teacherId,
+      type: 'booking'
+    }
+  }));
+
+  const handleEventClick = useCallback((info: any) => {
+    if (info.event.extendedProps.type === 'availability' && selectedTeacherData) {
+      const slot = selectedTeacherData.availability.find(
+        (s) =>
+          s.date.year === info.event.extendedProps.date.year &&
+          s.date.month === info.event.extendedProps.date.month &&
+          s.date.day === info.event.extendedProps.date.day &&
+          s.startTime === info.event.extendedProps.startTime
+      );
+
+      if (slot) {
+        setSelectedSlot({
+          ...slot,
+          title: `Class with ${selectedTeacherData.nickname}`,
+        });
+        setShowBookingOverlay(true);
+      }
+    }
+  }, [selectedTeacherData, setSelectedSlot, setShowBookingOverlay]);
 
   const handleDeleteFeedback = useCallback(async (booking: Booking) => {
     if (booking.feedback) {
@@ -116,65 +128,6 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
     const now = new Date();
     return showUpcoming ? bookingDateTime >= now : bookingDateTime < now;
   });
-
-  const calendars = [
-    {
-      id: "availability",
-      name: "Available Slots",
-      backgroundColor: "#10B981", // emerald-500
-      borderColor: "#059669", // emerald-600
-      dragBackgroundColor: "#A7F3D0", // emerald-200
-      color: "#065F46", // emerald-800
-    },
-    {
-      id: "bookings",
-      name: "My Bookings",
-      backgroundColor: "#3B82F6", // blue-500
-      borderColor: "#2563EB", // blue-600
-      dragBackgroundColor: "#BFDBFE", // blue-200
-      color: "#1E40AF", // blue-800
-    },
-  ];
-
-  // Convert bookings to TUI calendar events
-  const bookingEvents = bookings.map((booking) => {
-    const teacher = findTeacherById(booking.teacherId);
-    return {
-      calendarId: "bookings",
-      title: booking.title || `Class with ${teacher?.nickname || "Unknown Teacher"}`,
-      category: "time",
-      start: new Date(booking.date.year, booking.date.month - 1, booking.date.day, booking.startTime),
-      end: new Date(booking.date.year, booking.date.month - 1, booking.date.day, booking.endTime),
-      isReadOnly: true,
-      raw: {
-        link: booking.link,
-        teacherId: booking.teacherId,
-        title: booking.title,
-      },
-    };
-  });
-
-  const events = [...availabilityEvents, ...bookingEvents];
-
-  const handleEventClick = useCallback((event: any) => {
-    if (event.event.calendarId === "availability" && selectedTeacherData) {
-      const slot = selectedTeacherData.availability.find(
-        (s) =>
-          s.date.year === event.event.raw.date.year &&
-          s.date.month === event.event.raw.date.month &&
-          s.date.day === event.event.raw.date.day &&
-          s.startTime === event.event.raw.startTime
-      );
-
-      if (slot) {
-        setSelectedSlot({
-          ...slot,
-          title: `Class with ${selectedTeacherData.nickname}`,
-        });
-        setShowBookingOverlay(true);
-      }
-    }
-  }, [selectedTeacherData, setSelectedSlot, setShowBookingOverlay]);
 
   const template = {
     time(event: any) {
@@ -305,69 +258,20 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
               </div>
 
               <div className="flex-1 overflow-auto">
-                <CalendarWrapper
-                  ref={calendarRef}
+                <FullCalendar
+                  plugins={[timeGridPlugin, dayGridPlugin]}
+                  initialView="timeGridWeek"
+                  headerToolbar={{
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'timeGridWeek,timeGridDay'
+                  }}
+                  slotMinTime="06:00:00"
+                  slotMaxTime="22:00:00"
+                  events={[...availabilityEvents, ...bookingEvents]}
+                  eventClick={handleEventClick}
+                  editable={false}
                   height="100%"
-                  view="week"
-                  week={{
-                    startDayOfWeek: 1,
-                    hourStart: 6,
-                    hourEnd: 22,
-                    taskView: false,
-                    eventView: ["time"],
-                  }}
-                  calendars={calendars}
-                  events={events}
-                  onClickEvent={handleEventClick}
-                  isReadOnly={true}
-                  template={template}
-                  theme={{
-                    common: {
-                      backgroundColor: "white",
-                      border: "1px solid #e5e7eb",
-                      holiday: { color: "#059669" },
-                      saturday: { color: "#059669" },
-                      dayName: { color: "#059669" },
-                      today: { color: "#059669" },
-                      gridSelection: { backgroundColor: "rgba(16, 185, 129, 0.1)" },
-                    },
-                    week: {
-                      dayName: {
-                        borderLeft: "1px solid #e5e7eb",
-                        backgroundColor: "white",
-                        color: "#374151",
-                        fontWeight: "600",
-                      },
-                      timeGrid: {
-                        borderRight: "1px solid #e5e7eb",
-                      },
-                      timeGridLeft: {
-                        fontSize: "12px",
-                        backgroundColor: "white",
-                        color: "#374151",
-                        fontWeight: "500",
-                      },
-                      today: {
-                        backgroundColor: "rgba(16, 185, 129, 0.05)",
-                        color: "#059669",
-                      },
-                      weekend: {
-                        backgroundColor: "rgba(16, 185, 129, 0.02)",
-                      },
-                      nowIndicatorLabel: {
-                        color: "#059669",
-                      },
-                      nowIndicatorPast: {
-                        border: "1px dashed #10B981",
-                      },
-                      nowIndicatorBullet: {
-                        backgroundColor: "#10B981",
-                      },
-                      nowIndicatorLine: {
-                        border: "1px solid #10B981",
-                      },
-                    },
-                  }}
                 />
               </div>
             </div>
@@ -432,9 +336,7 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline">
-                            Teacher: {selectedTeacherData?.nickname || "Unknown Teacher"}
-                          </Badge>
+                          <Badge variant="outline">Teacher: {selectedTeacherData?.nickname || "Unknown Teacher"}</Badge>
                         </div>
                         {booking.bulkId && (
                           <div className="text-xs text-gray-500">

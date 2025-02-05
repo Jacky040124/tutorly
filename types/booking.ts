@@ -21,12 +21,14 @@ export interface Booking {
     link: string;
     addedAt: string;
   };
-  feedback?: {
-    rating: number;
-    comment: string;
-    createdAt: string;
-    updatedAt: string;
-    studentId: string;
-    meetingId: string;
-  };
+  feedback?: Feedback;
+}
+
+export interface Feedback {
+  rating: number;
+  comment: string;
+  createdAt: string;
+  updatedAt: string;
+  studentId: string;
+  meetingId: string;
 }
