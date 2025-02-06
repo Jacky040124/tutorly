@@ -1,3 +1,5 @@
+'use server';
+
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as firebaseSignOut } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { initializeApp, getApps } from "firebase/app";
@@ -7,7 +9,6 @@ import { getStorage } from "firebase/storage";
 import { config } from "dotenv";
 import { createUserFromData, createNewStudent, createNewTeacher } from "@/types/user";
 import { User } from "@/types/user";
-import { Feedback } from "@/types/booking";
 // Firebase Service
 
 config();
@@ -27,11 +28,9 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-export { auth, db, storage };
-
 // Auth Service
 
-export interface authState {
+export type authState ={
   error: string | null;
   user: User | null;
 }
@@ -102,33 +101,9 @@ export const signOut = async () => {
   await firebaseSignOut(auth);
 };
 
-// Booking Service
+// Feedback Service
 
-export async function updateFeedback(bookingId: string, feedback: Feedback) {
-  try {
-    const bookingRef = doc(db, "bookings", bookingId);
-    await setDoc(
-      bookingRef,
-      {
-        feedback: {
-          rating: feedback.rating,
-          comment: feedback.comment,
-          studentId: feedback.studentId,
-          updatedAt: new Date().toISOString(),
-        },
-      },
-      { merge: true }
-    );
-
-    console.log("Successfully updated feedback");
-    return true;
-  } catch (error) {
-    console.error("Error updating feedback:", error);
-    throw error;
-  }
-}
-
-export interface FeedbackState {
+export type FeedbackState = {
   message: string;
   error: string | null;
 }
@@ -161,3 +136,95 @@ export async function addFeedback(prevState: FeedbackState, formData: FormData):
     return { message: "Error adding feedback", error: error as string };
   }
 }
+
+export async function deleteFeedback(bookingId: string) {
+  console.log("Deleting feedback:", { bookingId });
+
+  try {
+    const bookingRef = doc(db, "bookings", bookingId);
+    await setDoc(
+      bookingRef,
+      {
+        feedback: null,
+      },
+      { merge: true }
+    );
+
+    console.log("Successfully deleted feedback");
+    return true;
+  } catch (error) {
+    console.error("Error deleting feedback:", error);
+    throw error;
+  }
+}
+
+export async function updateBookingStatus(bookingId: string, newStatus: "completed" | "confirmed" | "cancelled") {
+  try {
+    const bookingRef = doc(db, "bookings", bookingId);
+    await setDoc(bookingRef, { status: newStatus }, { merge: true });
+    return true;
+  } catch (error) {
+    console.error("Error updating booking status:", error);
+    throw error;
+  }
+}
+
+// Homework Service
+
+export async function addHomework(prevState: any, formData: FormData): Promise<any> {
+  try {
+    const bookingId = formData.get("bookingId") as string;
+    const homeworkLink = formData.get("link") as string;
+
+    await setDoc(
+      doc(db, "bookings", bookingId),
+      {
+        homework: {
+          link: homeworkLink,
+          addedAt: new Date().toISOString(),
+        },
+      },
+      { merge: true }
+    );
+
+    return { message: "Homework added successfully", error: null };
+  } catch (error) {
+    return { message: "Error adding homework", error: error as string };
+  }
+}
+// Mail Service
+
+import { Resend } from "resend";
+import { ConfirmationEmailTemplate, FeedbackEmailTemplate } from "@/lib/EmailTemplate";
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+interface sendProps {
+  to: string;
+  content: string;
+  type: "bookingConfirmation" | "feedbackConfirmation";
+}
+
+export async function send(props: sendProps) {
+  try {
+    if (props.type === "bookingConfirmation") {
+      await resend.emails.send({
+        from: "MeetYourTutor <onboarding@resend.dev>",
+        to: [props.to],
+        subject: "Booking Confirmation - MeetYourTutor",
+        react: ConfirmationEmailTemplate({ content: props.content })
+      });
+    }
+
+    if (props.type === "feedbackConfirmation") {
+      await resend.emails.send({
+        from: "MeetYourTutor <onboarding@resend.dev>",
+        to: [props.to],
+        subject: "Feedback Confirmation - MeetYourTutor",
+        react: FeedbackEmailTemplate({ content: props.content })
+      });
+    }
+  } catch (error) {
+    console.error("Error sending email:", error);
+  }
+}
+

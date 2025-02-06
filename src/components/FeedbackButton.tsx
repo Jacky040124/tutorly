@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { sendMail } from '@/services/mail.service';
+import { send } from '@/app/action';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
@@ -21,13 +21,13 @@ export default function FeedbackButton() {
         setStatus('idle');
         
         try {
-            await sendMail({
+            await send({
                 to: process.env.NEXT_PUBLIC_ADMIN_EMAIL!,
-                subject: 'New Website Feedback',
                 content: `
                     <h2>New Feedback Received</h2>
                     <p>${message}</p>
                 `,
+                type: "feedbackConfirmation"
             });
 
             setStatus('success');

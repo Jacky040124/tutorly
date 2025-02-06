@@ -5,12 +5,11 @@ import { useUser } from "@/hooks/useUser";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, ExternalLink, Plus, Star } from "lucide-react";
+import { RefreshCw, ExternalLink, Star } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { updateBookingStatus, updateBookingHomework } from "@/services/booking.service";
-import { Input } from "@/components/ui/input";
+import { updateBookingStatus } from "@/app/action";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { filterBookingsByTime, convertToCalendarDate } from "@/lib/utils/calendarUtil";
 import { Booking } from "@/types/booking";
@@ -18,6 +17,7 @@ import { fetchUserNickname } from "@/services/user.service";
 import { useTranslations } from "next-intl";
 import { Teacher } from "@/types/user";
 import { EventClickArg } from '@fullcalendar/core';
+import TeacherHomeworkOverlay from "@/components/TeacherHomeworkOverlay";
 
 
 // Import plugins statically
@@ -72,7 +72,6 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
   const { user, availability, removeAvailability } = useUser();
   const [showUpcoming, setShowUpcoming] = useState(true);
   const [studentNames, setStudentNames] = useState<{ [key: string]: string }>({});
-  const [homeworkLink, setHomeworkLink] = useState("");
   const [slotToDelete, setSlotToDelete] = useState<any | null>(null);
 
   const t = useTranslations("Dashboard.Common");
@@ -90,20 +89,6 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
       }
     },
     []
-  );
-
-  const handleHomeworkSubmit = useCallback(
-    async (bookingId: string) => {
-      try {
-        await updateBookingHomework(bookingId, homeworkLink);
-        setHomeworkLink(""); // Reset input
-      } catch (error) {
-        if (error instanceof Error) {
-          console.error(`Error updating homework: ${error.message}`);
-        }
-      }
-    },
-    [homeworkLink]
   );
 
   // Fetch student names
@@ -386,40 +371,12 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
                     {!showUpcoming && (
                       <div className="flex items-center justify-between mt-2 text-sm">
                         <div className="flex items-center gap-2">
-                          {booking.homework ? (
-                            <a
-                              href={booking.homework.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1 text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors"
-                            >
-                              <ExternalLink className="h-3 w-3" />
-                              {tStudent("buttons.viewHomework")}
-                            </a>
-                          ) : (
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button variant="outline" size="sm" className="h-7">
-                                  <Plus className="h-3 w-3 mr-1" />
-                                  {tStudent("buttons.uploadHomework")}
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>{tStudent("buttons.uploadHomework")}</DialogTitle>
-                                </DialogHeader>
-                                <div className="flex gap-2">
-                                  <Input
-                                    placeholder={t("fields.placeholder.enter")}
-                                    value={homeworkLink}
-                                    onChange={(e) => setHomeworkLink(e.target.value)}
-                                  />
-                                  <Button onClick={() => handleHomeworkSubmit(booking.id)}>
-                                    {t("calendarOverlay.buttons.save")}
-                                  </Button>
-                                </div>
-                              </DialogContent>
-                            </Dialog>
+                          {!booking.homework && (
+                            <TeacherHomeworkOverlay 
+                              bookingId={booking.id}
+                              t={t}
+                              tStudent={tStudent}
+                            />
                           )}
 
                           {booking.feedback ? (

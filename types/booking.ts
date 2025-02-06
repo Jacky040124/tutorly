@@ -21,7 +21,12 @@ export interface Booking {
     link: string;
     addedAt: string;
   };
-  feedback?: Feedback;
+  feedback?: {
+    rating?: number;
+    comment?: string;
+    createdAt?: string;
+    updatedAt?: string;
+  };
 }
 
 export interface Feedback {

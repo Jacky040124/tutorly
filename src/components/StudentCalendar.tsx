@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { ExternalLink, Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { deleteFeedback } from "@/services/booking.service";
+import { deleteFeedback } from "@/app/action";
 import { useTeachers } from "@/hooks/useTeacher";
 import { Booking } from "@/types/booking";
 
@@ -409,9 +409,11 @@ export default function StudentCalendar({ selectedTeacher, weekOffset, setWeekOf
                               {booking.feedback.comment && (
                                 <p className="text-sm text-gray-600">{booking.feedback.comment}</p>
                               )}
-                              <p className="text-xs text-gray-500">
-                                Last updated: {new Date(booking.feedback.updatedAt).toLocaleDateString()}
-                              </p>
+                              {booking.feedback?.updatedAt && (
+                                <p className="text-xs text-gray-500">
+                                  Last updated: {new Date(booking.feedback.updatedAt).toLocaleDateString()}
+                                </p>
+                              )}
                             </div>
                           ) : (
                             <Button

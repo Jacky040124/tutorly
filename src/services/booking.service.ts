@@ -1,8 +1,41 @@
 import { doc, runTransaction, collection, query, where, getDocs, setDoc } from "firebase/firestore";
 import { db } from "./firebase";
-import { sendMail, generateBookingConfirmationEmail } from "./mail.service";
+import { send } from "@/app/action";
 import { Booking } from "../../types/booking";
 import { Event } from "../../types/event";
+import { formatTime } from "@/lib/utils/timeUtils";
+
+function generateBookingConfirmationEmail(booking: Booking | Booking[], teacherData: TeacherData) {
+  const isMultipleBookings = Array.isArray(booking);
+  const bookings = isMultipleBookings ? booking : [booking];
+
+  const formatBookingDetails = (b: any) => `
+    <li style="margin-bottom: 10px;">
+      Date: ${b.date.day}/${b.date.month}/${b.date.year}<br>
+      Time: ${formatTime(b.startTime)} - ${formatTime(b.endTime)}<br>
+      ${b.link ? `Zoom Link: <a href="${b.link}">${b.link}</a>` : ""}
+    </li>
+  `;
+
+  return `
+    <h1>Booking Confirmation</h1>
+    <p>Your booking with ${teacherData.nickname} has been confirmed.</p>
+    
+    <h2>Booking Details:</h2>
+    <ul style="list-style: none; padding: 0;">
+      ${bookings.map(formatBookingDetails).join("")}
+    </ul>
+
+    <p>Price per lesson: $${teacherData.pricing}</p>
+    ${
+      isMultipleBookings ? `<p>Total for ${bookings.length} lessons: $${teacherData.pricing * bookings.length}</p>` : ""
+    }
+    
+    <p>Please e-transfer the payment to: ${teacherData.email}</p>
+    
+    <p>Thank you for booking with us!</p>
+  `;
+}
 
 type BookingWithId = Booking & { id: string };
 
@@ -36,7 +69,7 @@ async function checkForExistingBooking(booking: Booking) {
   return !querySnapshot.empty;
 }
 
-export async function confirmBooking(bookings : Booking[], availability: Event[]) {
+export async function confirmBooking(bookings: Booking[], availability: Event[]) {
   try {
     const bookingsArray = Array.isArray(bookings) ? bookings : [bookings];
 
@@ -44,7 +77,9 @@ export async function confirmBooking(bookings : Booking[], availability: Event[]
     for (const booking of bookingsArray) {
       const hasExistingBooking = await checkForExistingBooking(booking);
       if (hasExistingBooking) {
-        throw new Error(`You have already booked this time slot on ${booking.date.day}/${booking.date.month}/${booking.date.year} at ${booking.startTime}:00`);
+        throw new Error(
+          `You have already booked this time slot on ${booking.date.day}/${booking.date.month}/${booking.date.year} at ${booking.startTime}:00`
+        );
       }
     }
 
@@ -68,11 +103,12 @@ export async function confirmBooking(bookings : Booking[], availability: Event[]
           );
 
           // Find the corresponding availability slot
-          const availabilitySlot = updatedAvailability.find(slot => 
-            slot.date.year === booking.date.year &&
-            slot.date.month === booking.date.month &&
-            slot.date.day === booking.date.day &&
-            slot.startTime === booking.startTime
+          const availabilitySlot = updatedAvailability.find(
+            (slot) =>
+              slot.date.year === booking.date.year &&
+              slot.date.month === booking.date.month &&
+              slot.date.day === booking.date.day &&
+              slot.startTime === booking.startTime
           );
 
           if (!availabilitySlot) {
@@ -82,21 +118,22 @@ export async function confirmBooking(bookings : Booking[], availability: Event[]
           // Add student to enrolledStudentIds
           const updatedSlot = {
             ...availabilitySlot,
-            enrolledStudentIds: [...(availabilitySlot.enrolledStudentIds || []), booking.studentId]
+            enrolledStudentIds: [...(availabilitySlot.enrolledStudentIds || []), booking.studentId],
           };
 
           // Update or remove the availability slot based on enrollment
           if (updatedSlot.enrolledStudentIds.length >= (updatedSlot.maxStudents || 1)) {
             // Remove the slot if it's full
-            updatedAvailability = updatedAvailability.filter(slot => 
-              slot.date.year !== booking.date.year ||
-              slot.date.month !== booking.date.month ||
-              slot.date.day !== booking.date.day ||
-              slot.startTime !== booking.startTime
+            updatedAvailability = updatedAvailability.filter(
+              (slot) =>
+                slot.date.year !== booking.date.year ||
+                slot.date.month !== booking.date.month ||
+                slot.date.day !== booking.date.day ||
+                slot.startTime !== booking.startTime
             );
           } else {
             // Update the slot with new enrolledStudentIds
-            updatedAvailability = updatedAvailability.map(slot => 
+            updatedAvailability = updatedAvailability.map((slot) =>
               slot.date.year === booking.date.year &&
               slot.date.month === booking.date.month &&
               slot.date.day === booking.date.day &&
@@ -127,7 +164,7 @@ export async function confirmBooking(bookings : Booking[], availability: Event[]
   } catch (error) {
     console.error("Error in confirmBooking:", {
       error,
-      bookings: Array.isArray(bookings) 
+      bookings: Array.isArray(bookings)
         ? bookings.map((b) => ({ ...b, hasLink: !!b.link }))
         : [{ ...(bookings as Booking), hasLink: !!(bookings as Booking).link }],
     });
@@ -137,7 +174,6 @@ export async function confirmBooking(bookings : Booking[], availability: Event[]
 
 export async function getTeacherBookings(teacherId: string) {
   try {
-
     const bookingsRef = collection(db, "bookings");
     const q = query(bookingsRef, where("teacherId", "==", teacherId), where("status", "==", "confirmed"));
 
@@ -228,16 +264,16 @@ export async function handleBookingConfirmed(
 
     try {
       const emailContent = generateBookingConfirmationEmail(bookings, teacherData);
-      await sendMail({
-        to: userEmail,
-        subject: "Booking Confirmation - MeetYourTutor",
-        content: emailContent
+      await send({
+        to: teacherData.email,
+        content: emailContent,
+        type: "bookingConfirmation",
       });
       console.log("teacherData.email:", teacherData.email);
-      await sendMail({
-        to: teacherData.email,
-        subject: "Booking Confirmation - MeetYourTutor",
-        content: emailContent
+      await send({
+        to: userEmail,
+        content: emailContent,
+        type: "bookingConfirmation",
       });
     } catch (emailError) {
       console.error("Email sending failed:", emailError);
@@ -248,112 +284,6 @@ export async function handleBookingConfirmed(
     return result;
   } catch (error) {
     console.error("Booking confirmation failed:", error);
-    throw error;
-  }
-}
-
-export async function addFeedback(bookingId: string, feedback: FeedbackData) {
-  console.log("Adding feedback:", { bookingId, feedback });
-
-  try {
-    const bookingRef = doc(db, "bookings", bookingId);
-    await setDoc(
-      bookingRef,
-      {
-        feedback: {
-          rating: feedback.rating,
-          comment: feedback.comment,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          studentId: feedback.studentId,
-          meetingId: bookingId,
-        },
-      },
-      { merge: true }
-    );
-
-    console.log("Successfully added feedback");
-    return true;
-  } catch (error) {
-    console.error("Error adding feedback:", error);
-    throw error;
-  }
-}
-
-export async function updateFeedback(bookingId: string, feedback: FeedbackData) {
-  try {
-    const bookingRef = doc(db, "bookings", bookingId);
-    await setDoc(
-      bookingRef,
-      {
-        feedback: {
-          rating: feedback.rating,
-          comment: feedback.comment,
-          studentId: feedback.studentId,
-          updatedAt: new Date().toISOString(),
-        },
-      },
-      { merge: true }
-    );
-
-    console.log("Successfully updated feedback");
-    return true;
-  } catch (error) {
-    console.error("Error updating feedback:", error);
-    throw error;
-  }
-}
-
-export async function deleteFeedback(bookingId: string) {
-  console.log("Deleting feedback:", { bookingId });
-
-  try {
-    const bookingRef = doc(db, "bookings", bookingId);
-    await setDoc(
-      bookingRef,
-      {
-        feedback: null,
-      },
-      { merge: true }
-    );
-
-    console.log("Successfully deleted feedback");
-    return true;
-  } catch (error) {
-    console.error("Error deleting feedback:", error);
-    throw error;
-  }
-}
-
-export async function updateBookingStatus(bookingId: string, newStatus: "completed" | "confirmed" | "cancelled") {
-  try {
-    const bookingRef = doc(db, "bookings", bookingId);
-    await setDoc(bookingRef, { status: newStatus }, { merge: true });
-    return true;
-  } catch (error) {
-    console.error("Error updating booking status:", error);
-    throw error;
-  }
-}
-
-export async function updateBookingHomework(bookingId: string, homeworkLink: string) {
-  try {
-    const bookingRef = doc(db, "bookings", bookingId);
-    await setDoc(
-      bookingRef,
-      {
-        homework: {
-          link: homeworkLink,
-          addedAt: new Date().toISOString(),
-        },
-      },
-      { merge: true }
-    );
-
-    console.log("Successfully updated homework");
-    return true;
-  } catch (error) {
-    console.error("Error updating homework:", error);
     throw error;
   }
 }
