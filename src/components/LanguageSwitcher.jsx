@@ -7,16 +7,8 @@ import { useUser } from '@/hooks/useUser';
 export default function LanguageSwitcher() {
   const locale = useLocale();
   const router = useRouter();
-  const { user, updateUserSettings } = useUser();
 
   const changeLanguage = async (newLocale) => {
-    // Set the locale in user settings if logged in
-    if (user) {
-      await updateUserSettings({ locale: newLocale });
-    }
-    
-    // Set the locale in localStorage for persistence
-    localStorage.setItem('locale', newLocale);
     
     // Refresh the page to update translations
     router.refresh();

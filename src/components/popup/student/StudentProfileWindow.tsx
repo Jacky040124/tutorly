@@ -3,7 +3,7 @@ import { useUser } from "@/hooks/useUser";
 import { useOverlay } from "@/hooks/useOverlay";
 import { useNotification } from "@/hooks/useNotification";
 import { updateStudentProfile } from "@/services/user.service";
-import { uploadImage } from "@/services/storage.service";
+import { uploadImage } from "@/app/action";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

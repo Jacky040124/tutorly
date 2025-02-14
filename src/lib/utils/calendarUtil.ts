@@ -9,12 +9,6 @@ interface CalendarConfig {
   INTERVALS_PER_HOUR: number;
 }
 
-interface TimeSlot {
-  hour: number;
-  displayHour: number;
-  ampm: string;
-}
-
 interface DateObject {
   year: number;
   month: number;
@@ -36,25 +30,7 @@ export const CALENDAR_CONFIG: CalendarConfig = {
   INTERVALS_PER_HOUR: 12,
 };
 
-export const TOTAL_INTERVALS = CALENDAR_CONFIG.HOURS_TO_DISPLAY * CALENDAR_CONFIG.INTERVALS_PER_HOUR;
-export const HEADER_OFFSET = 2;
 
-export const calculateGridPosition = {
-  startRow: (hour: number): number => 
-    (hour - CALENDAR_CONFIG.START_HOUR) * CALENDAR_CONFIG.INTERVALS_PER_HOUR + HEADER_OFFSET,
-  duration: (startTime: number, endTime: number): number => 
-    (endTime - startTime) * CALENDAR_CONFIG.INTERVALS_PER_HOUR,
-};
-
-export const generateTimeLabels = (): TimeSlot[] => {
-  const timeSlots: TimeSlot[] = [];
-  for (let hour = CALENDAR_CONFIG.START_HOUR; hour < CALENDAR_CONFIG.END_HOUR; hour++) {
-    const displayHour = hour % 12 || 12;
-    const ampm = hour >= 12 ? "PM" : "AM";
-    timeSlots.push({ hour, displayHour, ampm });
-  }
-  return timeSlots;
-};
 
 export function isWithinWeek(date: Date, monday: DateObject, sunday: DateObject): boolean {
   return date >= normalizeToMidnight(monday) && date <= normalizeToMidnight(sunday);

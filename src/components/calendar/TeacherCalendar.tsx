@@ -17,7 +17,7 @@ import { fetchUserNickname } from "@/services/user.service";
 import { useTranslations } from "next-intl";
 import { Teacher } from "@/types/user";
 import { EventClickArg } from '@fullcalendar/core';
-import TeacherHomeworkOverlay from "@/components/TeacherHomeworkOverlay";
+import TeacherProfileWindow from "@/components/popup/teacher/ProfileWindow";
 
 
 // Import plugins statically
@@ -264,20 +264,20 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
                   allDaySlot={false}
                   slotDuration="01:00:00"
                   slotLabelFormat={{
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    hour12: false
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: false,
                   }}
                   dayHeaderFormat={{
-                    weekday: 'short',
-                    month: 'numeric',
-                    day: 'numeric',
-                    omitCommas: true
+                    weekday: "short",
+                    month: "numeric",
+                    day: "numeric",
+                    omitCommas: true,
                   }}
                   eventTimeFormat={{
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    hour12: false
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: false,
                   }}
                   expandRows={true}
                   stickyHeaderDates={true}
@@ -372,11 +372,7 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
                       <div className="flex items-center justify-between mt-2 text-sm">
                         <div className="flex items-center gap-2">
                           {!booking.homework && (
-                            <TeacherHomeworkOverlay 
-                              bookingId={booking.id}
-                              t={t}
-                              tStudent={tStudent}
-                            />
+                            <TeacherProfileWindow bookingId={booking.id} t={t} tStudent={tStudent} />
                           )}
 
                           {booking.feedback ? (

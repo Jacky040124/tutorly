@@ -1,14 +1,20 @@
-'use server';
+"use server";
 
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as firebaseSignOut } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { initializeApp, getApps } from "firebase/app";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { config } from "dotenv";
-import { createUserFromData, createNewStudent, createNewTeacher } from "@/types/user";
-import { User } from "@/types/user";
+import { Teacher, createNewTeacher, createTeacherFromData, TeacherDetails } from "@/types/teacher";
+import { Student, createNewStudent, createStudentFromData } from "@/types/student";
+import { Resend } from "resend";
+import { ConfirmationEmailTemplate, FeedbackEmailTemplate } from "@/lib/EmailTemplate";
+import { createEvent } from "@/types/event";
+import { parseEventDateTime } from "@/lib/utils";
+
 // Firebase Service
 
 config();
@@ -30,10 +36,10 @@ const storage = getStorage(app);
 
 // Auth Service
 
-export type authState ={
+export type authState = {
   error: string | null;
-  user: User | null;
-}
+  user: Teacher | Student | null;
+};
 
 export const signIn = async (prevState: authState, formData: FormData): Promise<authState> => {
   const email = formData.get("email");
@@ -44,14 +50,26 @@ export const signIn = async (prevState: authState, formData: FormData): Promise<
   const docSnap = await getDoc(docRef);
   const userData = docSnap.data();
 
+  
   if (!docSnap.exists() || !userData) {
     return { error: "User data not found", user: null };
   }
 
-  return {
-    user: createUserFromData(userData),
-    error: null,
-  };
+  if (userData && userData.type === "teacher") {
+    return {
+      user: createTeacherFromData(userData as Teacher),
+      error: null,
+    };
+  }
+
+  if (userData && userData.type === "student") {
+    return {
+      user: createStudentFromData(userData),
+      error: null,
+    };
+  }
+
+  return { error: "Invalid user type", user: null };
 };
 
 export const signUpStudent = async (prevState: authState, formData: FormData): Promise<authState> => {
@@ -106,7 +124,7 @@ export const signOut = async () => {
 export type FeedbackState = {
   message: string;
   error: string | null;
-}
+};
 
 export async function addFeedback(prevState: FeedbackState, formData: FormData): Promise<FeedbackState> {
   try {
@@ -194,8 +212,6 @@ export async function addHomework(prevState: any, formData: FormData): Promise<a
 }
 // Mail Service
 
-import { Resend } from "resend";
-import { ConfirmationEmailTemplate, FeedbackEmailTemplate } from "@/lib/EmailTemplate";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface sendProps {
@@ -211,7 +227,7 @@ export async function send(props: sendProps) {
         from: "MeetYourTutor <onboarding@resend.dev>",
         to: [props.to],
         subject: "Booking Confirmation - MeetYourTutor",
-        react: ConfirmationEmailTemplate({ content: props.content })
+        react: ConfirmationEmailTemplate({ content: props.content }),
       });
     }
 
@@ -220,11 +236,174 @@ export async function send(props: sendProps) {
         from: "MeetYourTutor <onboarding@resend.dev>",
         to: [props.to],
         subject: "Feedback Confirmation - MeetYourTutor",
-        react: FeedbackEmailTemplate({ content: props.content })
+        react: FeedbackEmailTemplate({ content: props.content }),
       });
     }
   } catch (error) {
     console.error("Error sending email:", error);
   }
+}
+
+// Storage Service
+
+interface UploadImageResult {
+  downloadUrl: string;
+  path: string;
+}
+
+export async function downloadFileFromUrl(path: string): Promise<string> {
+  try {
+    const storageRef = ref(storage, path);
+    const downloadUrl = await getDownloadURL(storageRef);
+    return downloadUrl;
+  } catch (error) {
+    console.error("Error in downloadFileFromUrl:", error);
+    if (error instanceof Error) {
+      throw new Error(`Failed to get download URL: ${error.message}`);
+    }
+    throw new Error("Failed to get download URL: Unknown error occurred");
+  }
+}
+
+export async function uploadImage(file: File, userId: string): Promise<UploadImageResult> {
+  try {
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      throw new Error("Invalid file type. Please upload an image file.");
+    }
+
+    // Validate file size (max 5MB)
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > MAX_SIZE) {
+      throw new Error("File size too large. Maximum size is 5MB.");
+    }
+    
+    const timestamp = Date.now();
+    const fileName = `${timestamp}_${file.name}`;
+    const path = `avatars/${fileName}`;
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file);
+    const downloadUrl = await getDownloadURL(storageRef);
+
+    const teacherRef = doc(db, "users", userId);
+    await setDoc(teacherRef, { details: { photoURL: downloadUrl } }, { merge: true });
+
+    return {
+      downloadUrl,
+      path,
+    };
+
+  } catch (error) {
+    console.error("Error in uploadImage:", error);
+    if (error instanceof Error) {
+      throw new Error(`Failed to upload image: ${error.message}`);
+    }
+    throw new Error("Failed to upload image: Unknown error occurred");
+  }
+}
+
+// Student Service
+
+// Teacher Service
+
+interface EventState {
+  events: Event[];
+  error: string | null;
+}
+
+export async function addEvent(prevState: EventState, formData: FormData): Promise<EventState> {
+  try {
+    const userId = formData.get("userId") as string;
+    const isRepeating = formData.get("isRepeating") as string;
+    const date = formData.get("date") as string;
+    const numberOfClasses = formData.get("numberOfClasses") as string;
+    const events = JSON.parse(formData.get("events") as string) as Event[];
+    const title = formData.get("title") as string;
+    const startTime = formData.get("startTime") as string;
+    const endTime = formData.get("endTime") as string;
+    const meetingLinks = formData.get("meetingLinks") as string;
+    const maxStudents = formData.get("maxStudents") as string;
+
+    // events generation logic
+    const baseDate = new Date(date);
+    const generatedEvents = Array.from({ length: Number(numberOfClasses) }, (_, index) => {
+      const eventDate = new Date(baseDate);
+      eventDate.setDate(baseDate.getDate() + index * 7); // Add weeks
+
+      return createEvent({
+        isRecurring: isRepeating === "true",
+        date: parseEventDateTime(eventDate.toISOString(), startTime, endTime),
+        title: title,
+        meeting_link: meetingLinks,
+        maxStudents: Number(maxStudents),
+      });
+    });
+
+    const newEvents = [...events, ...generatedEvents];
+
+    const teacherRef = doc(db, "users", userId);
+    await setDoc(teacherRef, { events: newEvents }, { merge: true });
+    const docSnap = await getDoc(teacherRef);
+    const userData = docSnap.data();
+
+    if (!docSnap.exists() || !userData) {
+      return { error: "Failed to update teacher data", events: [] };
+    }
+
+    return {
+      events: newEvents as Event[],
+      error: null,
+    };
+  } catch (error) {
+    return {
+      events: prevState.events,
+      error: error instanceof Error ? error.message : "Failed to add event",
+    };
+  }
+}
+
+
+export interface UpdateTeacherProfileState {
+  error: string | null;
+  updatedProfile: TeacherDetails | null;
+}
+
+export async function updateTeacherProfile(prevState: UpdateTeacherProfileState, formData: FormData) {
+    const userId = formData.get("userId") as string;
+    const nickname = formData.get("nickname") as string;
+    const description = formData.get("description") as string;
+    const expertise = formData.get("expertise") as string;
+    const education = formData.get("education") as string;
+    const experience = formData.get("experience") as string;
+    const teachingStyle = formData.get("teachingStyle") as string;
+    const pricing = Number(formData.get("pricing")) || 0;
+
+    try {
+        const updatedDetails: TeacherDetails = {
+            nickname,
+            description,
+            expertise,
+            education,
+            experience,
+            teachingStyle,
+            pricing,
+        }
+    
+        console.log("updatedProfile", updatedDetails);
+        const teacherRef = doc(db, "users", userId);
+
+        await setDoc(teacherRef, { details: updatedDetails }, { merge: true });
+
+        return {
+            error: null,
+            updatedProfile: updatedDetails,
+        }
+    } catch (error) {
+        return {
+            error: error instanceof Error ? error.message : "Failed to update teacher profile",
+            updatedProfile: prevState.updatedProfile,
+        };
+    }
 }
 

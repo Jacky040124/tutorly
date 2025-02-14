@@ -1,16 +1,15 @@
 "use client";
 
 import { useUser } from "@/hooks/useUser";
-import TeacherCalendar from "@/components/TeacherCalendar";
-import TeacherProfileOverlay from "@/components/TeacherProfileOverlay";
+import TeacherCalendar from "@/components/calendar/TeacherCalendar";
+import ProfileWindow from "@/components/popup/teacher/ProfileWindow";
 import { useOverlay } from "@/hooks/useOverlay";
 import { useTranslations } from "next-intl";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, UserCircle, Plus } from "lucide-react";
-import AddEventOverlay from "@/components/AddEventOverlay";
-import { useBooking } from "@/hooks/useBooking";
+import AddEventWindow from "@/components/popup/teacher/AddEventWindow";
 
 interface TeacherDashboardProps {
   params: {
@@ -22,7 +21,6 @@ export default function TeacherDashboard({ params }: TeacherDashboardProps) {
   const { user } = useUser();
   const t = useTranslations("Dashboard.Teacher");
   const tCommon = useTranslations("Dashboard.Common");
-  const { bookings } = useBooking();
   const { showTeacherProfileOverlay, setShowTeacherProfileOverlay, showAddEventOverlay, setShowAddEventOverlay } =
     useOverlay();
 
@@ -80,14 +78,11 @@ export default function TeacherDashboard({ params }: TeacherDashboardProps) {
         </div>
       </div>
 
-      {/* Calendar Section */}
-      <TeacherCalendar bookings={bookings} />
-
       {/* Profile Overlay */}
-      {showTeacherProfileOverlay && <TeacherProfileOverlay />}
+      {showTeacherProfileOverlay && <ProfileWindow />}
 
       {/* Add Event Overlay */}
-      {showAddEventOverlay && <AddEventOverlay />}
+      {showAddEventOverlay && <AddEventWindow />}
     </div>
   );
 }

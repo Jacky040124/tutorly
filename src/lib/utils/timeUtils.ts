@@ -91,37 +91,8 @@ export function getWeekBounds(weekOffset: number): WeekBounds {
     };
 }
 
-export const timeToDecimal = (time: string): number | null => {
-    if (!time) return null;
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours + (minutes / 60);
-};
-
 export const formatTime = (time: number): string => {
     const hours = Math.floor(time);
     const minutes = (time % 1) * 60;
     return `${hours}:${minutes === 0 ? '00' : minutes}`;
 }; 
-
-
-export function calculateSelectedDate(day: number, weekOffset: number): DateObject {
-    const today = new Date();
-    const monday = new Date(today);
-    monday.setDate(monday.getDate() - monday.getDay() + 1 + (weekOffset * 7));
-    
-    const selectedDate = new Date(monday);
-    selectedDate.setDate(monday.getDate() + (day - 1));
-    
-    return {
-        year: selectedDate.getFullYear(),
-        month: selectedDate.getMonth() + 1,
-        day: selectedDate.getDate()
-    };
-}
-
-
-export const calculateGridPositions = (startTime: number, endTime: number): GridPositions => {
-    const startRow = (startTime * 12) + 2;
-    const spanRows = (endTime - startTime) * 12;
-    return { startRow, spanRows };
-};

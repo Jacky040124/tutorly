@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import StudentCalendar from "@/components/StudentCalendar";
-import StudentProfileOverlay from "@/components/StudentProfileOverlay";
+import StudentProfileOverlay from "@/components/popup/StudentProfileWindow";
 import { useOverlay } from "@/hooks/useOverlay";
 import { useTranslations } from 'next-intl';
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -19,6 +19,7 @@ interface StudentDashboardProps {
   };
 }
 
+// TODO: Chagne student page to a multi page app for better seperation of logic
 export default function StudentDashboard({ params }: StudentDashboardProps) {
   const { user } = useUser();
   const [selectedTeacher, setSelectedTeacher] = useState<string>("default");

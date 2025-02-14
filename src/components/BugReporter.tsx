@@ -8,7 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { MessageCircle } from 'lucide-react';
 
-export default function FeedbackButton() {
+
+export default function BugReporter() {
     const t = useTranslations('BugReport');
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState('');

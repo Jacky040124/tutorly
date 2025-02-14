@@ -1,50 +1,100 @@
-export type EventDate = {
-  day: number;    // The day of the month
-  month: number;  // The month (1-12)
-  year: number;   // The full year
-};
-
-export type Event = {
+export interface Event {
+  id: string;
   title: string;
-  date: EventDate;
-  startTime: number; // Start hour of the event (0-23)
-  endTime: number; // End hour of the event (0-23)
-  meeting_link: string; // Zoom meeting link for the event
+  bulkId?: string;
+  createdAt: string;
+  date: {
+    day: number;
+    month: number;
+    year: number;
+    startTime: number;
+    endTime: number;
+  };
+  isRecurring: boolean;
+  maxStudents: number;
+  enrolledStudentIds: string[];
 
-  maxStudents: number; // Maximum number of students allowed to enroll
-  enrolledStudentIds: string[]; // Array of student IDs who have enrolled
+  status: "completed" | "confirmed" | "cancelled" | "available";
+  lessonNumber?: number;
+  meeting_link: string;
+  price: number;
 
-  isRepeating: boolean; // Whether this is a repeating event
-  repeatGroupId: string; // Unique identifier for repeating events group
-  repeatIndex: number; // Index of this event in the repeating sequence
-  totalClasses: number; // Total number of classes in repeating sequence
+  bookingDetails?: {
+    studentId: string;
+    teacherId: string;
+
+    repeatInfo?: {
+      repeatGroupId: string; // Unique identifier for repeating events group
+      repeatIndex: number; // Index of this event in the repeating sequence
+      totalClasses: number; // Total number of classes in repeating sequence
+    };
+
+    homework?: {
+      link: string;
+      addedAt: string;
+    };
+
+    feedback?: {
+      rating?: number;
+      comment?: string;
+      createdAt?: string;
+      updatedAt?: string;
+    };
+  };
+}
+
+export const createEmptyEvent = (): Event => {
+  return {
+    id: '',
+    title: '',
+    createdAt: new Date().toISOString(),
+    date: {
+      day: 1,
+      month: 1,
+      year: new Date().getFullYear(),
+      startTime: 0,
+      endTime: 0,
+    },
+    isRecurring: false,
+    maxStudents: 1,
+    enrolledStudentIds: [],
+    status: 'available',
+    meeting_link: '',
+    price: 0
+  };
 };
 
-export type CalendarEvent = {
-  id: string;           // Unique identifier for the event
-  calendarId: string;   // ID of the calendar this event belongs to
-  title: string;        // Display title of the event
-  category: string;     // Event category (e.g., "time")
-  start: Date;         // Start date and time
-  end: Date;           // End date and time
-  isReadOnly: boolean;  // Whether the event can be modified
-  raw: Event;          // Raw event data
+export interface CreateEventData {
+  title?: string;
+  date?: {
+    day?: number;
+    month?: number;
+    year?: number;
+    startTime?: number;
+    endTime?: number;
+  };
+  maxStudents?: number;
+  price?: number;
+  meeting_link?: string;
+  isRecurring?: boolean;
+  bulkId?: string;
+  lessonNumber?: number;
+}
+
+export const createEvent = (data: CreateEventData): Event => {
+  const defaultEvent = createEmptyEvent();
+  
+  return {
+    ...defaultEvent,
+    ...data,
+    date: {
+      ...defaultEvent.date,
+      ...data.date
+    },
+    createdAt: new Date().toISOString(), // Always use current timestamp
+    id: crypto.randomUUID() // Generate a unique ID
+  };
 };
 
-// This type is used in the calendar utility functions
-export type TimeSlot = {
-  hour: number;
-  displayHour: number;
-  ampm: string;
-};
 
-// This represents the configuration for calendar display
-export type CalendarConfig = {
-  START_HOUR: number;
-  END_HOUR: number;
-  HOURS_TO_DISPLAY: number;
-  INTERVALS_PER_HOUR: number;
-};
-
-export {};
 

@@ -8,7 +8,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { Suspense } from "react";
 import Loading from "./loading";
-import FeedbackButton from '@/components/FeedbackButton';
+import BugReporter from "@/components/BugReporter";
 import { Toaster } from "@/components/ui/toaster";
 import { UserProvider } from "@/hooks/useUser";
 
@@ -50,8 +50,8 @@ export default async function RootLayout({ children, params }: RootLayoutProp) {
         <UserProvider>
           <ClientLayout>
             <NextIntlClientProvider messages={messages}>
-              <Suspense fallback={<Loading/>}>{children}</Suspense>
-              <FeedbackButton />
+              <Suspense fallback={<Loading />}>{children}</Suspense>
+              <BugReporter />
             </NextIntlClientProvider>
           </ClientLayout>
         </UserProvider>

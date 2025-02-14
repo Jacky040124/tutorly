@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useTranslations } from "next-intl";
 import { useEffect,useActionState } from "react";
 import { authState } from "@/app/action";
-import { User } from "@/types/user";
+import { Student } from "@/types/student";
 
 export default function SignIn() {
   const t = useTranslations("Auth.SignIn");
@@ -20,7 +20,7 @@ export default function SignIn() {
 
   useEffect(() => {
     if (state.user) {
-      setUser(state.user as User);
+      setUser(state.user as Student);
       router.push(`/dashboard/${state.user.type}/${state.user.uid}`);
     }
   }, [state]);

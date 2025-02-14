@@ -181,12 +181,13 @@
     "pricingPlaceholder": "Enter your hourly rate",
     "buttons": {
       "save": "Save",
+      "saving": "Saving...",
       "cancel": "Cancel"
     },
     "updateSuccess": "Profile updated successfully",
     "updateError": "Failed to update profile",
-    "imageUploadSuccess": "Profile image uploaded successfully",
-    "imageUploadError": "Failed to upload profile image"
+    "imageUploadSuccess": "Image uploaded successfully",
+    "imageUploadError": "Failed to upload image"
   },
   "Calendar": {
     "navigation": {
