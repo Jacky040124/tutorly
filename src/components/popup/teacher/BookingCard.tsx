@@ -1,8 +1,5 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ExternalLink, Star } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import EventWindow from "@/components/popup/teacher/EventWindow";
 import { Event } from "@/types/event";
 import { useState } from "react";
@@ -18,7 +15,6 @@ interface BookingCardProps {
 // TODO : add delete event button
 export function BookingCard({ events }: BookingCardProps) {
   const [showEventWindow, setShowEventWindow] = useState(false);
-
   const t = useTranslations("Dashboard.Teacher");
 
   return (

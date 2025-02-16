@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@/hooks/useUser";
-import TeacherCalendar from "@/components/TeacherCalendar";
+import Calendar from "@/components/popup/teacher/Calendar";
 import ProfileWindow from "@/components/popup/teacher/ProfileWindow";
 import { useOverlay } from "@/hooks/useOverlay";
 import { useTranslations } from "next-intl";
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { CalendarIcon, UserCircle, Plus } from "lucide-react";
 import AddEventWindow from "@/components/popup/teacher/AddEventWindow";
 import { Teacher } from "@/types/teacher";
-import { BookingCard } from "@/components/BookingCard";
+import { BookingCard } from "@/components/popup/teacher/BookingCard";
 
 interface TeacherDashboardProps {
   params: {
@@ -90,7 +90,7 @@ export default function TeacherDashboard({ params }: TeacherDashboardProps) {
       <div className="grid grid-cols-12 gap-6 flex-1 min-h-0">
         {/* Calendar */}
         <div className="col-span-9 h-full">
-          <TeacherCalendar teacher={teacher} />
+          <Calendar teacher={teacher} />
         </div>
 
         {/* Booking Card */}

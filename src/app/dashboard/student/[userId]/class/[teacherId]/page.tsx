@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useTeachers } from "@/hooks/useTeacher";
 import { Teacher } from "@/types/teacher";
-import TeacherCalendar from "@/components/TeacherCalendar";
+import Calendar from "@/components/popup/teacher/Calendar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
@@ -18,6 +18,8 @@ export default function Store() {
     return <div>Teacher not found</div>;
   }
 
+
+  
   return (
     <div className="container mx-auto py-4 space-y-4">
       <Card className="overflow-hidden">
@@ -34,9 +36,7 @@ export default function Store() {
             </div>
             <div className="text-center">
               <h2 className="text-2xl font-bold">{teacher.details.nickname}</h2>
-              <p className="text-lg text-muted-foreground mb-3">
-                ${teacher.details.pricing}/hour
-              </p>
+              <p className="text-lg text-muted-foreground mb-3">${teacher.details.pricing}/hour</p>
               <div className="flex flex-wrap justify-center gap-1.5">
                 {teacher.details.expertise.split(",").map((skill, index) => (
                   <Badge key={index} variant="secondary" className="text-xs">
@@ -82,12 +82,12 @@ export default function Store() {
                 </section>
               </div>
             </div>
-          </div>
+          </div>    
         </div>
       </Card>
 
       <div className="h-[800px]">
-        <TeacherCalendar teacher={teacher} />
+        <Calendar teacher={teacher} />
       </div>
     </div>
   );

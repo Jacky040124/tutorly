@@ -4,7 +4,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { Teacher } from "@/types/teacher";
 import { adaptToCalendarEvent } from "@/lib/utils";
 
-export default function TeacherCalendar({ teacher }: { teacher: Teacher }) {
+export default function Calendar({ teacher }: { teacher: Teacher }) {
   const events = teacher.events;
   const calendarEvents = events.map(adaptToCalendarEvent);
 
