@@ -97,3 +97,25 @@ export const adaptToCalendarEvent = (event: Event): CalendarEvent => {
     end: endDate,
   };
 };
+
+export function parseCommaSeparatedValue(value: string): string[] {
+  return value
+    .split(",")
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
+export function handleTagInput(
+  e: React.KeyboardEvent<HTMLInputElement>,
+  currentTags: string[],
+  setTags: (tags: string[]) => void
+) {
+  if (e.key === "Enter" || e.key === ",") {
+    e.preventDefault();
+    const value = (e.target as HTMLInputElement).value.trim();
+    if (value && !currentTags.includes(value)) {
+      setTags([...currentTags, value]);
+      (e.target as HTMLInputElement).value = "";
+    }
+  }
+}

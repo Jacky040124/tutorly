@@ -10,6 +10,7 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
+    "@fullcalendar/bootstrap5": "^6.1.15",
     "@fullcalendar/core": "^6.1.15",
     "@fullcalendar/daygrid": "^6.1.15",
     "@fullcalendar/interaction": "^6.1.15",
@@ -34,6 +35,8 @@
     "@sendgrid/mail": "^8.1.4",
     "@types/react-window": "^1.8.8",
     "@uploadthing/react": "^7.1.5",
+    "bootstrap": "^5.3.3",
+    "bootswatch": "^5.3.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^2.30.0",

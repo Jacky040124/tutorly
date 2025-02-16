@@ -13,6 +13,9 @@ interface BookingCardProps {
   events: Event[];
 }
 
+
+// TODO : fix data refetch after update
+// TODO : add delete event button
 export function BookingCard({ events }: BookingCardProps) {
   const [showEventWindow, setShowEventWindow] = useState(false);
 

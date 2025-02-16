@@ -4,7 +4,6 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { useUser } from "@/hooks/useUser";
 import { Teacher } from "@/types/teacher";
 import { adaptToCalendarEvent } from "@/lib/utils";
-
 export default function TeacherCalendar() {
   const { user } = useUser();
   const teacher = user as Teacher;
@@ -14,10 +13,11 @@ export default function TeacherCalendar() {
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 h-full">
-      <FullCalendar 
+      <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin]}
-        initialView="timeGridWeek"
+        themeSystem="standard"
         height="100%"
+        initialView="timeGridWeek"
         events={calendarEvents}
       />
     </div>

@@ -1,5 +1,14 @@
 import { Event } from "./event";
 
+export interface StudentDetails {
+  gradeLevel?: string;
+  description?: string;
+  interests: string[];
+  bookingHistory?: any[];
+  goals: string[];
+  photoURL?: string;
+}
+
 export interface Student {
   uid: string;
   type: "student";
@@ -7,19 +16,12 @@ export interface Student {
   nickname: string;
   createdAt?: string;
 
-  photoURL?: string;
   introduction?: string;
   balance: number;
 
-  details: {
-    gradeLevel?: string;
-    description?: string;
-    interests: string[];
-    bookingHistory?: any[];
-    goals: string[];
-  };
+  details: StudentDetails;
   
-  Events: Event[];
+  events: Event[];
 }
 
 export const isStudent = (student: Student): student is Student => {
@@ -43,7 +45,7 @@ export const createNewStudent = (email: string, uid: string, nickname: string): 
       description: "",
     },
 
-    Events: [],
+    events: [],
   };
 };
 
@@ -58,13 +60,14 @@ export const createStudentFromData = (userData: any): Student => {
     balance: userData.balance ?? 0,
 
     details: {
-      interests: userData.interests ?? [],
-      goals: userData.goals ?? [],
-      bookingHistory: userData.bookingHistory ?? [],
-      gradeLevel: userData.academicDetails?.gradeLevel ?? "",
-      description: userData.academicDetails?.description ?? "",
+      interests: userData.details?.interests ?? [],
+      goals: userData.details?.goals ?? [],
+      bookingHistory: userData.details?.bookingHistory ?? [],
+      gradeLevel: userData.details?.gradeLevel ?? "",
+      description: userData.details?.description ?? "",
+      photoURL: userData.details?.photoURL ?? "",
     },
 
-    Events: userData.Events,
+    events: userData.events ?? [],
   } as Student;
 };

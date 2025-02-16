@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@/hooks/useUser";
-import TeacherCalendar from "@/components/Calendar";
+import TeacherCalendar from "@/components/TeacherCalendar";
 import ProfileWindow from "@/components/popup/teacher/ProfileWindow";
 import { useOverlay } from "@/hooks/useOverlay";
 import { useTranslations } from "next-intl";

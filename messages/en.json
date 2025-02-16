@@ -97,6 +97,17 @@
       }
     },
     "Student": {
+      "schedule": {
+        "title": "Your Schedule",
+        "subtitle": "View and manage your upcoming classes",
+        "currentMonth": "{month} {year}",
+        "calendar": {
+          "today": "Today",
+          "week": "Week",
+          "day": "Day",
+          "noEvents": "No classes scheduled"
+        }
+      },
       "title": "Your Classes",
       "selectTeacherPrompt": "Select a teacher to view their availability",
       "teacherRate": "Classes with {price}$ per hour",
@@ -139,7 +150,12 @@
       },
       "noUpcoming": "No upcoming classes",
       "noPast": "No past classes",
-      "noBookings": "No classes available"
+      "noBookings": "No classes available",
+      "navigation": {
+        "schedule": "Schedule",
+        "classes": "My Classes",
+        "profile": "Profile"
+      }
     },
     "Teacher": {
       "welcome": "Welcome to Your Dashboard",

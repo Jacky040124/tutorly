@@ -9,11 +9,11 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { config } from "dotenv";
 import { Teacher, createNewTeacher, createTeacherFromData, TeacherDetails } from "@/types/teacher";
-import { Student, createNewStudent, createStudentFromData } from "@/types/student";
+import { Student, createNewStudent, createStudentFromData, StudentDetails } from "@/types/student";
 import { Resend } from "resend";
 import { ConfirmationEmailTemplate, FeedbackEmailTemplate } from "@/lib/EmailTemplate";
 import { createEvent, Event, EventStatus } from "@/types/event";
-import { parseEventDateTime } from "@/lib/utils";
+import { parseEventDateTime, parseCommaSeparatedValue } from "@/lib/utils";
 
 // Firebase Service
 
@@ -50,7 +50,6 @@ export const signIn = async (prevState: authState, formData: FormData): Promise<
   const docSnap = await getDoc(docRef);
   const userData = docSnap.data();
 
-  
   if (!docSnap.exists() || !userData) {
     return { error: "User data not found", user: null };
   }
@@ -210,8 +209,8 @@ export async function addHomework(prevState: any, formData: FormData): Promise<a
     return { message: "Error adding homework", error: error as string };
   }
 }
-// Mail Service
 
+// Mail Service
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface sendProps {
@@ -267,7 +266,6 @@ export async function downloadFileFromUrl(path: string): Promise<string> {
 
 export async function uploadImage(file: File, userId: string): Promise<UploadImageResult> {
   try {
-
     // Validate file type
     if (!file.type.startsWith("image/")) {
       throw new Error("Invalid file type. Please upload an image file.");
@@ -278,7 +276,7 @@ export async function uploadImage(file: File, userId: string): Promise<UploadIma
     if (file.size > MAX_SIZE) {
       throw new Error("File size too large. Maximum size is 5MB.");
     }
-    
+
     const timestamp = Date.now();
     const fileName = `${timestamp}_${file.name}`;
     const path = `avatars/${fileName}`;
@@ -286,14 +284,11 @@ export async function uploadImage(file: File, userId: string): Promise<UploadIma
     await uploadBytes(storageRef, file);
     const downloadUrl = await getDownloadURL(storageRef);
 
-    const teacherRef = doc(db, "users", userId);
-    await setDoc(teacherRef, { details: { photoURL: downloadUrl } }, { merge: true });
+    const userRef = doc(db, "users", userId);
+    await setDoc(userRef, { details: { photoURL: downloadUrl } }, { merge: true });
 
-    return {
-      downloadUrl,
-      path,
-    };
-
+    return { downloadUrl, path };
+    
   } catch (error) {
     console.error("Error in uploadImage:", error);
     if (error instanceof Error) {
@@ -304,6 +299,62 @@ export async function uploadImage(file: File, userId: string): Promise<UploadIma
 }
 
 // Student Service
+
+export interface UpdateStudentProfileState {
+  error: string | null;
+  updatedProfile: {
+    nickname: string;
+    introduction?: string;
+    photoURL?: string;
+    details: StudentDetails;
+  } | null;
+}
+
+export async function updateStudentProfile(
+  prevState: UpdateStudentProfileState,
+  formData: FormData
+): Promise<UpdateStudentProfileState> {
+  try {
+    const userId = formData.get("userId") as string;
+    const nickname = formData.get("nickname") as string;
+    const introduction = formData.get("introduction") as string;
+    const photoURL = formData.get("photoURL") as string;
+    const interests = parseCommaSeparatedValue(formData.get("interests") as string);
+    const goals = parseCommaSeparatedValue(formData.get("goals") as string);
+
+    if (!nickname) {
+      return {
+        error: "Nickname is required",
+        updatedProfile: null,
+      };
+    }
+
+    const updatedProfile = {
+      nickname,
+      photoURL,
+      details: {
+        interests,
+        goals,
+        bookingHistory: [],
+        gradeLevel: "",
+        description: introduction,
+      },
+    };
+
+    const userRef = doc(db, "users", userId);
+    await setDoc(userRef, updatedProfile, { merge: true });
+
+    return {
+      error: null,
+      updatedProfile,
+    };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Failed to update profile",
+      updatedProfile: null,
+    };
+  }
+}
 
 // Teacher Service
 
@@ -365,48 +416,47 @@ export async function addEvent(prevState: EventState, formData: FormData): Promi
   }
 }
 
-
 export interface UpdateTeacherProfileState {
   error: string | null;
   updatedProfile: TeacherDetails | null;
 }
 
 export async function updateTeacherProfile(prevState: UpdateTeacherProfileState, formData: FormData) {
-    const userId = formData.get("userId") as string;
-    const nickname = formData.get("nickname") as string;
-    const description = formData.get("description") as string;
-    const expertise = formData.get("expertise") as string;
-    const education = formData.get("education") as string;
-    const experience = formData.get("experience") as string;
-    const teachingStyle = formData.get("teachingStyle") as string;
-    const pricing = Number(formData.get("pricing")) || 0;
+  const userId = formData.get("userId") as string;
+  const nickname = formData.get("nickname") as string;
+  const description = formData.get("description") as string;
+  const expertise = formData.get("expertise") as string;
+  const education = formData.get("education") as string;
+  const experience = formData.get("experience") as string;
+  const teachingStyle = formData.get("teachingStyle") as string;
+  const pricing = Number(formData.get("pricing")) || 0;
 
-    try {
-        const updatedDetails: TeacherDetails = {
-            nickname,
-            description,
-            expertise,
-            education,
-            experience,
-            teachingStyle,
-            pricing,
-        }
-    
-        console.log("updatedProfile", updatedDetails);
-        const teacherRef = doc(db, "users", userId);
+  try {
+    const updatedDetails: TeacherDetails = {
+      nickname,
+      description,
+      expertise,
+      education,
+      experience,
+      teachingStyle,
+      pricing,
+    };
 
-        await setDoc(teacherRef, { details: updatedDetails }, { merge: true });
+    console.log("updatedProfile", updatedDetails);
+    const teacherRef = doc(db, "users", userId);
 
-        return {
-            error: null,
-            updatedProfile: updatedDetails,
-        }
-    } catch (error) {
-        return {
-            error: error instanceof Error ? error.message : "Failed to update teacher profile",
-            updatedProfile: prevState.updatedProfile,
-        };
-    }
+    await setDoc(teacherRef, { details: updatedDetails }, { merge: true });
+
+    return {
+      error: null,
+      updatedProfile: updatedDetails,
+    };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Failed to update teacher profile",
+      updatedProfile: prevState.updatedProfile,
+    };
+  }
 }
 
 async function updateTeacherEvents(teacherId: string, newEvent: Event) {
@@ -434,7 +484,10 @@ export interface UpdateEventDetailsState {
   error: string | null;
 }
 
-export async function updateEventDetails(prevState: UpdateEventDetailsState, formData: FormData): Promise<UpdateEventDetailsState> {
+export async function updateEventDetails(
+  prevState: UpdateEventDetailsState,
+  formData: FormData
+): Promise<UpdateEventDetailsState> {
   try {
     const event = formData.get("event") as string;
     const status = formData.get("status") as string;
@@ -449,10 +502,10 @@ export async function updateEventDetails(prevState: UpdateEventDetailsState, for
     const newEvent: Event = JSON.parse(event);
     newEvent.status = status as unknown as EventStatus;
     newEvent.meeting_link = meetingLink;
-        if (newEvent.bookingDetails) {
+    if (newEvent.bookingDetails) {
       newEvent.bookingDetails = {
         ...newEvent.bookingDetails,
-        homework: homework ? { link: homework, addedAt: new Date().toISOString() } : undefined
+        homework: homework ? { link: homework, addedAt: new Date().toISOString() } : undefined,
       };
     }
 
