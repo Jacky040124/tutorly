@@ -32,7 +32,7 @@ export default function App() {
   const filteredTeachers =
     selectedSubject === "ALL"
       ? teachers
-      : teachers.filter((teacher) => teacher.expertise?.toLowerCase().includes(selectedSubject.toLowerCase()));
+      : teachers.filter((teacher) => teacher.details.expertise?.toLowerCase().includes(selectedSubject.toLowerCase()));
 
   const totalPages = Math.ceil(filteredTeachers.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -112,10 +112,10 @@ export default function App() {
             {paginatedTeachers.map((teacher) => (
               <Card key={teacher.uid} className="overflow-hidden">
                 <CardHeader className="relative p-0">
-                  {teacher.photoURL ? (
+                  {teacher.details.photoURL ? (
                     <Image
-                      src={teacher.photoURL}
-                      alt={teacher.nickname}
+                      src={teacher.details.photoURL}
+                      alt={teacher.details.nickname}
                       width={500}
                       height={300}
                       className="w-full h-48 object-cover"
@@ -124,23 +124,23 @@ export default function App() {
                     <div className="w-full h-48 bg-muted" />
                   )}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 p-4">
-                    <h3 className="text-xl font-bold text-white">{teacher.nickname}</h3>
+                    <h3 className="text-xl font-bold text-white">{teacher.details.nickname}</h3>
                   </div>
                 </CardHeader>
 
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-primary font-bold text-lg">
-                      {t("tutors.pricePerHour", { price: teacher.pricing })}
+                      {t("tutors.pricePerHour", { price: teacher.details.pricing })}
                     </span>
                   </div>
 
-                  <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{teacher.description}</p>
+                  <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{teacher.details.introduction}</p>
                 </CardContent>
 
                 <CardFooter className="px-6 pb-6 pt-0">
                   <div className="flex flex-wrap gap-2">
-                    {teacher.expertise?.split(",").map((skill, index) => (
+                    {teacher.details.expertise?.split(",").map((skill, index) => (
                       <Badge key={index} variant="secondary">
                         {skill.trim()}
                       </Badge>

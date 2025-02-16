@@ -1,6 +1,6 @@
 // src/hooks/useTeachers.ts
 import { useEffect, useState } from "react";
-import { fetchTeachers } from "@/services/user.service";
+import { fetchTeachers } from "@/app/action";
 import { Teacher } from "@/types/teacher";
 
 export function useTeachers() {
@@ -18,5 +18,9 @@ export function useTeachers() {
     loadTeachers();
   }, []);
 
-  return { teachers };
+  function getTeacherById(teacherId: string) {
+    return teachers.find((teacher) => teacher.uid === teacherId);
+  }
+
+  return { teachers, getTeacherById };
 };

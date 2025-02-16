@@ -1,7 +1,7 @@
 "use server";
 
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as firebaseSignOut } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 import { initializeApp, getApps } from "firebase/app";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAuth } from "firebase/auth";
@@ -525,4 +525,18 @@ export async function updateEventDetails(
       error: error instanceof Error ? error.message : "An unknown error occurred",
     };
   }
+}
+
+export async function fetchTeachers(): Promise<Teacher[]> {
+  const teachers: Teacher[] = [];
+  const querySnapshot = await getDocs(collection(db, "users"));
+  
+  querySnapshot.forEach((doc) => {
+    const docData = doc.data();
+    if (docData.type === "teacher") {
+      teachers.push(createTeacherFromData({ ...docData, uid: doc.id }));
+    }
+  });
+
+  return teachers;
 }

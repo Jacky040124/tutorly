@@ -61,12 +61,14 @@ export const createNewTeacher = (email: string, uid: string): Teacher => {
 
     details: {
       nickname: "",
+      photoURL: "",
+      introduction: "",
       description: "",
-      pricing: 0,
       expertise: "",
       education: "",
       experience: "",
       teachingStyle: "",
+      pricing: 0
     },
 
     events: [],

@@ -51,6 +51,7 @@ export default function StudentSchedule({ params }: StudentDashboardProps) {
           height="100%"
           initialView="timeGridWeek"
           events={calendarEvents}
+          allDaySlot={false}
           buttonText={{
             today: t("calendar.today"),
             week: t("calendar.week"),

@@ -2,7 +2,6 @@
 
 import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/hooks/useUser';
 
 export default function LanguageSwitcher() {
   const locale = useLocale();

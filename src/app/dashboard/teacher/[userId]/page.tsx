@@ -90,7 +90,7 @@ export default function TeacherDashboard({ params }: TeacherDashboardProps) {
       <div className="grid grid-cols-12 gap-6 flex-1 min-h-0">
         {/* Calendar */}
         <div className="col-span-9 h-full">
-          <TeacherCalendar />
+          <TeacherCalendar teacher={teacher} />
         </div>
 
         {/* Booking Card */}
