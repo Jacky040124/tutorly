@@ -68,3 +68,12 @@ export const generateTimeOptions = () => {
   }
   return options;
 };
+
+export function formatTime(minutes: number): string {
+  const hour = Math.floor(minutes / 60);
+  const minute = minutes % 60;
+  const period = hour >= 12 ? 'PM' : 'AM';
+  const displayHour = hour % 12 || 12; // Convert 0 to 12 for 12 AM
+  const displayMinute = minute.toString().padStart(2, '0');
+  return `${displayHour}:${displayMinute} ${period}`;
+}

@@ -5,24 +5,19 @@ import { useUser } from "@/hooks/useUser";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, ExternalLink, Star } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { updateBookingStatus } from "@/app/action";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { filterBookingsByTime, convertToCalendarDate } from "@/lib/utils/calendarUtil";
-import { Booking } from "@/types/booking";
-import { fetchUserNickname } from "@/services/user.service";
 import { useTranslations } from "next-intl";
-import { Teacher } from "@/types/user";
-import { EventClickArg } from '@fullcalendar/core';
-import TeacherProfileWindow from "@/components/popup/teacher/ProfileWindow";
-
+import { Teacher } from "@/types/teacher";
+import { EventClickArg } from "@fullcalendar/core";
+import { BookingCard } from "@/components/BookingCard";
+import { Event } from "@/types/event";
 
 // Import plugins statically
-import timeGridPlugin from '@fullcalendar/timegrid';
-import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from "@fullcalendar/timegrid";
+import dayGridPlugin from "@fullcalendar/daygrid";
 
 // Add custom styles
 const calendarStyles = `
@@ -49,15 +44,16 @@ const calendarStyles = `
 }
 `;
 
-const FullCalendar = dynamic(() => 
-  import('@fullcalendar/react').then((mod) => {
-    // Inject custom styles
-    const style = document.createElement('style');
-    style.textContent = calendarStyles;
-    document.head.appendChild(style);
-    return mod.default;
-  }), 
-  { 
+const FullCalendar = dynamic(
+  () =>
+    import("@fullcalendar/react").then((mod) => {
+      // Inject custom styles
+      const style = document.createElement("style");
+      style.textContent = calendarStyles;
+      document.head.appendChild(style);
+      return mod.default;
+    }),
+  {
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-full">
@@ -67,11 +63,10 @@ const FullCalendar = dynamic(() =>
   }
 );
 
-export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
+export default function TeacherCalendar({ events }: { events: Event[] }) {
   const calendarRef = useRef<any>(null);
-  const { user, availability, removeAvailability } = useUser();
+  const { user, removeEvents } = useUser();
   const [showUpcoming, setShowUpcoming] = useState(true);
-  const [studentNames, setStudentNames] = useState<{ [key: string]: string }>({});
   const [slotToDelete, setSlotToDelete] = useState<any | null>(null);
 
   const t = useTranslations("Dashboard.Common");
@@ -91,75 +86,48 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
     []
   );
 
-  // Fetch student names
-  useEffect(() => {
-    const fetchNames = async () => {
-      if (!user?.uid) return;
-
-      try {
-        const names: { [key: string]: string } = {};
-        for (const booking of bookings) {
-          if (!studentNames[booking.studentId]) {
-            const nickname = await fetchUserNickname(booking.studentId);
-            if (nickname) {
-              names[booking.studentId] = nickname;
-            }
-          }
-        }
-        if (Object.keys(names).length > 0) {
-          setStudentNames((prev) => ({ ...prev, ...names }));
-        }
-      } catch (error) {
-        if (error instanceof Error) {
-          console.error(`Error fetching student names: ${error.message}`);
-        }
-      }
-    };
-
-    fetchNames();
-  }, [user?.uid, bookings, studentNames]);
-
   // Filter bookings based on upcoming/past
-  const filteredBookings = filterBookingsByTime(bookings, showUpcoming);
+  const filteredEvents = filterBookingsByTime(events, showUpcoming);
 
   // Convert availability to events
-  const availabilityEvents = ((user as Teacher)?.availability?.map((slot, index) => ({
-    id: `availability_${index}`,
-    title: "Available",
-    start: convertToCalendarDate(slot.date, slot.startTime),
-    end: convertToCalendarDate(slot.date, slot.endTime),
-    backgroundColor: '#10B981',
-    borderColor: '#059669',
-    extendedProps: {
-      ...slot,
-      isAvailability: true,
-      type: 'availability'
-    }
-  })) || []);
+  const availabilityEvents =
+    (user as Teacher)?.events?.map((slot, index) => ({
+      id: `availability_${index}`,
+      title: "Available",
+      start: convertToCalendarDate(slot.date, slot.date.startTime),
+      end: convertToCalendarDate(slot.date, slot.date.endTime),
+      backgroundColor: "#10B981",
+      borderColor: "#059669",
+      extendedProps: {
+        ...slot,
+        isAvailability: true,
+        type: "availability",
+      },
+    })) || [];
 
   // Convert bookings to events
-  const bookingEvents = bookings.map((booking) => ({
-    id: booking.id,
-    title: booking.title || "Booked",
-    start: convertToCalendarDate(booking.date, booking.startTime),
-    end: convertToCalendarDate(booking.date, booking.endTime),
-    backgroundColor: '#3B82F6',
-    borderColor: '#2563EB',
+  const bookingEvents = events.map((event: Event) => ({
+    id: event.id,
+    title: event.title || "Booked",
+    start: convertToCalendarDate(event.date, event.date.startTime),
+    end: convertToCalendarDate(event.date, event.date.endTime),
+    backgroundColor: "#3B82F6",
+    borderColor: "#2563EB",
     extendedProps: {
-      ...booking,
-      meeting_link: booking.link || "",
+      ...event,
+      meeting_link: event.meeting_link || "",
       maxStudents: 1,
       enrolledStudentIds: [],
-      isRepeating: !!booking.bulkId,
-      repeatGroupId: booking.bulkId || `single_${booking.id}`,
-      repeatIndex: booking.lessonNumber || 0,
-      totalClasses: booking.totalLessons || 1,
-      type: 'booking'
-    }
+      isRepeating: !!event.bulkId,
+      repeatGroupId: event.bulkId || `single_${event.id}`,
+      repeatIndex: event.lessonNumber || 0,
+      totalClasses: event.bookingDetails?.repeatInfo?.totalClasses || 1,
+      type: "booking",
+    },
   }));
 
   const handleEventClick = useCallback((info: EventClickArg) => {
-    if (info.event.extendedProps.type === 'availability') {
+    if (info.event.extendedProps.type === "availability") {
       setSlotToDelete(info.event);
     }
   }, []);
@@ -192,22 +160,22 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
       const eventData = slotToDelete;
 
       if (eventData.extendedProps) {
-        await removeAvailability(eventData.extendedProps);
+        await removeEvents(eventData.extendedProps);
       } else {
         const startDate = new Date(eventData.start);
 
-        const slotToRemove = availability.find((slot) => {
+        const slotToRemove = events.find((slot) => {
           return (
             slot.date.year === startDate.getFullYear() &&
             slot.date.month === startDate.getMonth() + 1 &&
             slot.date.day === startDate.getDate() &&
-            slot.startTime === startDate.getHours() &&
-            slot.endTime === new Date(eventData.end).getHours()
+            slot.date.startTime === startDate.getHours() &&
+            slot.date.endTime === new Date(eventData.end).getHours()
           );
         });
 
         if (slotToRemove) {
-          await removeAvailability(slotToRemove);
+          await removeEvents(slotToRemove);
         }
       }
     } catch (error) {
@@ -215,10 +183,11 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
     } finally {
       setSlotToDelete(null);
     }
-  }, [slotToDelete, removeAvailability, availability]);
+  }, [slotToDelete, removeEvents, events]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      {/* calendar card */}
       <Card className="lg:col-span-9 rounded-xl shadow-md">
         <CardContent className="p-4 h-[800px]">
           <div className="h-full flex flex-col">
@@ -311,155 +280,10 @@ export default function TeacherCalendar({ bookings }: { bookings: Booking[] }) {
         </CardHeader>
         <CardContent className="p-4">
           <ScrollArea className="h-[700px]">
-            {filteredBookings.length > 0 ? (
+            {filteredEvents.length > 0 ? (
               <div className="space-y-3">
-                {filteredBookings.map((booking, index) => (
-                  <div
-                    key={index}
-                    className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {new Date(booking.date.year, booking.date.month - 1, booking.date.day).toLocaleDateString(
-                            "en-US",
-                            { weekday: "long", month: "short", day: "numeric" }
-                          )}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {booking.startTime}:00 - {booking.endTime}:00
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {booking.link && (
-                          <a
-                            href={booking.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                            {tStudent("buttons.meet")}
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">
-                          {tStudent("student")}: {studentNames[booking.studentId] || "Loading..."}
-                        </Badge>
-                        {!showUpcoming && (
-                          <Select
-                            value={booking.status}
-                            onValueChange={(value) =>
-                              handleBookingStatusChange(booking.id, value as "completed" | "confirmed" | "cancelled")
-                            }
-                          >
-                            <SelectTrigger className="w-[130px] h-7">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="confirmed">{tStudent("status.confirmed")}</SelectItem>
-                              <SelectItem value="completed">{tStudent("status.completed")}</SelectItem>
-                              <SelectItem value="cancelled">{tStudent("status.cancelled")}</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </div>
-                    </div>
-                    {!showUpcoming && (
-                      <div className="flex items-center justify-between mt-2 text-sm">
-                        <div className="flex items-center gap-2">
-                          {!booking.homework && (
-                            <TeacherProfileWindow bookingId={booking.id} t={t} tStudent={tStudent} />
-                          )}
-
-                          {booking.feedback ? (
-                            <div className="flex items-center gap-2">
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button variant="outline" size="sm" className="h-7">
-                                    <Star className="h-3 w-3 mr-1" />
-                                    {tStudent("buttons.viewFeedback")}
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>{tStudent("feedback.title")}</DialogTitle>
-                                  </DialogHeader>
-                                  <div className="space-y-3">
-                                    <div className="flex items-center gap-1">
-                                      <span>{tStudent("feedback.rating")}:</span>
-                                      <div className="flex">
-                                        {Array.from({ length: 5 }).map((_, i) => (
-                                          <Star
-                                            key={i}
-                                            className={`h-4 w-4 ${
-                                              booking.feedback?.rating
-                                                ? i < booking.feedback.rating
-                                                  ? "text-yellow-400 fill-current"
-                                                  : "text-gray-300"
-                                                : "text-gray-300"
-                                            }`}
-                                          />
-                                        ))}
-                                      </div>
-                                    </div>
-                                    {booking.feedback.comment && (
-                                      <div>
-                                        <span className="font-medium">{tStudent("feedback.comment")}:</span>
-                                        <p className="text-sm mt-1">{booking.feedback.comment}</p>
-                                      </div>
-                                    )}
-                                    <div className="text-xs text-gray-500">
-                                      <p>
-                                        {tStudent("feedback.created")}:{" "}
-                                        {new Date(booking.feedback.createdAt).toLocaleDateString()}
-                                      </p>
-                                      {booking.feedback.updatedAt && (
-                                        <p>
-                                          {tStudent("feedback.updated")}:{" "}
-                                          {new Date(booking.feedback.updatedAt).toLocaleDateString()}
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-                                </DialogContent>
-                              </Dialog>
-                              <div className="flex items-center gap-1">
-                                {Array.from({ length: 5 }).map((_, i) => (
-                                  <Star
-                                    key={i}
-                                    className={`h-3 w-3 ${
-                                      booking.feedback?.rating
-                                        ? i < booking.feedback.rating
-                                          ? "text-yellow-400 fill-current"
-                                          : "text-gray-300"
-                                        : "text-gray-300"
-                                    }`}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-500 flex items-center gap-1">
-                                <Star className="h-3 w-3" />
-                                {tStudent("feedback.none")}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        {booking.bulkId && (
-                          <div className="text-xs text-gray-500 flex items-center gap-1">
-                            <RefreshCw className="h-3 w-3" />
-                            {booking.lessonNumber} {tStudent("lessonCount.of")} {booking.totalLessons}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                {filteredEvents.map((booking, index) => (
+                  <BookingCard key={index} events={booking} />
                 ))}
               </div>
             ) : (

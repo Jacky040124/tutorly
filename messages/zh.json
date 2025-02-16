@@ -63,10 +63,6 @@
           "title": "课程标题",
           "titlePlaceholder": "请输入课程标题"
         },
-        "buttons": {
-          "save": "保存",
-          "cancel": "取消"
-        },
         "errors": {
           "fillAllFields": "请填写所有字段",
           "endTimeLater": "结束时间必须晚于开始时间",
@@ -153,6 +149,58 @@
       "pricing": "收费 (每小时$)",
       "profile": "个人资料",
       "addEvent": "添加课程",
+      "homework": {
+        "title": "作业",
+        "add": "添加作业",
+        "edit": "编辑作业",
+        "view": "查看作业",
+        "description": "描述",
+        "descriptionPlaceholder": "输入作业描述...",
+        "dueDate": "截止日期",
+        "status": {
+          "pending": "待完成",
+          "submitted": "已提交",
+          "graded": "已评分"
+        },
+        "buttons": {
+          "save": "保存",
+          "cancel": "取消",
+          "submit": "提交"
+        }
+      },
+      "event": {
+        "title": "课程详情",
+        "details": "课程详情",
+        "student": "学生",
+        "status": {
+          "label": "状态",
+          "available": "可预约",
+          "confirmed": "已确认",
+          "completed": "已完成",
+          "cancelled": "已取消"
+        },
+        "meetingLink": {
+          "label": "会议链接",
+          "placeholder": "输入会议链接..."
+        },
+        "homework": {
+          "label": "作业",
+          "add": "添加作业",
+          "placeholder": "输入作业描述..."
+        },
+        "feedback": {
+          "label": "学生反馈",
+          "noFeedback": "暂无反馈",
+          "comment": "评论",
+          "rating": "评分"
+        },
+        "buttons": {
+          "save": "保存",
+          "saving": "保存中...",
+          "cancel": "取消"
+        },
+        "overview": "查看课程概览"
+      },
       "buttons": {
         "save": "保存",
         "cancel": "取消"

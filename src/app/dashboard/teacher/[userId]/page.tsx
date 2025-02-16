@@ -10,6 +10,8 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, UserCircle, Plus } from "lucide-react";
 import AddEventWindow from "@/components/popup/teacher/AddEventWindow";
+import { Teacher } from "@/types/teacher";
+import { BookingCard } from "@/components/BookingCard";
 
 interface TeacherDashboardProps {
   params: {
@@ -19,6 +21,7 @@ interface TeacherDashboardProps {
 
 export default function TeacherDashboard({ params }: TeacherDashboardProps) {
   const { user } = useUser();
+  const teacher = user as Teacher;
   const t = useTranslations("Dashboard.Teacher");
   const tCommon = useTranslations("Dashboard.Common");
   const { showTeacherProfileOverlay, setShowTeacherProfileOverlay, showAddEventOverlay, setShowAddEventOverlay } =
@@ -44,7 +47,7 @@ export default function TeacherDashboard({ params }: TeacherDashboardProps) {
       <Card className="rounded-xl shadow-sm">
         <CardHeader className="pb-4">
           <CardTitle className="text-2xl font-semibold">{t("welcome")}</CardTitle>
-          <p className="text-gray-500">{tCommon("greeting", { name: user?.nickname })}</p>
+          <p className="text-gray-500">{tCommon("greeting", { name: teacher.details.nickname })}</p>
         </CardHeader>
       </Card>
 
@@ -83,6 +86,9 @@ export default function TeacherDashboard({ params }: TeacherDashboardProps) {
 
       {/* Add Event Overlay */}
       {showAddEventOverlay && <AddEventWindow />}
+
+      {/* Booking Card */}
+      <BookingCard events={teacher.events} handleBookingStatusChange={() => {}} />
     </div>
   );
 }

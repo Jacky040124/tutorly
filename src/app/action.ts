@@ -12,7 +12,7 @@ import { Teacher, createNewTeacher, createTeacherFromData, TeacherDetails } from
 import { Student, createNewStudent, createStudentFromData } from "@/types/student";
 import { Resend } from "resend";
 import { ConfirmationEmailTemplate, FeedbackEmailTemplate } from "@/lib/EmailTemplate";
-import { createEvent } from "@/types/event";
+import { createEvent, Event, EventStatus } from "@/types/event";
 import { parseEventDateTime } from "@/lib/utils";
 
 // Firebase Service
@@ -325,7 +325,6 @@ export async function addEvent(prevState: EventState, formData: FormData): Promi
     const meetingLinks = formData.get("meetingLinks") as string;
     const maxStudents = formData.get("maxStudents") as string;
 
-    // events generation logic
     const baseDate = new Date(date);
     const generatedEvents = Array.from({ length: Number(numberOfClasses) }, (_, index) => {
       const eventDate = new Date(baseDate);
@@ -337,6 +336,9 @@ export async function addEvent(prevState: EventState, formData: FormData): Promi
         title: title,
         meeting_link: meetingLinks,
         maxStudents: Number(maxStudents),
+        enrolledStudentIds: [],
+        status: { status: "available" },
+        price: 0,
       });
     });
 
@@ -407,3 +409,67 @@ export async function updateTeacherProfile(prevState: UpdateTeacherProfileState,
     }
 }
 
+async function updateTeacherEvents(teacherId: string, newEvent: Event) {
+  const teacherRef = doc(db, "users", teacherId);
+  const teacherDoc = await getDoc(teacherRef);
+  if (teacherDoc.exists()) {
+    const teacherData = teacherDoc.data();
+    const updatedEvents = teacherData.events.map((e: Event) => (e.id === newEvent.id ? newEvent : e));
+    await setDoc(teacherRef, { events: updatedEvents }, { merge: true });
+  }
+}
+
+async function updateStudentEvents(studentId: string, newEvent: Event) {
+  const studentRef = doc(db, "users", studentId);
+  const studentDoc = await getDoc(studentRef);
+  if (studentDoc.exists()) {
+    const studentData = studentDoc.data();
+    const updatedEvents = studentData.events.map((e: Event) => (e.id === newEvent.id ? newEvent : e));
+    await setDoc(studentRef, { events: updatedEvents }, { merge: true });
+  }
+}
+
+export interface UpdateEventDetailsState {
+  message: string;
+  error: string | null;
+}
+
+export async function updateEventDetails(prevState: UpdateEventDetailsState, formData: FormData): Promise<UpdateEventDetailsState> {
+  try {
+    const event = formData.get("event") as string;
+    const status = formData.get("status") as string;
+    const homework = formData.get("homework") as string;
+    const meetingLink = formData.get("meetingLink") as string;
+    const teacherId = formData.get("teacherId") as string;
+
+    if (!event) {
+      return { message: "Event not found", error: "Event not found" };
+    }
+
+    const newEvent: Event = JSON.parse(event);
+    newEvent.status = status as unknown as EventStatus;
+    newEvent.meeting_link = meetingLink;
+        if (newEvent.bookingDetails) {
+      newEvent.bookingDetails = {
+        ...newEvent.bookingDetails,
+        homework: homework ? { link: homework, addedAt: new Date().toISOString() } : undefined
+      };
+    }
+
+    await updateTeacherEvents(teacherId, newEvent);
+    if (newEvent.bookingDetails) {
+      await updateStudentEvents(newEvent.bookingDetails?.studentId, newEvent);
+    }
+
+    return {
+      message: "Event details updated successfully",
+      error: null,
+    };
+  } catch (error) {
+    console.error("Error updating event details:", error);
+    return {
+      message: "Failed to update event details",
+      error: error instanceof Error ? error.message : "An unknown error occurred",
+    };
+  }
+}

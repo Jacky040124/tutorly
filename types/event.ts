@@ -1,52 +1,62 @@
+export interface Homework {
+  link: string;
+  addedAt: string;
+}
+
+export interface Feedback {
+  rating?: number;
+  comment?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface RepeatInfo {
+  repeatGroupId: string; // Unique identifier for repeating events group
+  repeatIndex: number; // Index of this event in the repeating sequence
+  totalClasses: number; // Total number of classes in repeating sequence
+}
+
+export interface BookingDetails {
+  studentId: string;
+  teacherId: string;
+  repeatInfo?: RepeatInfo;
+  homework?: Homework;
+  feedback?: Feedback;
+}
+
+export interface EventDate {
+  day: number;
+  month: number;
+  year: number;
+  startTime: number;
+  endTime: number;
+}
+
+export interface EventStatus {
+  status: "completed" | "confirmed" | "cancelled" | "available";
+}
+
 export interface Event {
   id: string;
   title: string;
   bulkId?: string;
   createdAt: string;
-  date: {
-    day: number;
-    month: number;
-    year: number;
-    startTime: number;
-    endTime: number;
-  };
+  date: EventDate;
   isRecurring: boolean;
   maxStudents: number;
   enrolledStudentIds: string[];
-
-  status: "completed" | "confirmed" | "cancelled" | "available";
-  lessonNumber?: number;
+  status: EventStatus;
   meeting_link: string;
   price: number;
 
-  bookingDetails?: {
-    studentId: string;
-    teacherId: string;
-
-    repeatInfo?: {
-      repeatGroupId: string; // Unique identifier for repeating events group
-      repeatIndex: number; // Index of this event in the repeating sequence
-      totalClasses: number; // Total number of classes in repeating sequence
-    };
-
-    homework?: {
-      link: string;
-      addedAt: string;
-    };
-
-    feedback?: {
-      rating?: number;
-      comment?: string;
-      createdAt?: string;
-      updatedAt?: string;
-    };
-  };
+  lessonNumber?: number;
+  bookingDetails?: BookingDetails;
 }
 
-export const createEmptyEvent = (): Event => {
+const createEmptyEvent = (): Event => {
   return {
-    id: '',
-    title: '',
+    id: "",
+    title: "",
     createdAt: new Date().toISOString(),
     date: {
       day: 1,
@@ -58,43 +68,45 @@ export const createEmptyEvent = (): Event => {
     isRecurring: false,
     maxStudents: 1,
     enrolledStudentIds: [],
-    status: 'available',
-    meeting_link: '',
-    price: 0
+    status: { status: "available" },
+    meeting_link: "",
+    price: 0,
   };
 };
 
 export interface CreateEventData {
-  title?: string;
-  date?: {
-    day?: number;
-    month?: number;
-    year?: number;
-    startTime?: number;
-    endTime?: number;
-  };
-  maxStudents?: number;
-  price?: number;
-  meeting_link?: string;
-  isRecurring?: boolean;
+  title: string;
   bulkId?: string;
+  date: EventDate;
+  isRecurring?: boolean;
+  maxStudents?: number;
+  enrolledStudentIds: string[];
+  status: EventStatus;
+  meeting_link: string;
+  price: number;
   lessonNumber?: number;
+  bookingDetails?: BookingDetails;
 }
 
 export const createEvent = (data: CreateEventData): Event => {
   const defaultEvent = createEmptyEvent();
-  
+
+  const bookingDetails = data.bookingDetails
+    ? {
+        ...defaultEvent.bookingDetails,
+        ...data.bookingDetails,
+      }
+    : undefined;
+
   return {
     ...defaultEvent,
     ...data,
     date: {
       ...defaultEvent.date,
-      ...data.date
+      ...data.date,
     },
+    bookingDetails,
     createdAt: new Date().toISOString(), // Always use current timestamp
-    id: crypto.randomUUID() // Generate a unique ID
+    id: crypto.randomUUID(), // Generate a unique ID
   };
 };
-
-
-
