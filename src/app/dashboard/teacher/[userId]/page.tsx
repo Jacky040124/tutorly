@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@/hooks/useUser";
-import TeacherCalendar from "@/components/calendar/TeacherCalendar";
+import TeacherCalendar from "@/components/Calendar";
 import ProfileWindow from "@/components/popup/teacher/ProfileWindow";
 import { useOverlay } from "@/hooks/useOverlay";
 import { useTranslations } from "next-intl";
@@ -42,7 +42,7 @@ export default function TeacherDashboard({ params }: TeacherDashboardProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-4">
+    <div className="flex flex-col gap-6 p-4 h-screen">
       {/* Welcome Card */}
       <Card className="rounded-xl shadow-sm">
         <CardHeader className="pb-4">
@@ -87,8 +87,17 @@ export default function TeacherDashboard({ params }: TeacherDashboardProps) {
       {/* Add Event Overlay */}
       {showAddEventOverlay && <AddEventWindow />}
 
-      {/* Booking Card */}
-      <BookingCard events={teacher.events} handleBookingStatusChange={() => {}} />
+      <div className="grid grid-cols-12 gap-6 flex-1 min-h-0">
+        {/* Calendar */}
+        <div className="col-span-9 h-full">
+          <TeacherCalendar />
+        </div>
+
+        {/* Booking Card */}
+        <div className="col-span-3 h-full">
+          <BookingCard events={teacher.events} />
+        </div>
+      </div>
     </div>
   );
 }

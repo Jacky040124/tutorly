@@ -28,6 +28,7 @@ interface EventWindowProps {
 
 const EVENT_STATUS_OPTIONS = ["available", "confirmed", "completed", "cancelled"] as const;
 
+// TODO : fix data refetch after update
 export default function EventWindow({ event, close, show }: EventWindowProps) {
   if (!event) return null;
   const { toast } = useToast();
@@ -40,15 +41,6 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
   const [studentNickname, setStudentNickname] = useState<string>("Loading...");
   const [selectedStatus, setSelectedStatus] = useState<EventStatus>(event.status);
   const t = useTranslations("Dashboard.Teacher.event");
-  console.log("selectedStatus", selectedStatus);
-
-  console.log("event.status", event.status);
-
-  useEffect(() => {
-    if (event?.bookingDetails?.studentId) {
-      // getStudentNickname(event.bookingDetails.studentId).then(setStudentNickname);
-    }
-  }, [event?.bookingDetails?.studentId]);
 
   useEffect(() => {
     if (state.error) {
@@ -109,7 +101,7 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
                 onValueChange={(value) => setSelectedStatus({ status: value as EventStatus["status"] })}
               >
                 <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder={t(`status.${event.status}`)} />
+                  <SelectValue placeholder={event.status} />
                 </SelectTrigger>
 
                 <SelectContent>

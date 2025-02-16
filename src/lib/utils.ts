@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { Event } from "@/types/event";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -69,11 +70,30 @@ export const generateTimeOptions = () => {
   return options;
 };
 
-export function formatTime(minutes: number): string {
-  const hour = Math.floor(minutes / 60);
-  const minute = minutes % 60;
+export function formatTime(hour: number): string {
   const period = hour >= 12 ? 'PM' : 'AM';
   const displayHour = hour % 12 || 12; // Convert 0 to 12 for 12 AM
-  const displayMinute = minute.toString().padStart(2, '0');
-  return `${displayHour}:${displayMinute} ${period}`;
+  return `${displayHour}:00 ${period}`;
 }
+
+export interface CalendarEvent {
+  title: string;
+  start: Date;
+  end: Date;
+}
+
+export const adaptToCalendarEvent = (event: Event): CalendarEvent => {
+  const startDate = new Date(event.date.year, event.date.month - 1, event.date.day);
+  startDate.setHours(Math.floor(event.date.startTime / 60));
+  startDate.setMinutes(event.date.startTime % 60);
+
+  const endDate = new Date(event.date.year, event.date.month - 1, event.date.day);
+  endDate.setHours(Math.floor(event.date.endTime / 60));
+  endDate.setMinutes(event.date.endTime % 60);
+
+  return {
+    title: event.title,
+    start: startDate,
+    end: endDate,
+  };
+};
