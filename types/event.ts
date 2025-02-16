@@ -91,22 +91,27 @@ export interface CreateEventData {
 export const createEvent = (data: CreateEventData): Event => {
   const defaultEvent = createEmptyEvent();
 
-  const bookingDetails = data.bookingDetails
-    ? {
-        ...defaultEvent.bookingDetails,
-        ...data.bookingDetails,
-      }
-    : undefined;
-
-  return {
-    ...defaultEvent,
-    ...data,
+  // Create base event with required fields
+  const event: Event = {
+    id: crypto.randomUUID(),
+    createdAt: new Date().toISOString(),
+    title: data.title,
     date: {
       ...defaultEvent.date,
       ...data.date,
     },
-    bookingDetails,
-    createdAt: new Date().toISOString(), // Always use current timestamp
-    id: crypto.randomUUID(), // Generate a unique ID
+    isRecurring: data.isRecurring ?? defaultEvent.isRecurring,
+    maxStudents: data.maxStudents ?? defaultEvent.maxStudents,
+    enrolledStudentIds: data.enrolledStudentIds,
+    status: data.status,
+    meeting_link: data.meeting_link,
+    price: data.price,
   };
+
+  // Add optional fields only if they are defined
+  if (data.bulkId) event.bulkId = data.bulkId;
+  if (data.lessonNumber) event.lessonNumber = data.lessonNumber;
+  if (data.bookingDetails) event.bookingDetails = { ...data.bookingDetails };
+
+  return event;
 };

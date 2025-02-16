@@ -376,6 +376,17 @@ export async function addEvent(prevState: EventState, formData: FormData): Promi
     const meetingLinks = formData.get("meetingLinks") as string;
     const maxStudents = formData.get("maxStudents") as string;
 
+    console.log("userId", userId);
+    console.log("isRepeating", isRepeating);
+    console.log("date", date);
+    console.log("numberOfClasses", numberOfClasses);
+    console.log("events", events);
+    console.log("title", title);
+    console.log("startTime", startTime);
+    console.log("endTime", endTime);
+    console.log("meetingLinks", meetingLinks);
+    console.log("maxStudents", maxStudents);
+
     const baseDate = new Date(date);
     const generatedEvents = Array.from({ length: Number(numberOfClasses) }, (_, index) => {
       const eventDate = new Date(baseDate);
@@ -395,10 +406,15 @@ export async function addEvent(prevState: EventState, formData: FormData): Promi
 
     const newEvents = [...events, ...generatedEvents];
 
+
+    console.log("newEvents", newEvents);
+    
     const teacherRef = doc(db, "users", userId);
     await setDoc(teacherRef, { events: newEvents }, { merge: true });
     const docSnap = await getDoc(teacherRef);
     const userData = docSnap.data();
+
+    
 
     if (!docSnap.exists() || !userData) {
       return { error: "Failed to update teacher data", events: [] };

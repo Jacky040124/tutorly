@@ -21,7 +21,11 @@ export default function SignIn() {
   useEffect(() => {
     if (state.user) {
       setUser(state.user as Student);
-      router.push(`/dashboard/${state.user.type}/${state.user.uid}/schedule`);
+      if (state.user.type === "student") {
+        router.push(`/dashboard/student/${state.user.uid}/class`);
+      } else {
+        router.push(`/dashboard/teacher/${state.user.uid}`);
+      }
     }
   }, [state]);
 
