@@ -37,6 +37,7 @@ export default function Class() {
                     src={teacher.details.photoURL || "/default-avatar.png"}
                     alt={teacher.details.nickname}
                     fill
+                    sizes="(max-width: 64px) 100vw"
                     className="object-cover"
                   />
                 </div>

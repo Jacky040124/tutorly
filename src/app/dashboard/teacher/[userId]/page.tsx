@@ -12,14 +12,9 @@ import { CalendarIcon, UserCircle, Plus } from "lucide-react";
 import AddEventWindow from "@/components/popup/teacher/AddEventWindow";
 import { Teacher } from "@/types/teacher";
 import { BookingCard } from "@/components/popup/teacher/BookingCard";
+import { formatMonthYear } from "@/lib/utils";
 
-interface TeacherDashboardProps {
-  params: {
-    userId: string;
-  };
-}
-
-export default function TeacherDashboard({ params }: TeacherDashboardProps) {
+export default function TeacherDashboard() {
   const { user } = useUser();
   const teacher = user as Teacher;
   const t = useTranslations("Dashboard.Teacher");
@@ -27,19 +22,7 @@ export default function TeacherDashboard({ params }: TeacherDashboardProps) {
   const { showTeacherProfileOverlay, setShowTeacherProfileOverlay, showAddEventOverlay, setShowAddEventOverlay } =
     useOverlay();
 
-  const currentDate = new Date().toLocaleString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
-
-  // TODO: use window.userid to handle this
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">{tCommon("pleaseSignIn")}</div>
-      </div>
-    );
-  }
+  const currentDate = formatMonthYear(new Date());
 
   return (
     <div className="flex flex-col gap-6 p-4 h-screen">
@@ -90,12 +73,12 @@ export default function TeacherDashboard({ params }: TeacherDashboardProps) {
       <div className="grid grid-cols-12 gap-6 flex-1 min-h-0">
         {/* Calendar */}
         <div className="col-span-9 h-full">
-          <Calendar teacher={teacher} />
+          <Calendar teacher={teacher as Teacher} />
         </div>
 
         {/* Booking Card */}
         <div className="col-span-3 h-full">
-          <BookingCard events={teacher.events} />
+          <BookingCard events={teacher.events || []} />
         </div>
       </div>
     </div>

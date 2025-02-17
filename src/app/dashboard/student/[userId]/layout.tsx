@@ -1,14 +1,33 @@
 "use client";
 
-import { CalendarDays, UserCircle, Clock, Settings } from "lucide-react";
+import { CalendarDays, UserCircle, Clock } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
+import { useUser } from "@/hooks/useUser";
+import { useParams } from "next/navigation";
+import { useEffect } from "react";
+import { getUserById } from "@/app/action";
+import { Student } from "@/types/student";
+
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
+  const { userId } = useParams();
+  const { user, setUser } = useUser();
   const pathname = usePathname();
   const t = useTranslations("Dashboard.Student");
+
+  useEffect(() => {
+    async function fetchUser() {
+      const user = await getUserById(userId as string);
+      setUser(user as Student);
+    }
+
+    if (!user) {
+      fetchUser();
+    }
+  }, [user, setUser, userId]);
 
   const navigation = [
     {

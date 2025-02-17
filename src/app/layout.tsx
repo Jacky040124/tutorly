@@ -36,7 +36,6 @@ interface RootLayoutProp {
   };
 }
 
-// TODO: proper error handling
 // TODO: handle user persistence
 
 export default async function RootLayout({ children, params }: RootLayoutProp) {

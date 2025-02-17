@@ -129,3 +129,10 @@ export function handleTagInput(
     }
   }
 }
+
+export function formatMonthYear(date: Date): string {
+  return date.toLocaleString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+}

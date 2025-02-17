@@ -33,6 +33,15 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+export async function getUserById(userId: string) {
+  const docRef = doc(db, "users", userId);
+  const docSnap = await getDoc(docRef);
+  if (!docSnap.exists()) {
+    throw new Error("User document not found");
+  }
+  return docSnap.data();
+}
+
 // Auth Service
 
 export type authState = {
