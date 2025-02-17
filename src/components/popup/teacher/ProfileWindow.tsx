@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 import { Camera } from "lucide-react";
@@ -17,7 +16,6 @@ import { updateTeacherProfile } from "@/app/action";
 import { Teacher } from "@/types/teacher";
 import { useToast } from "@/hooks/use-toast";
 import { UpdateTeacherProfileState } from "@/app/action";
-
 
 export default function TeacherProfileOverlay() {
   const { user } = useUser();
@@ -108,102 +106,89 @@ export default function TeacherProfileOverlay() {
             </div>
           </div>
 
-          <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="basic">{t("basicInfo")}</TabsTrigger>
-              <TabsTrigger value="professional">{t("professionalInfo")}</TabsTrigger>
-            </TabsList>
+          <Card>
+            <CardContent className="p-4 space-y-4">
+              {/* Basic Info */}
+              <div className="space-y-2">
+                <Label htmlFor="nickname">{t("nickname")}</Label>
+                <Input 
+                  id="nickname" 
+                  name="nickname" 
+                  defaultValue={teacher.details.nickname}
+                  placeholder={t("nicknamePlaceholder")} 
+                />
+              </div>
 
-            <TabsContent value="basic">
-              <Card>
-                <CardContent className="p-4 space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="nickname">{t("nickname")}</Label>
-                    <Input 
-                      id="nickname" 
-                      name="nickname" 
-                      defaultValue={teacher.details.nickname}
-                      placeholder={t("nicknamePlaceholder")} 
-                    />
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="introduction">{t("introduction")}</Label>
+                <Textarea
+                  id="introduction"
+                  name="description"
+                  defaultValue={teacher.details.description}
+                  placeholder={t("introductionPlaceholder")}
+                  rows={3}
+                />
+              </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="introduction">{t("introduction")}</Label>
-                    <Textarea
-                      id="introduction"
-                      name="description"
-                      defaultValue={teacher.details.description}
-                      placeholder={t("introductionPlaceholder")}
-                      rows={3}
-                    />
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="pricing">{t("pricing")}</Label>
+                <Input
+                  id="pricing"
+                  name="pricing"
+                  type="number"
+                  defaultValue={teacher.details.pricing}
+                  min={0}
+                  step={1}
+                  placeholder={t("pricingPlaceholder")}
+                />
+              </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="pricing">{t("pricing")}</Label>
-                    <Input
-                      id="pricing"
-                      name="pricing"
-                      type="number"
-                      defaultValue={teacher.details.pricing}
-                      min={0}
-                      step={1}
-                      placeholder={t("pricingPlaceholder")}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+              {/* Professional Info */}
+              <div className="space-y-2">
+                <Label htmlFor="expertise">{t("expertise")}</Label>
+                <Textarea 
+                  id="expertise" 
+                  name="expertise" 
+                  defaultValue={teacher.details.expertise}
+                  placeholder={t("expertisePlaceholder")} 
+                  rows={2} 
+                />
+              </div>
 
-            <TabsContent value="professional">
-              <Card>
-                <CardContent className="p-4 space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="expertise">{t("expertise")}</Label>
-                    <Textarea 
-                      id="expertise" 
-                      name="expertise" 
-                      defaultValue={teacher.details.expertise}
-                      placeholder={t("expertisePlaceholder")} 
-                      rows={2} 
-                    />
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="education">{t("education")}</Label>
+                <Textarea 
+                  id="education" 
+                  name="education"
+                  defaultValue={teacher.details.education}
+                  placeholder={t("educationPlaceholder")} 
+                  rows={2} 
+                />
+              </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="education">{t("education")}</Label>
-                    <Textarea 
-                      id="education" 
-                      name="education"
-                      defaultValue={teacher.details.education}
-                      placeholder={t("educationPlaceholder")} 
-                      rows={2} 
-                    />
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="experience">{t("experience")}</Label>
+                <Textarea 
+                  id="experience" 
+                  name="experience"
+                  defaultValue={teacher.details.experience}
+                  placeholder={t("experiencePlaceholder")} 
+                  rows={2} 
+                />
+              </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="experience">{t("experience")}</Label>
-                    <Textarea 
-                      id="experience" 
-                      name="experience"
-                      defaultValue={teacher.details.experience}
-                      placeholder={t("experiencePlaceholder")} 
-                      rows={2} 
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="teachingStyle">{t("teachingStyle")}</Label>
-                    <Textarea
-                      id="teachingStyle"
-                      name="teachingStyle"
-                      defaultValue={teacher.details.teachingStyle}
-                      placeholder={t("teachingStylePlaceholder")}
-                      rows={2}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+              <div className="space-y-2">
+                <Label htmlFor="teachingStyle">{t("teachingStyle")}</Label>
+                <Textarea
+                  id="teachingStyle"
+                  name="teachingStyle"
+                  defaultValue={teacher.details.teachingStyle}
+                  placeholder={t("teachingStylePlaceholder")}
+                  rows={2}
+                />
+              </div>
+            </CardContent>
+          </Card>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setShowTeacherProfileOverlay(false)}>

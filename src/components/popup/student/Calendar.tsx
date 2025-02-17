@@ -6,7 +6,6 @@ import { adaptToCalendarEvent } from "@/lib/utils";
 import { renderEventContent } from "@/lib/utils/calendarUtil";
 
 
-// TODO: Add conditoinal styling for events based on status on all calendars
 export default function Calendar({ teacher, handleEventClick}: { teacher: Teacher, handleEventClick: (info: any) => void }) {
   const events = teacher.events;
   const calendarEvents = events.map(adaptToCalendarEvent);

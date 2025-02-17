@@ -8,11 +8,20 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { bookEvent } from "@/app/action";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Event } from "@/types/event";
 import { useToast } from "@/hooks/use-toast";
+import { formatTime } from "@/lib/utils";
+
 
 export default function Store() {
   const { userId, teacherId } = useParams();
@@ -22,7 +31,7 @@ export default function Store() {
   const { toast } = useToast();
 
   const teacher: Teacher | undefined = getTeacherById(teacherId as string);
-  
+
   if (!teacher) {
     return <div>Teacher not found</div>;
   }
@@ -30,11 +39,12 @@ export default function Store() {
   const handleEventClick = async (info: any) => {
     const eventId = info.event.extendedProps.eventId;
     const event = teacher.events.find((event) => event.id === eventId);
+    console.log("status", info.event.extendedProps.status);
     if (event) {
       setSelectedEvent(event);
       setIsDialogOpen(true);
     }
-  }
+  };
 
   const handleConfirmBooking = async () => {
     if (selectedEvent) {
@@ -54,7 +64,7 @@ export default function Store() {
         });
       }
     }
-  }
+  };
 
   return (
     <div className="container mx-auto py-4 space-y-4">
@@ -133,16 +143,34 @@ export default function Store() {
             <DialogDescription asChild>
               {selectedEvent && (
                 <div className="space-y-2 mt-2">
-                  <div><strong>Class:</strong> {selectedEvent.title}</div>
-                  <div><strong>Date:</strong> {`${selectedEvent.date.month}/${selectedEvent.date.day}/${selectedEvent.date.year}`}</div>
-                  <div><strong>Time:</strong> {`${selectedEvent.date.startTime}:00 - ${selectedEvent.date.endTime}:00`}</div>
-                  <div><strong>Price:</strong> ${selectedEvent.price}</div>
+                  <div>
+                    <strong>Class:</strong> {selectedEvent.title}
+                  </div>
+                  <div>
+                    <strong>Status:</strong> {selectedEvent.status.status}
+                  </div>
+                  <div>
+                    <strong>Type:</strong> {selectedEvent.isRecurring ? "Repeating" : "One-time"}
+                  </div>
+                  <div>
+                    <strong>Date:</strong>{" "}
+                    {`${selectedEvent.date.month}/${selectedEvent.date.day}/${selectedEvent.date.year}`}
+                  </div>
+                  <div>
+                    <strong>Time:</strong>{" "}
+                    {`${formatTime(selectedEvent.date.startTime)} - ${formatTime(selectedEvent.date.endTime)}`}
+                  </div>
+                  <div>
+                    <strong>Price:</strong> ${selectedEvent.price}
+                  </div>
                 </div>
               )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Cancel
+            </Button>
             <Button onClick={handleConfirmBooking}>Confirm Booking</Button>
           </DialogFooter>
         </DialogContent>

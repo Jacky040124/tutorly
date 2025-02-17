@@ -378,13 +378,31 @@ interface EventState {
   error: string | null;
 }
 
+async function fetchEvents(userId: string): Promise<Event[]> {
+  try {
+    const userRef = doc(db, "users", userId);
+    const docSnap = await getDoc(userRef);
+    
+    if (!docSnap.exists()) {
+      console.error("User document not found");
+      return [];
+    }
+
+    const userData = docSnap.data();
+    return userData.events || [];
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    return [];
+  }
+}
+
 export async function addEvent(prevState: EventState, formData: FormData): Promise<EventState> {
   try {
     const userId = formData.get("userId") as string;
     const isRepeating = formData.get("isRepeating") as string;
     const date = formData.get("date") as string;
     const numberOfClasses = formData.get("numberOfClasses") as string;
-    const events = JSON.parse(formData.get("events") as string) as Event[];
+    const events = await fetchEvents(userId);
     const title = formData.get("title") as string;
     const startTime = formData.get("startTime") as string;
     const endTime = formData.get("endTime") as string;
@@ -392,6 +410,7 @@ export async function addEvent(prevState: EventState, formData: FormData): Promi
     const maxStudents = formData.get("maxStudents") as string;
 
     const baseDate = new Date(date);
+    const repeatGroupId = crypto.randomUUID();
     const generatedEvents = Array.from({ length: Number(numberOfClasses) }, (_, index) => {
       const eventDate = new Date(baseDate);
       eventDate.setDate(baseDate.getDate() + index * 7); // Add weeks
@@ -405,12 +424,14 @@ export async function addEvent(prevState: EventState, formData: FormData): Promi
         enrolledStudentIds: [],
         status: { status: "available" },
         price: 0,
+        repeatInfo: {
+          repeatGroupId: repeatGroupId,
+          repeatIndex: index,
+          totalClasses: Number(numberOfClasses),
+        },
       });
     });
-
     const newEvents = [...events, ...generatedEvents];
-
-    console.log("newEvents", newEvents);
 
     const teacherRef = doc(db, "users", userId);
     await setDoc(teacherRef, { events: newEvents }, { merge: true });
@@ -460,6 +481,7 @@ export async function updateTeacherProfile(prevState: UpdateTeacherProfileState,
     };
 
     console.log("updatedProfile", updatedDetails);
+
     const teacherRef = doc(db, "users", userId);
 
     await setDoc(teacherRef, { details: updatedDetails }, { merge: true });

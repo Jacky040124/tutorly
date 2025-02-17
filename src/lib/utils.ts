@@ -70,10 +70,12 @@ export const generateTimeOptions = () => {
   return options;
 };
 
-export function formatTime(hour: number): string {
+export function formatTime(minutes: number): string {
+  const hour = Math.floor(minutes / 60);
+  const minute = minutes % 60;
   const period = hour >= 12 ? 'PM' : 'AM';
   const displayHour = hour % 12 || 12; // Convert 0 to 12 for 12 AM
-  return `${displayHour}:00 ${period}`;
+  return `${displayHour}:${minute.toString().padStart(2, '0')} ${period}`;
 }
 
 export interface CalendarEvent {

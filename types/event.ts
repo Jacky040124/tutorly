@@ -10,6 +10,8 @@ export interface Feedback {
   updatedAt?: string;
 }
 
+
+
 export interface RepeatInfo {
   repeatGroupId: string; // Unique identifier for repeating events group
   repeatIndex: number; // Index of this event in the repeating sequence
@@ -19,7 +21,6 @@ export interface RepeatInfo {
 export interface BookingDetails {
   studentId: string;
   teacherId: string;
-  repeatInfo?: RepeatInfo;
   homework?: Homework;
   feedback?: Feedback;
 }
@@ -39,7 +40,7 @@ export interface EventStatus {
 export interface Event {
   id: string;
   title: string;
-  bulkId?: string;
+  repeatInfo: RepeatInfo;
   createdAt: string;
   date: EventDate;
   isRecurring: boolean;
@@ -65,6 +66,11 @@ const createEmptyEvent = (): Event => {
       startTime: 0,
       endTime: 0,
     },
+    repeatInfo: {
+      repeatGroupId: "",
+      repeatIndex: 0,
+      totalClasses: 0,
+    },
     isRecurring: false,
     maxStudents: 1,
     enrolledStudentIds: [],
@@ -86,6 +92,7 @@ export interface CreateEventData {
   price: number;
   lessonNumber?: number;
   bookingDetails?: BookingDetails;
+  repeatInfo: RepeatInfo;
 }
 
 export const createEvent = (data: CreateEventData): Event => {
@@ -100,6 +107,11 @@ export const createEvent = (data: CreateEventData): Event => {
       ...defaultEvent.date,
       ...data.date,
     },
+    repeatInfo: {
+      repeatGroupId: data.repeatInfo.repeatGroupId,
+      repeatIndex: data.repeatInfo.repeatIndex,
+      totalClasses: data.repeatInfo.totalClasses,
+    },
     isRecurring: data.isRecurring ?? defaultEvent.isRecurring,
     maxStudents: data.maxStudents ?? defaultEvent.maxStudents,
     enrolledStudentIds: data.enrolledStudentIds,
@@ -109,7 +121,6 @@ export const createEvent = (data: CreateEventData): Event => {
   };
 
   // Add optional fields only if they are defined
-  if (data.bulkId) event.bulkId = data.bulkId;
   if (data.lessonNumber) event.lessonNumber = data.lessonNumber;
   if (data.bookingDetails) event.bookingDetails = { ...data.bookingDetails };
 
