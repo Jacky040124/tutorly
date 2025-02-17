@@ -3,6 +3,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { Teacher } from "@/types/teacher";
 import { adaptToCalendarEvent } from "@/lib/utils";
+import { renderEventContent } from "@/lib/utils/calendarUtil";
 
 export default function Calendar({ teacher }: { teacher: Teacher }) {
   const events = teacher.events;
@@ -17,10 +18,11 @@ export default function Calendar({ teacher }: { teacher: Teacher }) {
         height="auto"
         initialView="timeGridWeek"
         events={calendarEvents}
+        eventContent={renderEventContent}
         headerToolbar={{
-          left: 'prev,next today',
-          center: 'title',
-          right: 'timeGridWeek,timeGridDay'
+          left: "prev,next today",
+          center: "title",
+          right: "timeGridWeek,timeGridDay",
         }}
       />
     </div>

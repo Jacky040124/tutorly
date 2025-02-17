@@ -3,6 +3,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { Teacher } from "@/types/teacher";
 import { adaptToCalendarEvent } from "@/lib/utils";
+import { renderEventContent } from "@/lib/utils/calendarUtil";
 
 
 // TODO: Add conditoinal styling for events based on status on all calendars
@@ -18,6 +19,7 @@ export default function Calendar({ teacher, handleEventClick}: { teacher: Teache
         height="auto"
         initialView="timeGridWeek"
         events={calendarEvents}
+        eventContent={renderEventContent}
         eventClick={handleEventClick}
         headerToolbar={{
           left: "prev,next today",
