@@ -1,50 +1,128 @@
-export type EventDate = {
-  day: number;    // The day of the month
-  month: number;  // The month (1-12)
-  year: number;   // The full year
-};
+export interface Homework {
+  link: string;
+  addedAt: string;
+}
 
-export type Event = {
-  title: string;
-  date: EventDate;
-  startTime: number; // Start hour of the event (0-23)
-  endTime: number; // End hour of the event (0-23)
-  meeting_link: string; // Zoom meeting link for the event
+export interface Feedback {
+  rating?: number;
+  comment?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
-  maxStudents: number; // Maximum number of students allowed to enroll
-  enrolledStudentIds: string[]; // Array of student IDs who have enrolled
 
-  isRepeating: boolean; // Whether this is a repeating event
+
+export interface RepeatInfo {
   repeatGroupId: string; // Unique identifier for repeating events group
   repeatIndex: number; // Index of this event in the repeating sequence
   totalClasses: number; // Total number of classes in repeating sequence
+}
+
+export interface BookingDetails {
+  studentId: string;
+  teacherId: string;
+  homework?: Homework;
+  feedback?: Feedback;
+}
+
+export interface EventDate {
+  day: number;
+  month: number;
+  year: number;
+  startTime: number;
+  endTime: number;
+}
+
+export interface EventStatus {
+  status: "completed" | "confirmed" | "cancelled" | "available";
+}
+
+export interface Event {
+  id: string;
+  title: string;
+  repeatInfo: RepeatInfo;
+  createdAt: string;
+  date: EventDate;
+  isRecurring: boolean;
+  maxStudents: number;
+  enrolledStudentIds: string[];
+  status: EventStatus;
+  meeting_link: string;
+  price: number;
+
+  lessonNumber?: number;
+  bookingDetails?: BookingDetails;
+}
+
+const createEmptyEvent = (): Event => {
+  return {
+    id: "",
+    title: "",
+    createdAt: new Date().toISOString(),
+    date: {
+      day: 1,
+      month: 1,
+      year: new Date().getFullYear(),
+      startTime: 0,
+      endTime: 0,
+    },
+    repeatInfo: {
+      repeatGroupId: "",
+      repeatIndex: 0,
+      totalClasses: 0,
+    },
+    isRecurring: false,
+    maxStudents: 1,
+    enrolledStudentIds: [],
+    status: { status: "available" },
+    meeting_link: "",
+    price: 0,
+  };
 };
 
-export type CalendarEvent = {
-  id: string;           // Unique identifier for the event
-  calendarId: string;   // ID of the calendar this event belongs to
-  title: string;        // Display title of the event
-  category: string;     // Event category (e.g., "time")
-  start: Date;         // Start date and time
-  end: Date;           // End date and time
-  isReadOnly: boolean;  // Whether the event can be modified
-  raw: Event;          // Raw event data
+export interface CreateEventData {
+  title: string;
+  bulkId?: string;
+  date: EventDate;
+  isRecurring?: boolean;
+  maxStudents?: number;
+  enrolledStudentIds: string[];
+  status: EventStatus;
+  meeting_link: string;
+  price: number;
+  lessonNumber?: number;
+  bookingDetails?: BookingDetails;
+  repeatInfo: RepeatInfo;
+}
+
+export const createEvent = (data: CreateEventData): Event => {
+  const defaultEvent = createEmptyEvent();
+
+  // Create base event with required fields
+  const event: Event = {
+    id: crypto.randomUUID(),
+    createdAt: new Date().toISOString(),
+    title: data.title,
+    date: {
+      ...defaultEvent.date,
+      ...data.date,
+    },
+    repeatInfo: {
+      repeatGroupId: data.repeatInfo.repeatGroupId,
+      repeatIndex: data.repeatInfo.repeatIndex,
+      totalClasses: data.repeatInfo.totalClasses,
+    },
+    isRecurring: data.isRecurring ?? defaultEvent.isRecurring,
+    maxStudents: data.maxStudents ?? defaultEvent.maxStudents,
+    enrolledStudentIds: data.enrolledStudentIds,
+    status: data.status,
+    meeting_link: data.meeting_link,
+    price: data.price,
+  };
+
+  // Add optional fields only if they are defined
+  if (data.lessonNumber) event.lessonNumber = data.lessonNumber;
+  if (data.bookingDetails) event.bookingDetails = { ...data.bookingDetails };
+
+  return event;
 };
-
-// This type is used in the calendar utility functions
-export type TimeSlot = {
-  hour: number;
-  displayHour: number;
-  ampm: string;
-};
-
-// This represents the configuration for calendar display
-export type CalendarConfig = {
-  START_HOUR: number;
-  END_HOUR: number;
-  HOURS_TO_DISPLAY: number;
-  INTERVALS_PER_HOUR: number;
-};
-
-export {};
-

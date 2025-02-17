@@ -12,7 +12,7 @@
     "SignUp": {
       "Student": {
         "title": "Create your account",
-        "subtitle": "Already have an account? Sign in",
+        "subtitle": "Already have an account?",
         "nickname": "Nickname",
         "email": "Email address",
         "password": "Password",
@@ -97,6 +97,17 @@
       }
     },
     "Student": {
+      "schedule": {
+        "title": "Your Schedule",
+        "subtitle": "View and manage your upcoming classes",
+        "currentMonth": "{month} {year}",
+        "calendar": {
+          "today": "Today",
+          "week": "Week",
+          "day": "Day",
+          "noEvents": "No classes scheduled"
+        }
+      },
       "title": "Your Classes",
       "selectTeacherPrompt": "Select a teacher to view their availability",
       "teacherRate": "Classes with {price}$ per hour",
@@ -139,7 +150,12 @@
       },
       "noUpcoming": "No upcoming classes",
       "noPast": "No past classes",
-      "noBookings": "No classes available"
+      "noBookings": "No classes available",
+      "navigation": {
+        "schedule": "Schedule",
+        "classes": "My Classes",
+        "profile": "Profile"
+      }
     },
     "Teacher": {
       "welcome": "Welcome to Your Dashboard",
@@ -149,9 +165,76 @@
       "pricing": "Pricing ($ per hour)",
       "profile": "Profile",
       "addEvent": "Add Event",
+      "student": "Student",
+      "event": {
+        "title": "Event Details",
+        "details": "Class Details",
+        "student": "Student",
+        "status": {
+          "label": "Status",
+          "available": "Available",
+          "confirmed": "Confirmed",
+          "completed": "Completed",
+          "cancelled": "Cancelled"
+        },
+        "meetingLink": {
+          "label": "Meeting Link",
+          "placeholder": "Enter meeting link..."
+        },
+        "homework": {
+          "label": "Homework",
+          "add": "Add Homework",
+          "placeholder": "Enter homework description..."
+        },
+        "feedback": {
+          "label": "Student Feedback",
+          "noFeedback": "No feedback yet",
+          "comment": "Comment",
+          "rating": "Rating"
+        },
+        "buttons": {
+          "save": "Save",
+          "saving": "Saving...",
+          "cancel": "Cancel"
+        },
+        "overview": "View Event Overview"
+      },
+      "feedback": {
+        "title": "Teacher Feedback",
+        "rating": "Rating",
+        "comment": "Comment",
+        "created": "Created",
+        "updated": "Last updated",
+        "none": "No feedback yet"
+      },
+      "status": {
+        "completed": "Completed",
+        "confirmed": "Confirmed",
+        "cancelled": "Cancelled"
+      },
       "buttons": {
         "save": "Save",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "meet": "Join Meeting"
+      },
+      "homework": {
+        "title": "Homework",
+        "add": "Add Homework",
+        "edit": "Edit Homework",
+        "view": "View Homework",
+        "description": "Description",
+        "descriptionPlaceholder": "Enter homework description...",
+        "dueDate": "Due Date",
+        "status": {
+          "pending": "Pending",
+          "submitted": "Submitted",
+          "graded": "Graded"
+        },
+        "buttons": {
+          "save": "Save",
+          "cancel": "Cancel",
+          "submit": "Submit"
+        }
       }
     }
   },
@@ -181,12 +264,13 @@
     "pricingPlaceholder": "Enter your hourly rate",
     "buttons": {
       "save": "Save",
+      "saving": "Saving...",
       "cancel": "Cancel"
     },
     "updateSuccess": "Profile updated successfully",
     "updateError": "Failed to update profile",
-    "imageUploadSuccess": "Profile image uploaded successfully",
-    "imageUploadError": "Failed to upload profile image"
+    "imageUploadSuccess": "Image uploaded successfully",
+    "imageUploadError": "Failed to upload image"
   },
   "Calendar": {
     "navigation": {

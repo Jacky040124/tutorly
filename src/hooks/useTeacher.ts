@@ -1,7 +1,7 @@
 // src/hooks/useTeachers.ts
 import { useEffect, useState } from "react";
-import { fetchTeachers } from "@/services/user.service";
-import { Teacher } from "@/types/user";
+import { fetchTeachers } from "@/app/action";
+import { Teacher } from "@/types/teacher";
 
 export function useTeachers() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -15,9 +15,12 @@ export function useTeachers() {
         console.error('Error loading teachers:', error);
       }
     };
-
     loadTeachers();
   }, []);
 
-  return { teachers };
+  function getTeacherById(teacherId: string) {
+    return teachers.find((teacher) => teacher.uid === teacherId);
+  }
+
+  return { teachers, getTeacherById };
 };

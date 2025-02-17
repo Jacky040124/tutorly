@@ -1,45 +1,33 @@
 "use client";
 
-import { useEffect } from "react";
 import { useUser } from "@/hooks/useUser";
-import { signIn } from "@/services/auth.service";
+import { signIn } from "@/app/action";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslations } from "next-intl";
-import { useForm, Controller } from "react-hook-form";
-import type { User } from "@/types/user";
-
-type SignInData = {
-  email: string;
-  password: string;
-};
+import { useEffect,useActionState } from "react";
+import { authState } from "@/app/action";
+import { Student } from "@/types/student";
 
 export default function SignIn() {
   const t = useTranslations("Auth.SignIn");
   const router = useRouter();
   const { setUser } = useUser();
-  const { handleSubmit, control, setValue } = useForm<SignInData>();
+  const [state, formAction, isPending] = useActionState(signIn, { error: null, user: null } as authState);
 
   useEffect(() => {
-    const savedEmail = window.localStorage.getItem("emailForSignIn");
-    if (savedEmail) {
-      setValue("email", savedEmail);
-      window.localStorage.removeItem("emailForSignIn");
+    if (state.user) {
+      setUser(state.user as Student);
+      if (state.user.type === "student") {
+        router.push(`/dashboard/student/${state.user.uid}/class`);
+      } else {
+        router.push(`/dashboard/teacher/${state.user.uid}`);
+      }
     }
-  }, [setValue]);
-
-  const onSubmit = async (data: SignInData) => {
-    try {
-      const { user, redirectTo } = await signIn(data.email, data.password);
-      setUser(user as User);
-      router.replace(redirectTo);
-    } catch (error) {
-      console.error("Sign-in error:", error);
-    }
-  };
+  }, [state]);
 
   return (
     <div className="flex-1 flex flex-col justify-center items-center px-4">
@@ -53,45 +41,18 @@ export default function SignIn() {
             </Link>
           </p>
         </div>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {state.error && <p className="text-red-500">{state.error}</p>}
+        <form action={formAction} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">{t("email")}</Label>
-            <Controller
-              name="email"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <Input 
-                  id="email" 
-                  type="email" 
-                  autoComplete="email" 
-                  {...field} 
-                  required 
-                />
-              )}
-            />
+            <Input id="email" type="email" autoComplete="email" name="email" required />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="password">{t("password")}</Label>
-            <Controller
-              name="password"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <Input 
-                  id="password" 
-                  type="password" 
-                  autoComplete="current-password" 
-                  {...field} 
-                  required 
-                />
-              )}
-            />
+            <Input id="password" type="password" autoComplete="current-password" name="password" required />
           </div>
-
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" disabled={isPending}>
             {t("button")}
           </Button>
         </form>

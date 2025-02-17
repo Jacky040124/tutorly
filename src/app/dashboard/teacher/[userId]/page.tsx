@@ -1,16 +1,17 @@
 "use client";
 
 import { useUser } from "@/hooks/useUser";
-import TeacherCalendar from "@/components/TeacherCalendar";
-import TeacherProfileOverlay from "@/components/TeacherProfileOverlay";
+import Calendar from "@/components/popup/teacher/Calendar";
+import ProfileWindow from "@/components/popup/teacher/ProfileWindow";
 import { useOverlay } from "@/hooks/useOverlay";
 import { useTranslations } from "next-intl";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, UserCircle, Plus } from "lucide-react";
-import AddEventOverlay from "@/components/AddEventOverlay";
-import { useBooking } from "@/hooks/useBooking";
+import AddEventWindow from "@/components/popup/teacher/AddEventWindow";
+import { Teacher } from "@/types/teacher";
+import { BookingCard } from "@/components/popup/teacher/BookingCard";
 
 interface TeacherDashboardProps {
   params: {
@@ -20,9 +21,9 @@ interface TeacherDashboardProps {
 
 export default function TeacherDashboard({ params }: TeacherDashboardProps) {
   const { user } = useUser();
+  const teacher = user as Teacher;
   const t = useTranslations("Dashboard.Teacher");
   const tCommon = useTranslations("Dashboard.Common");
-  const { bookings } = useBooking();
   const { showTeacherProfileOverlay, setShowTeacherProfileOverlay, showAddEventOverlay, setShowAddEventOverlay } =
     useOverlay();
 
@@ -41,12 +42,12 @@ export default function TeacherDashboard({ params }: TeacherDashboardProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-4">
+    <div className="flex flex-col gap-6 p-4 h-screen">
       {/* Welcome Card */}
       <Card className="rounded-xl shadow-sm">
         <CardHeader className="pb-4">
           <CardTitle className="text-2xl font-semibold">{t("welcome")}</CardTitle>
-          <p className="text-gray-500">{tCommon("greeting", { name: user?.nickname })}</p>
+          <p className="text-gray-500">{tCommon("greeting", { name: teacher.details.nickname })}</p>
         </CardHeader>
       </Card>
 
@@ -80,14 +81,23 @@ export default function TeacherDashboard({ params }: TeacherDashboardProps) {
         </div>
       </div>
 
-      {/* Calendar Section */}
-      <TeacherCalendar bookings={bookings} />
-
       {/* Profile Overlay */}
-      {showTeacherProfileOverlay && <TeacherProfileOverlay />}
+      {showTeacherProfileOverlay && <ProfileWindow />}
 
       {/* Add Event Overlay */}
-      {showAddEventOverlay && <AddEventOverlay />}
+      {showAddEventOverlay && <AddEventWindow />}
+
+      <div className="grid grid-cols-12 gap-6 flex-1 min-h-0">
+        {/* Calendar */}
+        <div className="col-span-9 h-full">
+          <Calendar teacher={teacher} />
+        </div>
+
+        {/* Booking Card */}
+        <div className="col-span-3 h-full">
+          <BookingCard events={teacher.events} />
+        </div>
+      </div>
     </div>
   );
 }
