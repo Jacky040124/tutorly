@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useOverlay } from "@/hooks/useOverlay";
-import { uploadImage } from "@/app/action";
+import { uploadImage } from "@/app/[locale]/action";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,10 +12,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 import { Camera } from "lucide-react";
-import { updateTeacherProfile } from "@/app/action";
+import { updateTeacherProfile } from "@/app/[locale]/action";
 import { Teacher } from "@/types/teacher";
 import { useToast } from "@/hooks/use-toast";
-import { UpdateTeacherProfileState } from "@/app/action";
+import { UpdateTeacherProfileState } from "@/app/[locale]/action";
 
 export default function TeacherProfileOverlay() {
   const { user } = useUser();

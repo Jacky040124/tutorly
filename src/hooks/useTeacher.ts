@@ -1,6 +1,6 @@
 // src/hooks/useTeachers.ts
 import { useEffect, useState } from "react";
-import { fetchTeachers } from "@/app/action";
+import { fetchTeachers } from "@/app/[locale]/action";
 import { Teacher } from "@/types/teacher";
 
 export function useTeachers() {

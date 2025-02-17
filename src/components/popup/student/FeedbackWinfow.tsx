@@ -4,7 +4,7 @@ import { Star } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { addFeedback, FeedbackState } from "@/app/action";
+import { addFeedback, FeedbackState } from "@/app/[locale]/action";
 import { useTranslation } from 'react-i18next';
 import { Booking } from '@/types/booking';
 import { useActionState } from 'react';

@@ -12,6 +12,7 @@ import { useUser } from "@/hooks/useUser";
 export default function Class() {
   const { user } = useUser();
   const { userId } = useParams();
+  const { locale } = useParams();
   const { teachers } = useTeachers();
 
   if (!user) {
@@ -74,7 +75,7 @@ export default function Class() {
               </div>
             </CardContent>
             <CardFooter>
-              <Link href={`/dashboard/student/${userId}/class/${teacher.uid}`} className="w-full">
+              <Link href={`/${locale}/dashboard/student/${userId}/class/${teacher.uid}`} className="w-full">
                 <Button className="w-full">View Profile</Button>
               </Link>
             </CardFooter>

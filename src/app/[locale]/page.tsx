@@ -8,9 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useTranslations } from "next-intl";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Image from "next/image";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 
 const subjects = [
   { key: "all", value: "ALL" },
@@ -28,7 +28,7 @@ export default function App() {
   const [selectedSubject, setSelectedSubject] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const { teachers } = useTeachers();
-
+  const { locale } = useParams();
   const filteredTeachers =
     selectedSubject === "ALL"
       ? teachers
@@ -51,9 +51,8 @@ export default function App() {
 
             {/* Right Side: Language Switcher and Auth Buttons */}
             <div className="flex items-center gap-6">
-              <LanguageSwitcher />
               <div className="flex items-center space-x-4">
-                <Link href="/auth/signin">
+                <Link href={`/${locale}/auth/signin`}>
                   <Button
                     variant="outline"
                     size="sm"
@@ -62,7 +61,7 @@ export default function App() {
                     {t("header.login")}
                   </Button>
                 </Link>
-                <Link href="/auth/signupteacher">
+                <Link href={`/${locale}/auth/signupteacher`}>
                   <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
                     {t("header.becomeTutor")}
                   </Button>

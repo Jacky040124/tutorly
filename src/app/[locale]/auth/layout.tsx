@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from 'next-intl';
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function AuthLayout({
   children,
@@ -21,7 +20,6 @@ export default function AuthLayout({
               {t("backToHome")}
             </Button>
           </Link>
-          <LanguageSwitcher />
         </div>
         {children}
       </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useUser } from "@/hooks/useUser";
-import { uploadImage } from "@/app/action";
+import { uploadImage } from "@/app/[locale]/action";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Student, createStudentFromData } from "@/types/student";
 import { Camera, X } from "lucide-react";
 import { useActionState } from "react";
-import { updateStudentProfile, UpdateStudentProfileState } from "@/app/action";
+import { updateStudentProfile, UpdateStudentProfileState } from "@/app/[locale]/action";
 import { useToast } from "@/hooks/use-toast";
 import { handleTagInput } from "@/lib/utils";
 

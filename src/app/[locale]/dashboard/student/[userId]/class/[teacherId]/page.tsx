@@ -7,7 +7,7 @@ import Calendar from "@/components/popup/student/Calendar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
-import { bookEvent } from "@/app/action";
+import { bookEvent } from "@/app/[locale]/action";
 import {
   Dialog,
   DialogContent,

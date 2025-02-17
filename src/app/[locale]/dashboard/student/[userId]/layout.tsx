@@ -8,12 +8,12 @@ import { useTranslations } from "next-intl";
 import { useUser } from "@/hooks/useUser";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
-import { getUserById } from "@/app/action";
+import { getUserById } from "@/app/[locale]/action";
 import { Student } from "@/types/student";
 
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
-  const { userId } = useParams();
+  const { userId, locale } = useParams();
   const { user, setUser } = useUser();
   const pathname = usePathname();
   const t = useTranslations("Dashboard.Student");
@@ -62,7 +62,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
                 return (
                   <Link
                     key={item.name}
-                    href={`/dashboard/student/${pathname.split("/")[3]}${item.href}`}
+                    href={`/${locale}/dashboard/student/${pathname.split("/")[3]}${item.href}`}
                     className={cn(
                       "group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors",
                       isActive

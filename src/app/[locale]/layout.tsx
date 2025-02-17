@@ -1,16 +1,16 @@
-// Root layout is kept as a server component for better performance
-// Client-side providers are moved to a separate component
 import { Inter, Lexend } from "next/font/google";
 import clsx from "clsx";
-import "@/app/globals.css";
+import "@/app/[locale]/globals.css";
 import ClientLayout from "@/components/ClientLayout";
-import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages } from "next-intl/server";
 import { Suspense } from "react";
 import Loading from "./loading";
 import BugReporter from "@/components/BugReporter";
 import { Toaster } from "@/components/ui/toaster";
 import { UserProvider } from "@/hooks/useUser";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
+import { notFound } from "next/navigation";
+import { routing } from "@/i18n/routing";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,18 +32,20 @@ export const metadata = {
 interface RootLayoutProp {
   children: React.ReactNode;
   params: {
-    userId: string;
+    locale: string;
   };
 }
 
 export default async function RootLayout({ children, params }: RootLayoutProp) {
-  // prefered language
-  const locale = await getLocale();
+  const { locale } = params;
 
-  // translation file
+  if (!routing.locales.includes(locale as any)) {
+    notFound();
+  }
+
   const messages = await getMessages();
 
-  // NextIntlClientProvider automatically inherits configuration from i18n/request.ts, but messages need to be passed explicitly.
+
   return (
     <html lang={locale} className={clsx("h-full scroll-smooth bg-white antialiased", inter.variable, lexend.variable)}>
       <body className="flex h-full flex-col">

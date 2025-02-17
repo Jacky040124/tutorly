@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { useActionState } from "react";
-import { addEvent } from "@/app/action";
+import { addEvent } from "@/app/[locale]/action";
 import { getNumberOfClasses, generateTimeOptions } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

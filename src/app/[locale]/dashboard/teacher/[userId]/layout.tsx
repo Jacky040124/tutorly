@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useParams } from "next/navigation";
-import { getUserById } from "@/app/action";
+import { getUserById } from "@/app/[locale]/action";
 import { Teacher } from "@/types/teacher";
 
 export default function TeacherLayout({ children }: { children: React.ReactNode }) {

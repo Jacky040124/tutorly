@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@/hooks/useUser";
-import { signIn } from "@/app/action";
+import { signIn } from "@/app/[locale]/action";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -9,22 +9,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslations } from "next-intl";
 import { useEffect,useActionState } from "react";
-import { authState } from "@/app/action";
+import { authState } from "@/app/[locale]/action";
 import { Student } from "@/types/student";
+import { useParams } from "next/navigation";
 
 export default function SignIn() {
   const t = useTranslations("Auth.SignIn");
   const router = useRouter();
   const { setUser } = useUser();
   const [state, formAction, isPending] = useActionState(signIn, { error: null, user: null } as authState);
+  const { locale } = useParams();
 
   useEffect(() => {
     if (state.user) {
       setUser(state.user as Student);
       if (state.user.type === "student") {
-        router.push(`/dashboard/student/${state.user.uid}/class`);
+        router.push(`/${locale}/dashboard/student/${state.user.uid}/schedule`);
       } else {
-        router.push(`/dashboard/teacher/${state.user.uid}`);
+        router.push(`/${locale}/dashboard/teacher/${state.user.uid}`);
       }
     }
   }, [state]);
@@ -36,7 +38,7 @@ export default function SignIn() {
           <h2 className="text-3xl font-bold">{t("title")}</h2>
           <p className="text-sm text-gray-600">
             {t("subtitle")}{" "}
-            <Link href="/auth/signup" className="font-medium text-green-600 hover:text-green-500">
+            <Link href={`/${locale}/auth/signup`} className="font-medium text-green-600 hover:text-green-500">
               {t("signupLink")}
             </Link>
           </p>

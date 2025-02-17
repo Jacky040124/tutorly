@@ -4,12 +4,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signUpStudent } from "@/app/action";
+import { signUpStudent } from "@/app/[locale]/action";
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useActionState, useEffect } from "react";
-import { authState } from "@/app/action";
-
+import { authState } from "@/app/[locale]/action";
+import { useParams } from "next/navigation";
 type SignUpData = {
   email: string;
   password: string;
@@ -22,10 +22,11 @@ export default function SignUp() {
   const tCommon = useTranslations('Auth.SignIn');
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(signUpStudent, { error: null, user: null } as authState);
+  const { locale } = useParams();
 
   useEffect(() => {
     if (state.user) {
-      router.push(`/auth/signin`);
+      router.push(`/${locale}/auth/signin`);
     }
   }, [state]);
 
@@ -36,7 +37,7 @@ export default function SignUp() {
           <h2 className="text-3xl font-bold">{t('title')}</h2>
           <p className="text-sm text-gray-600">
             {t('subtitle')}{' '}
-            <Link href="/auth/signin" className="font-medium text-green-600 hover:text-green-500">
+            <Link href={`/${locale}/auth/signin`} className="font-medium text-green-600 hover:text-green-500">
               {tCommon('button')}
             </Link>
           </p>
@@ -88,14 +89,14 @@ export default function SignUp() {
               {t('button')}
             </Button>
             <Link
-              href="/auth/signupteacher"
+              href={`/${locale}/auth/signupteacher`}
               className="block text-center text-sm text-gray-600 hover:text-gray-900"
             >
               {t('teacherLink')}
             </Link>
           </div>
         </form>
-      </div>
+      </div>  
     </div>
   );
 }

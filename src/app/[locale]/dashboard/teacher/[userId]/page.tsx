@@ -5,7 +5,6 @@ import Calendar from "@/components/popup/teacher/Calendar";
 import ProfileWindow from "@/components/popup/teacher/ProfileWindow";
 import { useOverlay } from "@/hooks/useOverlay";
 import { useTranslations } from "next-intl";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, UserCircle, Plus } from "lucide-react";
@@ -13,7 +12,7 @@ import AddEventWindow from "@/components/popup/teacher/AddEventWindow";
 import { Teacher } from "@/types/teacher";
 import { BookingCard } from "@/components/popup/teacher/BookingCard";
 import { formatMonthYear } from "@/lib/utils";
-import { deleteEvent } from "@/app/action";
+import { deleteEvent } from "@/app/[locale]/action";
 import { useState } from "react";
 import { Event } from "@/types/event";
 
@@ -62,7 +61,6 @@ export default function TeacherDashboard() {
         </div>
 
         <div className="flex items-center gap-4">
-          <LanguageSwitcher />
           <Button
             onClick={() => setShowAddEventOverlay(true)}
             variant="outline"
