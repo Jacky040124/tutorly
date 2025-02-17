@@ -31,12 +31,18 @@ export const metadata = {
 
 interface RootLayoutProp {
   children: React.ReactNode;
-  params: {
+  params: Promise<{
     locale: string;
-  };
+  }>;
 }
 
-export default async function RootLayout({ children, params }: RootLayoutProp) {
+export default async function RootLayout(props: RootLayoutProp) {
+  const params = await props.params;
+
+  const {
+    children
+  } = props;
+
   const { locale } = params;
 
   if (!routing.locales.includes(locale as any)) {

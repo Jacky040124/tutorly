@@ -14,11 +14,11 @@ interface BookingCardProps {
 // TODO : fix data refetch after update
 export function BookingCard({ events }: BookingCardProps) {
   const [showEventWindow, setShowEventWindow] = useState(false);
-  const t = useTranslations("Dashboard.Teacher");
+  const t = useTranslations("BookingCard");
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 h-full overflow-auto">
-      <h2 className="text-lg font-semibold mb-4">Upcoming Events</h2>
+      <h2 className="text-lg font-semibold mb-4">{t("title")}</h2>
       <div className="space-y-4">
         {events.map((event) => (
           <div

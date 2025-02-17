@@ -46,7 +46,7 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
 
   
 
-  const t = useTranslations("Dashboard.Teacher.event");
+  const t = useTranslations("EventWindow");
 
   useEffect(() => {
     async function fetchStudent() {
@@ -136,7 +136,7 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
                 onValueChange={(value) => setSelectedStatus({ status: value as EventStatus["status"] })}
               >
                 <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder={event.status} />
+                  <SelectValue placeholder={t(`status.${event.status.status}`)} />
                 </SelectTrigger>
 
                 <SelectContent>

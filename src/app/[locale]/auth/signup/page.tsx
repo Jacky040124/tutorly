@@ -18,8 +18,7 @@ type SignUpData = {
 };
 
 export default function SignUp() {
-  const t = useTranslations('Auth.SignUp.Student');
-  const tCommon = useTranslations('Auth.SignIn');
+  const t = useTranslations('Auth.SignUp');
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(signUpStudent, { error: null, user: null } as authState);
   const { locale } = useParams();
@@ -38,7 +37,7 @@ export default function SignUp() {
           <p className="text-sm text-gray-600">
             {t('subtitle')}{' '}
             <Link href={`/${locale}/auth/signin`} className="font-medium text-green-600 hover:text-green-500">
-              {tCommon('button')}
+              {t('SignInButton')}
             </Link>
           </p>
         </div>

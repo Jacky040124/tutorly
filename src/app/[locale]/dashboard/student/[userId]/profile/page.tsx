@@ -25,8 +25,7 @@ export default function StudentProfile({ params }: StudentProfileProps) {
   const { user, setUser } = useUser();
   if (!user) return null;
   const { toast } = useToast();
-  const t = useTranslations("Profile");
-  const tCommon = useTranslations("Dashboard.Common");
+  const t = useTranslations("Dashboard.Student.Profile");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const student = user as Student;
   const [interests, setInterests] = useState<string[]>(student?.details.interests || []);
@@ -35,8 +34,6 @@ export default function StudentProfile({ params }: StudentProfileProps) {
     error: null,
     updatedProfile: null,
   } as UpdateStudentProfileState);
-  console.log("student", student);
-  console.log("student photoURL", student.details.photoURL);
 
   useEffect(() => {
     if (state.error) {

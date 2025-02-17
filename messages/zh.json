@@ -1,356 +1,284 @@
 {
-  "Auth": {
-    "SignIn": {
-      "title": "登录您的账户",
-      "subtitle": "还没有账户？注册免费试用。",
-      "email": "电子邮箱",
-      "password": "密码",
-      "button": "登录",
-      "backToHome": "← 返回首页",
-      "signupLink": "注册"
-    },
-    "SignUp": {
-      "Student": {
-        "title": "创建账户",
-        "subtitle": "已有账户?",
-        "nickname": "昵称",
-        "email": "电子邮箱",
-        "password": "密码",
-        "signupCode": "注册码",
-        "button": "注册",
-        "teacherLink": "注册成为教师",
-        "banner": {
-          "title": "开始学习之旅",
-          "subtitle": "加入我们的社区，向最优秀的老师学习。"
-        }
-      },
-      "Teacher": {
-        "title": "创建教师账户",
-        "subtitle": "已有账户？",
-        "signInLink": "登录",
-        "nickname": "昵称",
-        "description": "描述",
-        "email": "电子邮箱",
-        "password": "密码",
-        "signupCode": "教师注册码",
-        "button": "注册成为教师 →",
-        "studentLink": "注册成为学生",
-        "banner": {
-          "title": "开始教学之旅",
-          "subtitle": "加入我们的社区，与全球学生分享您的知识。"
-        }
-      }
-    }
-  },
-  "Dashboard": {
-    "Common": {
-      "pleaseSignIn": "请登录以访问此页面",
-      "greeting": "欢迎回来，{name}",
-      "debugInformation": "调试信息",
-      "calendarOverlay": {
-        "title": "新建课程",
-        "fields": {
-          "date": "选择日期",
-          "startTime": "开始时间",
-          "endTime": "结束时间",
-          "selectTime": "选择时间",
-          "repeating": "重复课程",
-          "totalClasses": "总课时",
-          "meetLink": "会议链接",
-          "meetLinkPlaceholder": "输入Zoom会议链接",
-          "maxStudents": "最大学生人数",
-          "maxStudentsPlaceholder": "输入最大学生人数",
-          "title": "课程标题",
-          "titlePlaceholder": "请输入课程标题"
-        },
-        "errors": {
-          "fillAllFields": "请填写所有字段",
-          "endTimeLater": "结束时间必须晚于开始时间",
-          "bookingOverlap": "一个或多个时间段与现有预约重叠",
-          "availabilityOverlap": "一个或多个时间段与现有课程重叠",
-          "invalidMaxStudents": "最大学生人数必须至少为1",
-          "titleRequired": "请输入课程标题"
-        },
-        "removeSlot": {
-          "title": "删除时间段",
-          "confirmation": "确定要删除这个时间段吗？"
-        },
-        "buttons": {
-          "save": "保存",
-          "cancel": "取消",
-          "remove": "删除"
-        }
-      },
-      "fields": {
-        "selectTime": "选择时间",
-        "toggle": {
-          "ariaLabel": "切换设置",
-          "on": "开启",
-          "off": "关闭"
-        },
-        "required": "必填",
-        "optional": "选填",
-        "placeholder": {
-          "select": "请选择...",
-          "enter": "请输入..."
-        }
-      }
-    },
-    "Student": {
-      "schedule": {
-        "title": "课程安排",
-        "subtitle": "查看和管理您的课程",
-        "currentMonth": "{year}年{month}",
-        "calendar": {
-          "today": "今天",
-          "week": "周视图",
-          "day": "日视图",
-          "noEvents": "暂无课程安排"
-        }
-      },
-      "title": "您的课程",
-      "selectTeacherPrompt": "选择老师查看其可用时间",
-      "teacherRate": "课程每小时 {price}$",
-      "greeting": "欢迎回来",
-      "profile": "个人资料",
-      "selectTeacher": "选择老师",
-      "tabs": {
-        "upcoming": "即将到来",
-        "past": "历史记录"
-      },
-      "status": {
-        "confirmed": "已确认",
-        "completed": "已完成",
-        "cancelled": "已取消",
-        "upcoming": "即将到来的课程",
-        "past": "历史课程"
-      },
-      "lessonCount": {
-        "lesson": "课程",
-        "of": "/"
-      },
-      "student": "学生",
-      "teacher": "老师",
-      "feedback": {
-        "title": "学生反馈",
-        "rating": "评分",
-        "comment": "评论",
-        "created": "创建时间",
-        "updated": "更新时间",
-        "none": "暂无反馈"
-      },
-      "buttons": {
-        "meet": "进入课堂",
-        "uploadHomework": "上传作业",
-        "updateHomework": "更新作业",
-        "viewHomework": "查看作业",
-        "addFeedback": "添加反馈",
-        "editFeedback": "编辑反馈",
-        "viewFeedback": "查看反馈"
-      },
-      "noUpcoming": "暂无即将到来的课程",
-      "noPast": "暂无历史课程",
-      "noBookings": "暂无可预约课程",
-      "navigation": {
-        "schedule": "课程表",
-        "classes": "我的课程",
-        "profile": "个人资料"
-      }
-    },
-    "Teacher": {
-      "welcome": "欢迎来到您的教师面板",
-      "title": "编辑资料",
-      "nickname": "昵称",
-      "description": "描述",
-      "pricing": "收费 (每小时$)",
-      "profile": "个人资料",
-      "addEvent": "添加课程",
-      "homework": {
-        "title": "作业",
-        "add": "添加作业",
-        "edit": "编辑作业",
-        "view": "查看作业",
-        "description": "描述",
-        "descriptionPlaceholder": "输入作业描述...",
-        "dueDate": "截止日期",
-        "status": {
-          "pending": "待完成",
-          "submitted": "已提交",
-          "graded": "已评分"
-        },
-        "buttons": {
-          "save": "保存",
-          "cancel": "取消",
-          "submit": "提交"
-        }
-      },
-      "event": {
-        "title": "课程详情",
-        "details": "课程详情",
-        "student": "学生",
-        "status": {
-          "label": "状态",
-          "available": "可预约",
-          "confirmed": "已确认",
-          "completed": "已完成",
-          "cancelled": "已取消"
-        },
-        "meetingLink": {
-          "label": "会议链接",
-          "placeholder": "输入会议链接..."
-        },
-        "homework": {
-          "label": "作业",
-          "add": "添加作业",
-          "placeholder": "输入作业描述..."
-        },
-        "feedback": {
-          "label": "学生反馈",
-          "noFeedback": "暂无反馈",
-          "comment": "评论",
-          "rating": "评分"
-        },
-        "buttons": {
-          "save": "保存",
-          "saving": "保存中...",
-          "cancel": "取消"
-        },
-        "overview": "查看课程概览"
-      },
-      "buttons": {
-        "save": "保存",
-        "cancel": "取消"
-      }
-    }
-  },
-  "Profile": {
-    "editProfile": "编辑资料",
-    "student": "学生",
-    "teacher": "老师",
-    "basicInfo": "基本信息",
-    "professionalInfo": "专业信息",
-    "nickname": "昵称",
-    "nicknamePlaceholder": "请输入显示名称",
-    "introduction": "个人介绍",
-    "introductionPlaceholder": "请介绍一下自己",
-    "interests": "兴趣爱好",
-    "interestsPlaceholder": "你想学习什么？",
-    "goals": "学习目标",
-    "goalsPlaceholder": "你想达到什么目标？",
-    "expertise": "专业领域",
-    "expertisePlaceholder": "你擅长教授哪些科目？",
-    "education": "教育背景",
-    "educationPlaceholder": "你的教育经历",
-    "experience": "教学经验",
-    "experiencePlaceholder": "你的教学经验",
-    "teachingStyle": "教学风格",
-    "teachingStylePlaceholder": "描述你的教学方法",
-    "pricing": "每小时收费",
-    "pricingPlaceholder": "请输入每小时收费",
-    "buttons": {
-      "save": "保存",
-      "cancel": "取消"
-    },
-    "updateSuccess": "资料更新成功",
-    "updateError": "资料更新失败",
-    "imageUploadSuccess": "头像上传成功",
-    "imageUploadError": "头像上传失败"
-  },
-  "Calendar": {
-    "navigation": {
-      "today": "今天",
-      "previousWeek": "上周",
-      "nextWeek": "下周"
-    },
-    "view": {
-      "week": "周视图",
-      "day": "日视图"
-    },
-    "months": {
-      "january": "一月",
-      "february": "二月",
-      "march": "三月",
-      "april": "四月",
-      "may": "五月",
-      "june": "六月",
-      "july": "七月",
-      "august": "八月",
-      "september": "九月",
-      "october": "十月",
-      "november": "十一月",
-      "december": "十二月"
-    }
-  },
-  "CalendarOverlay": {
-    "title": "新建课程",
-    "fields": {
-      "title": "课程标题",
-      "titlePlaceholder": "请输入课程标题",
-      "date": "选择日期",
-      "startTime": "开始时间",
-      "endTime": "结束时间",
-      "selectTime": "选择时间",
-      "repeating": "重复课程",
-      "repeatingDescription": "开启后可以创建每周重复的课程",
-      "repeatingClasses": "将创建 {count} 节课程",
-      "meetLink": "会议链接",
-      "meetLinkPlaceholder": "输入Zoom会议链接",
-      "maxStudents": "最大学生人数",
-      "maxStudentsPlaceholder": "输入最大学生人数"
-    },
-    "buttons": {
-      "save": "保存",
-      "saving": "保存中...",
-      "cancel": "取消"
-    },
-    "errors": {
-      "fillAllFields": "请填写所有字段",
-      "endTimeLater": "结束时间必须晚于开始时间",
-      "bookingOverlap": "一个或多个时间段与现有预约重叠",
-      "availabilityOverlap": "一个或多个时间段与现有课程重叠",
-      "invalidMaxStudents": "最大学生人数必须至少为1",
-      "titleRequired": "请输入课程标题"
-    },
-    "eventAddedSuccess": "课程添加成功",
-    "bulkEventsAddedSuccess": "{count} 节课程添加成功"
-  },
   "Landing": {
+    "title": "Tutorly",
+    "subtitle": "找到您的完美家教",
+    "button": "開始",
     "header": {
       "title": "Tutorly",
-      "login": "登录",
-      "becomeTutor": "成为导师"
+      "login": "登入",
+      "becomeTutor": "成為老師"
     },
     "hero": {
-      "title": "找到最适合的导师",
-      "subtitle": "向最优秀的导师学习，实现你的目标"
+      "title": "找到最適合您的家教",
+      "subtitle": "與經驗豐富的老師連接，獲得個人化學習體驗"
     },
     "search": {
-      "placeholder": "搜索导师"
+      "placeholder": "搜尋科目或老師..."
     },
     "subjects": {
-      "all": "全部",
-      "math": "数学",
+      "all": "所有科目",
+      "math": "數學",
       "physics": "物理",
-      "chemistry": "化学",
-      "english": "英语",
-      "economics": "经济",
-      "computerScience": "计算机"
+      "chemistry": "化學",
+      "english": "英文",
+      "economics": "經濟",
+      "computerScience": "電腦科學"
     },
     "tutors": {
-      "pricePerHour": "每小时 ${price}"
+      "pricePerHour": "${price}/小時"
     },
     "pagination": {
-      "previous": "上一页",
-      "next": "下一页",
-      "pageInfo": "第 {current} 页，共 {total} 页"
+      "previous": "上一頁",
+      "next": "下一頁",
+      "pageInfo": "第 {current} 頁，共 {total} 頁"
     }
   },
+
+  "Auth": {
+    "SignIn": {
+      "title": "登入",
+      "subtitle": "還沒有帳號？",
+      "signupLink": "立即註冊",
+      "email": "電子郵件",
+      "password": "密碼",
+      "button": "登入",
+      "backToHome": "返回首頁",
+      "error": "電子郵件或密碼錯誤"
+    },
+
+    "SignUp": {
+      "title": "註冊",
+      "subtitle": "已經有帳號了？",
+      "email": "電子郵件",
+      "password": "密碼",
+      "nickname": "暱稱",
+      "signupCode": "註冊碼",
+      "button": "註冊",
+      "teacherLink": "想成為老師？在這裡註冊",
+      "SignInButton": "登入"
+    },
+
+    "SignUpTeacher": {
+      "title": "註冊為老師",
+      "subtitle": "已經有帳號了？",
+      "signInLink": "立即登入",
+      "email": "電子郵件",
+      "password": "密碼",
+      "signupCode": "老師註冊碼",
+      "button": "註冊",
+      "studentLink": "想註冊為學生？點擊這裡",
+      "error": "註冊資訊無效"
+    }
+  },
+
+  "Dashboard": {
+    "Student": {
+      "title": "學生儀表板",
+      "subtitle": "歡迎來到您的學生儀表板",
+      "navigation": {
+        "profile": "個人資料",
+        "schedule": "課程表",
+        "classes": "我的課程"
+      },
+
+      "Schedule": {
+        "title": "課程時間表",
+        "subtitle": "查看和管理您即將到來的課程",
+        "calendar": {
+          "today": "今天",
+          "week": "週",
+          "day": "日"
+        },
+        "pleaseSignIn": "請登入以查看您的課程時間表"
+      },
+
+      "Profile": {
+        "editProfile": "編輯個人資料",
+        "student": "學生",
+        "nickname": "顯示名稱",
+        "nicknamePlaceholder": "輸入您的顯示名稱",
+        "introduction": "自我介紹",
+        "introductionPlaceholder": "寫一段簡短的自我介紹",
+        "interests": "學習興趣",
+        "interestsPlaceholder": "您對學習什麼感興趣？（按下 Enter 或逗號 (,) 新增，× 移除）",
+        "noInterests": "尚未新增任何興趣",
+        "goals": "學習目標",
+        "goalsPlaceholder": "您想達成什麼目標？（按下 Enter 或逗號 (,) 新增，× 移除）",
+        "noGoals": "尚未新增任何目標",
+        "buttons": {
+          "save": "儲存變更",
+          "saving": "儲存中..."
+        },
+        "imageUploadSuccess": "個人照片更新成功",
+        "imageUploadError": "上傳個人照片失敗",
+        "updateSuccess": "個人資料更新成功",
+        "updateError": "更新個人資料失敗"
+      },
+
+      "Class": {
+        "title": "尋找最適合您的老師",
+        "subtitle": "瀏覽我們合格的教師，找到最適合您學習旅程的老師",
+        "loading": "載入中...",
+        "expertise": "專業領域",
+        "about": "關於",
+        "education": "教育背景",
+        "noDescription": "未提供描述",
+        "viewProfile": "查看個人資料",
+        "pricePerHour": "${price}/小時",
+        "confirmBooking": {
+          "title": "確認預約",
+          "class": "課程",
+          "status": "狀態",
+          "type": "類型",
+          "date": "日期",
+          "time": "時間",
+          "price": "價格",
+          "oneTime": "單次",
+          "repeating": "重複",
+          "buttons": {
+            "cancel": "取消",
+            "confirm": "確認預約"
+          }
+        },
+        "teacherProfile": {
+          "about": "關於",
+          "education": "教育背景",
+          "experience": "教學經驗",
+          "teachingStyle": "教學風格",
+          "noEducation": "未提供教育背景資訊",
+          "noExperience": "未提供教學經驗資訊",
+          "noTeachingStyle": "未提供教學風格資訊"
+        },
+        "bookingSuccess": "課程預約成功！",
+        "bookingError": "預約課程失敗",
+        "teacherNotFound": "找不到老師"
+      }
+    },
+
+    "Teacher": {
+      "welcome": "歡迎來到您的儀表板",
+      "greeting": "您好，{name}",
+      "addEvent": "新增課程",
+      "profile": "個人資料",
+      "confirmDelete": "確認刪除",
+      "deleteEventMessage": "您確定要刪除這個課程嗎？",
+      "confirm": "刪除",
+      "cancel": "取消"
+    }
+  },
+
   "BugReport": {
-    "title": "报告问题",
-    "placeholder": "请描述您遇到的问题...",
-    "sendButton": "发送反馈",
-    "sending": "发送中...",
-    "success": "反馈发送成功！",
-    "error": "发送失败，请重试。"
+    "title": "錯誤回報",
+    "subtitle": "回報錯誤",
+    "button": "回報",
+    "sendButton": "送出",
+    "sending": "正在送出...",
+    "success": "錯誤回報已送出",
+    "error": "錯誤回報失敗",
+    "placeholder": "描述錯誤..."
+  },
+
+  "layout": {
+    "backToHome": "返回首頁"
+  },
+
+  "AddEventOverlay": {
+    "title": "新增課程",
+    "fields": {
+      "date": "日期",
+      "title": "標題",
+      "startTime": "開始時間",
+      "endTime": "結束時間",
+      "meetLink": "會議連結",
+      "maxStudents": "最大學生人數",
+      "repeating": "每週重複"
+    },
+    "buttons": {
+      "cancel": "取消",
+      "save": "儲存",
+      "saving": "儲存中..."
+    },
+    "placeholders": {
+      "title": "標題",
+      "meetingLinks": "會議連結",
+      "maxStudents": "最大學生人數",
+      "startTime": "選擇開始時間",
+      "endTime": "選擇結束時間"
+    },
+    "messages": {
+      "classesGenerated": "將產生 {count} 堂課"
+    }
+  },
+
+  "BookingCard": {
+    "title": "即將到來的課程",
+    "buttons": {
+      "meet": "加入會議",
+      "overview": "查看詳情"
+    },
+    "event": {
+      "overview": "課程概覽",
+      "noEvents": "沒有即將到來的課程"
+    }
+  },
+
+  "EventWindow": {
+    "title": "課程詳情",
+    "studentInfo": {
+      "loading": "正在載入學生資訊..."
+    },
+    "status": {
+      "label": "課程狀態",
+      "available": "可預約",
+      "confirmed": "已確認",
+      "completed": "已完成",
+      "cancelled": "已取消"
+    },
+    "meetingLink": {
+      "label": "會議連結",
+      "placeholder": "輸入會議連結"
+    },
+    "homework": {
+      "label": "作業連結",
+      "placeholder": "輸入作業連結或說明"
+    },
+    "feedback": {
+      "label": "學生回饋",
+      "rating": "評分：{rating}/5",
+      "noComment": "未提供評論"
+    },
+    "buttons": {
+      "cancel": "取消",
+      "save": "儲存變更",
+      "saving": "儲存中..."
+    }
+  },
+
+  "Profile": {
+    "editProfile": "編輯個人資料",
+    "teacher": "老師",
+    "nickname": "顯示名稱",
+    "nicknamePlaceholder": "輸入您的顯示名稱",
+    "introduction": "自我介紹",
+    "introductionPlaceholder": "寫一段簡短的自我介紹",
+    "pricing": "每小時收費 (USD)",
+    "pricingPlaceholder": "輸入您的每小時收費",
+    "expertise": "專業領域",
+    "expertisePlaceholder": "列出您的教學科目和專長",
+    "education": "教育背景",
+    "educationPlaceholder": "分享您的學歷資格",
+    "experience": "教學經驗",
+    "experiencePlaceholder": "描述您的教學經驗",
+    "teachingStyle": "教學風格",
+    "teachingStylePlaceholder": "描述您的教學方式和方法",
+    "buttons": {
+      "cancel": "取消",
+      "save": "儲存變更",
+      "saving": "儲存中..."
+    },
+    "imageUploadSuccess": "個人照片更新成功",
+    "updateSuccess": "個人資料更新成功",
+    "updateError": "更新個人資料失敗",
+    "error": "錯誤"
   }
 }

@@ -6,16 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { addFeedback, FeedbackState } from "@/app/[locale]/action";
 import { useTranslation } from 'react-i18next';
-import { Booking } from '@/types/booking';
+import { Event } from '@/types/event';
 import { useActionState } from 'react';
 
 
 interface FeedbackOverlayProp {
-  booking: Booking;
+  event: Event;
   onClose: () => void;
 }
 
-export default function FeedbackOverlay({ booking, onClose }: FeedbackOverlayProp) {
+
+// TODO: Implement feedback overlay
+export default function FeedbackOverlay({ event, onClose }: FeedbackOverlayProp) {
   const { user } = useUser();
   const [feedbackText, setFeedbackText] = useState("");
   const [rating, setRating] = useState(0);
@@ -27,11 +29,11 @@ export default function FeedbackOverlay({ booking, onClose }: FeedbackOverlayPro
     <Dialog open={true} onOpenChange={() => onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{booking.feedback ? "Edit Feedback" : "Add Feedback"}</DialogTitle>
+          <DialogTitle>{event.bookingDetails?.feedback ? "Edit Feedback" : "Add Feedback"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-4">
           <form action={formAction}>
-            <input type="hidden" name="bookingId" value={booking.id} />
+            <input type="hidden" name="eventId" value={event.id} />
             <input type="hidden" name="studentId" value={user?.uid} />
             <input type="hidden" name="rating" value={rating} />
             <input type="hidden" name="comment" value={feedbackText} />

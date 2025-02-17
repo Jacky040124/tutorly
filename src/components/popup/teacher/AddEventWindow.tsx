@@ -24,7 +24,7 @@ export default function AddEventOverlay() {
 
   const { setShowAddEventOverlay } = useOverlay();
   const { toast } = useToast();
-  const t = useTranslations("CalendarOverlay");
+  const t = useTranslations("AddEventOverlay");
   const [date, setDate] = useState<Date>(new Date());
   const [isRepeating, setIsRepeating] = useState(false);
   const [title, setTitle] = useState("");

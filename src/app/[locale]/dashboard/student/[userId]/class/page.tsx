@@ -8,12 +8,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/hooks/useUser";
+import { useTranslations } from "use-intl";
 
 export default function Class() {
   const { user } = useUser();
   const { userId } = useParams();
   const { locale } = useParams();
   const { teachers } = useTeachers();
+  const t = useTranslations("Dashboard.Student.Class");
 
   if (!user) {
     return <div>Loading...</div>;
@@ -22,9 +24,9 @@ export default function Class() {
   return (
     <div className="container mx-auto py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Find Your Perfect Tutor</h1>
+        <h1 className="text-3xl font-bold">{t("title")}</h1>
         <p className="text-muted-foreground mt-2">
-          Browse through our qualified teachers and find the perfect match for your learning journey
+          {t("subtitle")}
         </p>
       </div>
 
@@ -45,7 +47,7 @@ export default function Class() {
                 <div>
                   <CardTitle className="text-xl">{teacher.details.nickname}</CardTitle>
                   <CardDescription className="text-sm text-muted-foreground">
-                    ${teacher.details.pricing}/hour
+                    {t("pricePerHour", { price: teacher.details.pricing })}
                   </CardDescription>
                 </div>
               </div>
@@ -53,7 +55,7 @@ export default function Class() {
             <CardContent className="flex-1">
               <div className="space-y-4">
                 <div>
-                  <h4 className="font-semibold mb-1">Expertise</h4>
+                  <h4 className="font-semibold mb-1">{t("expertise")}</h4>
                   <div className="flex flex-wrap gap-2">
                     {teacher.details.expertise.split(",").map((skill, index) => (
                       <Badge key={index} variant="secondary">
@@ -63,20 +65,20 @@ export default function Class() {
                   </div>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-1">About</h4>
+                  <h4 className="font-semibold mb-1">{t("about")}</h4>
                   <p className="text-sm text-muted-foreground line-clamp-3">
-                    {teacher.details.description || teacher.details.introduction || "No description provided"}
+                    {teacher.details.description || teacher.details.introduction || t("noDescription")}
                   </p>
                 </div>
                 <div>
-                  <h4 className="font-semibold mb-1">Education</h4>
+                  <h4 className="font-semibold mb-1">{t("education")}</h4>
                   <p className="text-sm text-muted-foreground">{teacher.details.education}</p>
                 </div>
               </div>
             </CardContent>
             <CardFooter>
               <Link href={`/${locale}/dashboard/student/${userId}/class/${teacher.uid}`} className="w-full">
-                <Button className="w-full">View Profile</Button>
+                <Button className="w-full">{t("viewProfile")}</Button>
               </Link>
             </CardFooter>
           </Card>

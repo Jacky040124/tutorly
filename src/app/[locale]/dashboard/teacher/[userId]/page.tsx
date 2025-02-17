@@ -23,7 +23,6 @@ export default function TeacherDashboard() {
   const [showDeleteEventOverlay, setShowDeleteEventOverlay] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const t = useTranslations("Dashboard.Teacher");
-  const tCommon = useTranslations("Dashboard.Common");
   const { showTeacherProfileOverlay, setShowTeacherProfileOverlay, showAddEventOverlay, setShowAddEventOverlay } =
     useOverlay();
 
@@ -49,7 +48,7 @@ export default function TeacherDashboard() {
       <Card className="rounded-xl shadow-sm">
         <CardHeader className="pb-4">
           <CardTitle className="text-2xl font-semibold">{t("welcome")}</CardTitle>
-          <p className="text-gray-500">{tCommon("greeting", { name: teacher.details.nickname })}</p>
+          <p className="text-gray-500">{t("greeting", { name: teacher.details.nickname })}</p>
         </CardHeader>
       </Card>
 

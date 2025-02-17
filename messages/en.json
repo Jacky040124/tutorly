@@ -1,362 +1,31 @@
 {
-  "Auth": {
-    "SignIn": {
-      "title": "Sign in to your account",
-      "subtitle": "Don't have an account? Sign up for a free trial.",
-      "email": "Email address",
-      "password": "Password",
-      "button": "Sign in",
-      "backToHome": "← Back to home",
-      "signupLink": "sign up"
-    },
-    "SignUp": {
-      "Student": {
-        "title": "Create your account",
-        "subtitle": "Already have an account?",
-        "nickname": "Nickname",
-        "email": "Email address",
-        "password": "Password",
-        "signupCode": "Sign-up Code",
-        "button": "Sign up",
-        "teacherLink": "Sign up as a teacher instead",
-        "banner": {
-          "title": "Start Learning Today",
-          "subtitle": "Join our community and learn from the best."
-        }
-      },
-      "Teacher": {
-        "title": "Create your teacher account",
-        "subtitle": "Already have an account?",
-        "signInLink": "Sign in",
-        "nickname": "Nickname",
-        "description": "Description",
-        "email": "Email address",
-        "password": "Password",
-        "signupCode": "Sign-up Code",
-        "button": "Sign up as teacher →",
-        "studentLink": "Sign up as a student instead",
-        "banner": {
-          "title": "Start Teaching Today",
-          "subtitle": "Join our community and share your knowledge with students worldwide."
-        }
-      }
-    }
-  },
-  "Dashboard": {
-    "Common": {
-      "pleaseSignIn": "Please sign in to access this page",
-      "greeting": "Welcome back, {name}",
-      "debugInformation": "Debug Information",
-      "calendarOverlay": {
-        "title": "New Event",
-        "fields": {
-          "date": "Select Day",
-          "startTime": "Start Time",
-          "endTime": "End Time",
-          "selectTime": "Select time",
-          "repeating": "Repeating",
-          "totalClasses": "Total Classes",
-          "meetLink": "Meeting Link",
-          "meetLinkPlaceholder": "Enter Zoom meeting link",
-          "maxStudents": "Maximum Students",
-          "maxStudentsPlaceholder": "Enter maximum number of students",
-          "title": "Class Title",
-          "titlePlaceholder": "Enter class title"
-        },
-        "buttons": {
-          "save": "Save",
-          "cancel": "Cancel",
-          "remove": "Remove"
-        },
-        "errors": {
-          "fillAllFields": "Please fill in all fields",
-          "endTimeLater": "End time must be later than start time",
-          "bookingOverlap": "One or more time slots overlap with existing bookings",
-          "availabilityOverlap": "One or more time slots overlap with existing events",
-          "invalidMaxStudents": "Maximum students must be at least 1",
-          "titleRequired": "Please enter a class title"
-        },
-        "removeSlot": {
-          "title": "Remove Time Slot",
-          "confirmation": "Are you sure you want to remove this time slot?"
-        }
-      },
-      "fields": {
-        "selectTime": "Select Time",
-        "toggle": {
-          "ariaLabel": "Toggle setting",
-          "on": "On",
-          "off": "Off"
-        },
-        "required": "Required",
-        "optional": "Optional",
-        "placeholder": {
-          "select": "Please select...",
-          "enter": "Please enter..."
-        }
-      }
-    },
-    "Student": {
-      "schedule": {
-        "title": "Your Schedule",
-        "subtitle": "View and manage your upcoming classes",
-        "currentMonth": "{month} {year}",
-        "calendar": {
-          "today": "Today",
-          "week": "Week",
-          "day": "Day",
-          "noEvents": "No classes scheduled"
-        }
-      },
-      "title": "Your Classes",
-      "selectTeacherPrompt": "Select a teacher to view their availability",
-      "teacherRate": "Classes with {price}$ per hour",
-      "greeting": "Welcome back",
-      "profile": "Profile",
-      "selectTeacher": "Select Teacher",
-      "tabs": {
-        "upcoming": "Upcoming",
-        "past": "Past"
-      },
-      "status": {
-        "confirmed": "Confirmed",
-        "completed": "Completed",
-        "cancelled": "Cancelled",
-        "upcoming": "Upcoming classes",
-        "past": "Past classes"
-      },
-      "lessonCount": {
-        "lesson": "Class",
-        "of": "of"
-      },
-      "student": "Student",
-      "teacher": "Teacher",
-      "feedback": {
-        "title": "Student Feedback",
-        "rating": "Rating",
-        "comment": "Comment",
-        "created": "Created",
-        "updated": "Last updated",
-        "none": "No feedback yet"
-      },
-      "buttons": {
-        "meet": "Join Meeting",
-        "uploadHomework": "Upload Homework",
-        "updateHomework": "Update Homework",
-        "viewHomework": "View Homework",
-        "addFeedback": "Add Feedback",
-        "editFeedback": "Edit Feedback",
-        "viewFeedback": "View Feedback"
-      },
-      "noUpcoming": "No upcoming classes",
-      "noPast": "No past classes",
-      "noBookings": "No classes available",
-      "navigation": {
-        "schedule": "Schedule",
-        "classes": "My Classes",
-        "profile": "Profile"
-      }
-    },
-    "Teacher": {
-      "welcome": "Welcome to Your Dashboard",
-      "title": "Edit Profile",
-      "nickname": "Nickname",
-      "description": "Description",
-      "pricing": "Pricing ($ per hour)",
-      "profile": "Profile",
-      "addEvent": "Add Event",
-      "student": "Student",
-      "event": {
-        "title": "Event Details",
-        "details": "Class Details",
-        "student": "Student",
-        "status": {
-          "label": "Status",
-          "available": "Available",
-          "confirmed": "Confirmed",
-          "completed": "Completed",
-          "cancelled": "Cancelled"
-        },
-        "meetingLink": {
-          "label": "Meeting Link",
-          "placeholder": "Enter meeting link..."
-        },
-        "homework": {
-          "label": "Homework",
-          "add": "Add Homework",
-          "placeholder": "Enter homework description..."
-        },
-        "feedback": {
-          "label": "Student Feedback",
-          "noFeedback": "No feedback yet",
-          "comment": "Comment",
-          "rating": "Rating"
-        },
-        "buttons": {
-          "save": "Save",
-          "saving": "Saving...",
-          "cancel": "Cancel"
-        },
-        "overview": "View Event Overview"
-      },
-      "feedback": {
-        "title": "Teacher Feedback",
-        "rating": "Rating",
-        "comment": "Comment",
-        "created": "Created",
-        "updated": "Last updated",
-        "none": "No feedback yet"
-      },
-      "status": {
-        "completed": "Completed",
-        "confirmed": "Confirmed",
-        "cancelled": "Cancelled"
-      },
-      "buttons": {
-        "save": "Save",
-        "cancel": "Cancel",
-        "meet": "Join Meeting"
-      },
-      "homework": {
-        "title": "Homework",
-        "add": "Add Homework",
-        "edit": "Edit Homework",
-        "view": "View Homework",
-        "description": "Description",
-        "descriptionPlaceholder": "Enter homework description...",
-        "dueDate": "Due Date",
-        "status": {
-          "pending": "Pending",
-          "submitted": "Submitted",
-          "graded": "Graded"
-        },
-        "buttons": {
-          "save": "Save",
-          "cancel": "Cancel",
-          "submit": "Submit"
-        }
-      },
-      "confirmDelete": "Confirm Delete",
-      "deleteEventMessage": "Are you sure you want to delete this event?",
-      "confirm": "Confirm"
-    }
-  },
-  "Profile": {
-    "editProfile": "Edit Profile",
-    "student": "Student",
-    "teacher": "Teacher",
-    "basicInfo": "Basic Information",
-    "professionalInfo": "Professional Information",
-    "nickname": "Nickname",
-    "nicknamePlaceholder": "Enter your display name",
-    "introduction": "Introduction",
-    "introductionPlaceholder": "Tell us about yourself",
-    "interests": "Interests",
-    "interestsPlaceholder": "What are you interested in learning?",
-    "goals": "Learning Goals",
-    "goalsPlaceholder": "What do you want to achieve?",
-    "expertise": "Areas of Expertise",
-    "expertisePlaceholder": "What subjects do you specialize in?",
-    "education": "Education",
-    "educationPlaceholder": "Your educational background",
-    "experience": "Teaching Experience",
-    "experiencePlaceholder": "Your teaching experience",
-    "teachingStyle": "Teaching Style",
-    "teachingStylePlaceholder": "Describe your teaching approach",
-    "pricing": "Hourly Rate",
-    "pricingPlaceholder": "Enter your hourly rate",
-    "buttons": {
-      "save": "Save",
-      "saving": "Saving...",
-      "cancel": "Cancel"
-    },
-    "updateSuccess": "Profile updated successfully",
-    "updateError": "Failed to update profile",
-    "imageUploadSuccess": "Image uploaded successfully",
-    "imageUploadError": "Failed to upload image"
-  },
-  "Calendar": {
-    "navigation": {
-      "today": "Today",
-      "previousWeek": "Previous Week",
-      "nextWeek": "Next Week"
-    },
-    "view": {
-      "week": "Week",
-      "day": "Day"
-    },
-    "months": {
-      "january": "January",
-      "february": "February",
-      "march": "March",
-      "april": "April",
-      "may": "May",
-      "june": "June",
-      "july": "July",
-      "august": "August",
-      "september": "September",
-      "october": "October",
-      "november": "November",
-      "december": "December"
-    }
-  },
-  "CalendarOverlay": {
-    "title": "Create New Course",
-    "fields": {
-      "title": "Course Title",
-      "titlePlaceholder": "Enter course title",
-      "date": "Select Date",
-      "startTime": "Start Time",
-      "endTime": "End Time",
-      "selectTime": "Select time",
-      "repeating": "Repeating Course",
-      "repeatingDescription": "Enable to create weekly recurring classes",
-      "repeatingClasses": "Will create {count} classes",
-      "meetLink": "Meeting Link",
-      "meetLinkPlaceholder": "Enter Zoom meeting link",
-      "maxStudents": "Maximum Students",
-      "maxStudentsPlaceholder": "Enter maximum number of students"
-    },
-    "buttons": {
-      "save": "Save",
-      "saving": "Saving...",
-      "cancel": "Cancel"
-    },
-    "errors": {
-      "fillAllFields": "Please fill in all fields",
-      "endTimeLater": "End time must be later than start time",
-      "bookingOverlap": "One or more time slots overlap with existing bookings",
-      "availabilityOverlap": "One or more time slots overlap with existing events",
-      "invalidMaxStudents": "Maximum students must be at least 1",
-      "titleRequired": "Please enter a course title"
-    },
-    "eventAddedSuccess": "Course added successfully",
-    "bulkEventsAddedSuccess": "{count} classes added successfully"
-  },
   "Landing": {
+    "title": "Tutorly",
+    "subtitle": "Find your perfect tutor",
+    "button": "Get Started",
     "header": {
       "title": "Tutorly",
-      "login": "Log In",
+      "login": "Sign In",
       "becomeTutor": "Become a Tutor"
     },
     "hero": {
-      "title": "Find The Perfect Tutor",
-      "subtitle": "Learn from the best, achieve your goals"
+      "title": "Find Your Perfect Tutor",
+      "subtitle": "Connect with experienced tutors for personalized learning"
     },
     "search": {
-      "placeholder": "Search for your tutor"
+      "placeholder": "Search for subjects or tutors..."
     },
     "subjects": {
-      "all": "ALL",
-      "math": "MATH",
-      "physics": "PHYS",
-      "chemistry": "CHEM",
-      "english": "ENGL",
-      "economics": "ECON",
-      "computerScience": "CPSC"
+      "all": "All Subjects",
+      "math": "Mathematics",
+      "physics": "Physics",
+      "chemistry": "Chemistry",
+      "english": "English",
+      "economics": "Economics",
+      "computerScience": "Computer Science"
     },
     "tutors": {
-      "pricePerHour": "${price}/hr"
+      "pricePerHour": "${price}/hour"
     },
     "pagination": {
       "previous": "Previous",
@@ -364,12 +33,259 @@
       "pageInfo": "Page {current} of {total}"
     }
   },
+
+  "Auth": {
+    "SignIn": {
+      "title": "Sign In",
+      "subtitle": "Don't have an account?",
+      "signupLink": "Sign up here",
+      "email": "Email",
+      "password": "Password",
+      "button": "Sign In",
+      "backToHome": "Back to Home",
+      "error": "Invalid email or password"
+    },
+
+    "SignUp": {
+      "title": "Sign Up",
+      "subtitle": "Already have an account?",
+      "email": "Email",
+      "password": "Password",
+      "nickname": "Nickname",
+      "signupCode": "Sign Up Code",
+      "button": "Sign Up",
+      "teacherLink": "Want to become a teacher? Sign up here",
+      "SignInButton": "Sign In"
+    },
+
+    "SignUpTeacher": {
+      "title": "Sign Up as Teacher",
+      "subtitle": "Already have an account?",
+      "signInLink": "Sign in here",
+      "email": "Email",
+      "password": "Password",
+      "signupCode": "Teacher Sign Up Code",
+      "button": "Sign Up",
+      "studentLink": "Want to sign up as student? Click here",
+      "error": "Invalid sign up information"
+    }
+  },
+
+  "Dashboard": {
+    "Student": {
+      "title": "Student Dashboard",
+      "subtitle": "Welcome to your student dashboard",
+      "button": "Dashboard",
+      "navigation": {
+        "profile": "Profile",
+        "schedule": "Schedule",
+        "classes": "My Classes"
+      },
+
+      "Schedule": {
+        "title": "Class Schedule",
+        "subtitle": "View and manage your upcoming classes",
+        "calendar": {
+          "today": "Today",
+          "week": "Week",
+          "day": "Day"
+        },
+        "pleaseSignIn": "Please sign in to view your schedule"
+      },
+
+      "Class": {
+        "title": "Find Your Perfect Tutor",
+        "subtitle": "Browse through our qualified teachers and find the perfect match for your learning journey",
+        "loading": "Loading...",
+        "expertise": "Expertise",
+        "about": "About",
+        "education": "Education",
+        "noDescription": "No description provided",
+        "viewProfile": "View Profile",
+        "pricePerHour": "${price}/hour",
+        "confirmBooking": {
+          "title": "Confirm Booking",
+          "class": "Class",
+          "status": "Status",
+          "type": "Type",
+          "date": "Date",
+          "time": "Time",
+          "price": "Price",
+          "oneTime": "One-time",
+          "repeating": "Repeating",
+          "buttons": {
+            "cancel": "Cancel",
+            "confirm": "Confirm Booking"
+          }
+        },
+        "teacherProfile": {
+          "about": "About",
+          "education": "Education",
+          "experience": "Teaching Experience",
+          "teachingStyle": "Teaching Style",
+          "noEducation": "No education information provided",
+          "noExperience": "No experience information provided",
+          "noTeachingStyle": "No teaching style information provided"
+        },
+        "bookingSuccess": "Class booked successfully!",
+        "bookingError": "Failed to book class",
+        "teacherNotFound": "Teacher not found",
+        "alreadyBooked": "You have already booked this event",
+        "classFull": "Event is full"
+      },
+
+      "Profile": {
+        "editProfile": "Edit Profile",
+        "student": "Student",
+        "nickname": "Display Name",
+        "nicknamePlaceholder": "Enter your display name",
+        "introduction": "Introduction",
+        "introductionPlaceholder": "Write a brief introduction about yourself",
+        "interests": "Learning Interests",
+        "interestsPlaceholder": "What are you interested in learning? (Press Enter or comma (,) to add, × to remove)",
+        "noInterests": "No interests added yet",
+        "goals": "Learning Goals",
+        "goalsPlaceholder": "What do you want to achieve? (Press Enter or comma (,) to add, × to remove)",
+        "noGoals": "No goals added yet",
+        "buttons": {
+          "save": "Save Changes",
+          "saving": "Saving..."
+        },
+        "imageUploadSuccess": "Profile photo updated successfully",
+        "imageUploadError": "Failed to upload profile photo",
+        "updateSuccess": "Profile updated successfully",
+        "updateError": "Failed to update profile"
+      }
+    },
+
+    "Teacher": {
+      "welcome": "Welcome to Your Dashboard",
+      "greeting": "Hello, {name}!",
+      "addEvent": "Add Event",
+      "profile": "Profile",
+      "confirmDelete": "Confirm Delete",
+      "deleteEventMessage": "Are you sure you want to delete this event?",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    }
+  },
+
   "BugReport": {
-    "title": "Report Bug",
-    "placeholder": "Tell us what's on your mind...",
-    "sendButton": "Send Feedback",
+    "title": "Bug Report",
+    "subtitle": "Report a bug",
+    "button": "Report",
+    "sendButton": "Send",
     "sending": "Sending...",
-    "success": "Feedback sent successfully!",
-    "error": "Failed to send. Please try again."
+    "success": "Bug report sent successfully",
+    "error": "Failed to send bug report",
+    "placeholder": "Describe the bug..."
+  },
+
+  "layout": {
+    "backToHome": "Back to Home"
+  },
+
+  "AddEventOverlay": {
+    "title": "Add Event",
+    "fields": {
+      "date": "Date",
+      "title": "Title",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "meetLink": "Meeting Link",
+      "maxStudents": "Maximum Students",
+      "repeating": "Repeat Weekly"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving..."
+    },
+    "placeholders": {
+      "title": "Title",
+      "meetingLinks": "Meeting Links",
+      "maxStudents": "Max Students",
+      "startTime": "Select start time",
+      "endTime": "Select end time"
+    },
+    "messages": {
+      "classesGenerated": "{count} classes will be generated"
+    }
+  },
+
+  "BookingCard": {
+    "title": "Upcoming Events",
+    "subtitle": "Select event date and time",
+    "button": "Add Event",
+    "buttons": {
+      "meet": "Join Meeting",
+      "overview": "View Details"
+    },
+    "event": {
+      "overview": "Event Overview",
+      "noEvents": "No upcoming events"
+    }
+  },
+
+  "EventWindow": {
+    "title": "Event Details",
+    "studentInfo": {
+      "loading": "Loading student information..."
+    },
+    "status": {
+      "label": "Event Status",
+      "available": "Available",
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "meetingLink": {
+      "label": "Meeting Link",
+      "placeholder": "Enter meeting link"
+    },
+    "homework": {
+      "label": "Homework Link",
+      "placeholder": "Enter homework link or instructions"
+    },
+    "feedback": {
+      "label": "Student Feedback",
+      "rating": "Rating: {rating}/5",
+      "noComment": "No comment provided"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "saving": "Saving..."
+    }
+  },
+
+  "ProfileWindow": {},
+
+  "Profile": {
+    "editProfile": "Edit Profile",
+    "teacher": "Teacher",
+    "nickname": "Display Name",
+    "nicknamePlaceholder": "Enter your display name",
+    "introduction": "Introduction",
+    "introductionPlaceholder": "Write a brief introduction about yourself",
+    "pricing": "Hourly Rate (USD)",
+    "pricingPlaceholder": "Enter your hourly rate",
+    "expertise": "Areas of Expertise",
+    "expertisePlaceholder": "List your teaching subjects and specialties",
+    "education": "Education Background",
+    "educationPlaceholder": "Share your academic qualifications",
+    "experience": "Teaching Experience",
+    "experiencePlaceholder": "Describe your teaching experience",
+    "teachingStyle": "Teaching Style",
+    "teachingStylePlaceholder": "Describe your teaching approach and methods",
+    "buttons": {
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "saving": "Saving..."
+    },
+    "imageUploadSuccess": "Profile photo updated successfully",
+    "updateSuccess": "Profile updated successfully",
+    "updateError": "Failed to update profile",
+    "error": "Error"
   }
 }

@@ -21,19 +21,21 @@ import { useState } from "react";
 import { Event } from "@/types/event";
 import { useToast } from "@/hooks/use-toast";
 import { formatTime } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 
+// TODO: Add translations
 export default function Store() {
   const { userId, teacherId } = useParams();
   const { getTeacherById } = useTeachers();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
-
+  const t = useTranslations("Dashboard.Student.Class");
   const teacher: Teacher | undefined = getTeacherById(teacherId as string);
 
   if (!teacher) {
-    return <div>Teacher not found</div>;
+    return <div>{t("teacherNotFound")}</div>;
   }
 
   const handleEventClick = async (info: any) => {
@@ -52,7 +54,7 @@ export default function Store() {
         await bookEvent(selectedEvent, teacherId as string, userId as string);
         toast({
           title: "Success",
-          description: "Class booked successfully!",
+          description: t("bookingSuccess"),
         });
         setIsDialogOpen(false);
         setSelectedEvent(null);
@@ -60,7 +62,7 @@ export default function Store() {
         toast({
           variant: "destructive",
           title: "Error",
-          description: error instanceof Error ? error.message : "Failed to book class",
+          description: error instanceof Error ? error.message : t("bookingError"),
         });
       }
     }
@@ -98,32 +100,32 @@ export default function Store() {
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <section>
-                  <h3 className="font-semibold text-lg">About</h3>
+                  <h3 className="font-semibold text-lg">{t("teacherProfile.about")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {teacher.details.description || teacher.details.introduction || "No description provided"}
+                    {teacher.details.description || teacher.details.introduction || t("noDescription")}
                   </p>
                 </section>
 
                 <section>
-                  <h3 className="font-semibold text-lg">Education</h3>
+                  <h3 className="font-semibold text-lg">{t("teacherProfile.education")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {teacher.details.education || "No education information provided"}
+                    {teacher.details.education || t("noEducation")}
                   </p>
                 </section>
               </div>
 
               <div className="space-y-4">
                 <section>
-                  <h3 className="font-semibold text-lg">Teaching Experience</h3>
+                  <h3 className="font-semibold text-lg">{t("teacherProfile.experience")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {teacher.details.experience || "No experience information provided"}
+                    {teacher.details.experience || t("noExperience")}
                   </p>
                 </section>
 
                 <section>
-                  <h3 className="font-semibold text-lg">Teaching Style</h3>
+                  <h3 className="font-semibold text-lg">{t("teacherProfile.teachingStyle")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {teacher.details.teachingStyle || "No teaching style information provided"}
+                    {teacher.details.teachingStyle || t("noTeachingStyle")}
                   </p>
                 </section>
               </div>
@@ -139,29 +141,30 @@ export default function Store() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm Booking</DialogTitle>
+            <DialogTitle>{t("confirmBooking.title")}</DialogTitle>
             <DialogDescription asChild>
               {selectedEvent && (
                 <div className="space-y-2 mt-2">
                   <div>
-                    <strong>Class:</strong> {selectedEvent.title}
+                    <strong>{t("confirmBooking.class")}:</strong> {selectedEvent.title}
                   </div>
                   <div>
-                    <strong>Status:</strong> {selectedEvent.status.status}
+                    <strong>{t("confirmBooking.status")}:</strong> {selectedEvent.status.status}
                   </div>
                   <div>
-                    <strong>Type:</strong> {selectedEvent.isRecurring ? "Repeating" : "One-time"}
+                    <strong>{t("confirmBooking.type")}:</strong>{" "}
+                    {selectedEvent.isRecurring ? t("confirmBooking.repeating") : t("confirmBooking.oneTime")}
                   </div>
                   <div>
-                    <strong>Date:</strong>{" "}
+                    <strong>{t("confirmBooking.date")}:</strong>{" "}
                     {`${selectedEvent.date.month}/${selectedEvent.date.day}/${selectedEvent.date.year}`}
                   </div>
                   <div>
-                    <strong>Time:</strong>{" "}
+                    <strong>{t("confirmBooking.time")}:</strong>{" "}
                     {`${formatTime(selectedEvent.date.startTime)} - ${formatTime(selectedEvent.date.endTime)}`}
                   </div>
                   <div>
-                    <strong>Price:</strong> ${selectedEvent.price}
+                    <strong>{t("confirmBooking.price")}:</strong> ${selectedEvent.price}
                   </div>
                 </div>
               )}
@@ -169,9 +172,11 @@ export default function Store() {
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Cancel
+              {t("confirmBooking.buttons.cancel")}
             </Button>
-            <Button onClick={handleConfirmBooking}>Confirm Booking</Button>
+            <Button onClick={handleConfirmBooking}>
+              {t("confirmBooking.buttons.confirm")}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

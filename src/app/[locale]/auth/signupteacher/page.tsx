@@ -12,7 +12,7 @@ import { authState } from "@/app/[locale]/action";
 import { useParams } from "next/navigation";
 
 export default function SignUpTeacher() {
-  const t = useTranslations('Auth.SignUp.Teacher');
+  const t = useTranslations("Auth.SignUpTeacher");
   const router = useRouter();
   const { locale } = useParams();
   const [state, formAction, isPending] = useActionState(signUpTeacher, { error: null, user: null } as authState);

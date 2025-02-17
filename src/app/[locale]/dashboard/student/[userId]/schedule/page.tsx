@@ -19,13 +19,12 @@ interface StudentDashboardProps {
 export default function StudentSchedule({ params }: StudentDashboardProps) {
   const { user } = useUser();
   const student = user as Student;
-  const t = useTranslations("Dashboard.Student.schedule");
-  const tCommon = useTranslations("Dashboard.Common");
+  const t = useTranslations("Dashboard.Student.Schedule");
 
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">{tCommon("pleaseSignIn")}</div>
+        <div className="text-lg">{t("pleaseSignIn")}</div>
       </div>
     );
   }
