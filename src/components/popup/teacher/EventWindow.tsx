@@ -30,25 +30,28 @@ interface EventWindowProps {
 const EVENT_STATUS_OPTIONS = ["available", "confirmed", "completed", "cancelled"] as const;
 
 // TODO : fix data refetch after update
-// TODO : fetch with student data fetching
 export default function EventWindow({ event, close, show }: EventWindowProps) {
   if (!event) return null;
+  const { user } = useUser();
+  const teacher = user as Teacher;
+  const studentid = event.bookingDetails?.studentId;
   const { toast } = useToast();
   const [state, formAction, isPending] = useActionState(updateEventDetails, {
     message: "",
     error: null,
   } as UpdateEventDetailsState);
-  const { user } = useUser();
-  const [student,setStudent] = useState<Student | null>(null);
-  const teacher = user as Teacher;
-  const studentid = event.bookingDetails?.studentId;
+
+  const [student, setStudent] = useState<Student | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<EventStatus>(event.status);
+
+  
+
   const t = useTranslations("Dashboard.Teacher.event");
 
   useEffect(() => {
     async function fetchStudent() {
       const student = await getUserById(studentid as string);
-      console.log("student",student);
+      console.log("student", student);
       setStudent(student as Student);
     }
 
@@ -64,11 +67,10 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
         description: state.message,
       });
     }
-    
+
     if (!student) {
       fetchStudent();
     }
-
   }, [state, toast, student]);
 
   if (!event) return null;
@@ -100,8 +102,8 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
                       {student ? (
                         <div className="flex items-start gap-3">
                           {student.details.photoURL && (
-                            <img 
-                              src={student.details.photoURL} 
+                            <img
+                              src={student.details.photoURL}
                               alt={student.nickname}
                               className="w-10 h-10 rounded-full object-cover"
                             />
