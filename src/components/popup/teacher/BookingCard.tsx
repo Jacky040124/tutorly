@@ -11,7 +11,7 @@ interface BookingCardProps {
 }
 
 
-// TODO : fix data refetch after update
+// TODO : Low Priority : fix data refetch after update
 export function BookingCard({ events }: BookingCardProps) {
   const [showEventWindow, setShowEventWindow] = useState(false);
   const t = useTranslations("BookingCard");

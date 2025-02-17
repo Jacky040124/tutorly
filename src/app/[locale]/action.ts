@@ -13,7 +13,7 @@ import { Student, createNewStudent, createStudentFromData, StudentDetails } from
 import { Resend } from "resend";
 import { ConfirmationEmailTemplate, FeedbackEmailTemplate } from "@/lib/EmailTemplate";
 import { createEvent, Event, EventStatus } from "@/types/event";
-import { parseEventDateTime, parseCommaSeparatedValue } from "@/lib/utils";
+import { parseEventDateTime, parseCommaSeparatedValue, isOverlap } from "@/lib/utils";
 
 // Firebase Service
 
@@ -32,6 +32,8 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
+
+
 
 export async function getUserById(userId: string) {
   const docRef = doc(db, "users", userId);
@@ -405,7 +407,6 @@ async function fetchEvents(userId: string): Promise<Event[]> {
   }
 }
 
-// TODO: Add validation for event overlap
 export async function addEvent(prevState: EventState, formData: FormData): Promise<EventState> {
   try {
     const userId = formData.get("userId") as string;
@@ -442,6 +443,14 @@ export async function addEvent(prevState: EventState, formData: FormData): Promi
       });
     });
     const newEvents = [...events, ...generatedEvents];
+
+    const isOverlapping = isOverlap(events, newEvents);
+    if (isOverlapping) {
+      return {
+        events: prevState.events,
+        error: "Event overlaps with existing events",
+      };
+    }
 
     const teacherRef = doc(db, "users", userId);
     await setDoc(teacherRef, { events: newEvents }, { merge: true });
@@ -486,7 +495,6 @@ export async function deleteEvent(teacherId: string, event: Event) {
     const events = studentData?.events || [];
     await setDoc(studentRef, { events: events.filter((e: Event) => e.id !== event.id) }, { merge: true });
   }
-
 }
 
 export interface UpdateTeacherProfileState {
@@ -637,13 +645,13 @@ async function fetchGroupedEvents(repeatGroupId: string, teacherId: string): Pro
 
   const teacherData = teacherDoc.data();
   const events = teacherData?.events || [];
-  
+
   events.forEach((event: Event) => {
     if (event.repeatInfo.repeatGroupId === repeatGroupId) {
       eventIds.push(event.id);
     }
   });
-  
+
   return eventIds;
 }
 
@@ -653,10 +661,10 @@ async function fetchEventData(eventId: string, teacherId: string): Promise<Event
   if (!teacherDoc.exists()) {
     throw new Error("Teacher document not found");
   }
-  
+
   const teacherData = teacherDoc.data();
   const event = teacherData.events?.find((e: Event) => e.id === eventId);
-  
+
   if (!event) {
     throw new Error("Event data not found");
   }
@@ -666,7 +674,7 @@ async function fetchEventData(eventId: string, teacherId: string): Promise<Event
 export async function bookEvent(event: Event, teacherId: string, studentId: string) {
   const studentEmail = await getUserEmailById(studentId);
   const teacherEmail = await getUserEmailById(teacherId);
-  const eventsToUpdate: string[] = await fetchGroupedEvents(event.repeatInfo.repeatGroupId, teacherId)
+  const eventsToUpdate: string[] = await fetchGroupedEvents(event.repeatInfo.repeatGroupId, teacherId);
 
   console.log("eventsToUpdate", eventsToUpdate);
   console.log("studentId", studentId);

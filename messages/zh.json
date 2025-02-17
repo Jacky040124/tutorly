@@ -232,7 +232,8 @@
       "available": "可預約",
       "confirmed": "已確認",
       "completed": "已完成",
-      "cancelled": "已取消"
+      "cancelled": "已取消",
+      "undefined": "未定義"
     },
     "meetingLink": {
       "label": "會議連結",

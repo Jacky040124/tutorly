@@ -12,13 +12,12 @@ import AddEventWindow from "@/components/popup/teacher/AddEventWindow";
 import { Teacher } from "@/types/teacher";
 import { BookingCard } from "@/components/popup/teacher/BookingCard";
 import { formatMonthYear } from "@/lib/utils";
-import { deleteEvent } from "@/app/[locale]/action";
+import { deleteEvent, getUserById } from "@/app/[locale]/action";
 import { useState } from "react";
 import { Event } from "@/types/event";
 
-// TODO : Handle UI update after delete event
 export default function TeacherDashboard() {
-  const { user } = useUser();
+  const { user, setUser } = useUser();
   const teacher = user as Teacher;
   const [showDeleteEventOverlay, setShowDeleteEventOverlay] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -39,7 +38,10 @@ export default function TeacherDashboard() {
 
   const handleConfirmDeleteEvent = async (event: Event) => {
     await deleteEvent(teacher.uid, event);
+    const updatedUser = await getUserById(teacher.uid);
+    setUser(updatedUser as Teacher);
     setShowDeleteEventOverlay(false);
+
   };
 
   return (

@@ -24,7 +24,6 @@ import { formatTime } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
 
-// TODO: Add translations
 export default function Store() {
   const { userId, teacherId } = useParams();
   const { getTeacherById } = useTeachers();

@@ -16,7 +16,7 @@ interface FeedbackOverlayProp {
 }
 
 
-// TODO: Implement feedback overlay
+// TODO: Higher Priority : Implement feedback overlay
 export default function FeedbackOverlay({ event, onClose }: FeedbackOverlayProp) {
   const { user } = useUser();
   const [feedbackText, setFeedbackText] = useState("");

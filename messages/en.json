@@ -237,7 +237,8 @@
       "available": "Available",
       "confirmed": "Confirmed",
       "completed": "Completed",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "undefined": "Undefined"
     },
     "meetingLink": {
       "label": "Meeting Link",

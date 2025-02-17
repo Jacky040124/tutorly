@@ -21,6 +21,8 @@ import { EventStatus } from "@/types/event";
 import { useToast } from "@/hooks/use-toast";
 import { getUserById } from "@/app/[locale]/action";
 import { Student } from "@/types/student";
+import { useParams } from "next/navigation";
+
 interface EventWindowProps {
   event?: Event;
   close: (open: boolean) => void;
@@ -29,10 +31,9 @@ interface EventWindowProps {
 
 const EVENT_STATUS_OPTIONS = ["available", "confirmed", "completed", "cancelled"] as const;
 
-// TODO : fix data refetch after update
 export default function EventWindow({ event, close, show }: EventWindowProps) {
   if (!event) return null;
-  const { user } = useUser();
+  const { user, setUser } = useUser();
   const teacher = user as Teacher;
   const studentid = event.bookingDetails?.studentId;
   const { toast } = useToast();
@@ -40,19 +41,16 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
     message: "",
     error: null,
   } as UpdateEventDetailsState);
-
   const [student, setStudent] = useState<Student | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<EventStatus>(event.status);
-
-  
-
   const t = useTranslations("EventWindow");
+
+  console.log("event.status.status",event.status.status);
 
   useEffect(() => {
     async function fetchStudent() {
       if (studentid) {
         const student = await getUserById(studentid);
-        console.log("student", student);
         setStudent(student as Student);
       }
     }
@@ -138,7 +136,7 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
                 onValueChange={(value) => setSelectedStatus({ status: value as EventStatus["status"] })}
               >
                 <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder={t(`status.${event.status.status}`)} />
+                  <SelectValue placeholder={t(`status.${event.status}`)} />
                 </SelectTrigger>
 
                 <SelectContent>
