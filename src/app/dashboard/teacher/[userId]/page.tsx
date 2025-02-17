@@ -37,7 +37,7 @@ export default function TeacherDashboard() {
       setSelectedEvent(event);
       setShowDeleteEventOverlay(true);
     }
-  };    
+  };
 
   const handleConfirmDeleteEvent = async (event: Event) => {
     await deleteEvent(event);
@@ -97,16 +97,10 @@ export default function TeacherDashboard() {
             <h2 className="text-xl font-semibold mb-4">{t("confirmDelete")}</h2>
             <p className="mb-6">{t("deleteEventMessage")}</p>
             <div className="flex justify-end gap-4">
-              <Button
-                variant="outline"
-                onClick={() => setShowDeleteEventOverlay(false)}
-              >
+              <Button variant="outline" onClick={() => setShowDeleteEventOverlay(false)}>
                 cancel
               </Button>
-              <Button
-                variant="destructive"
-                onClick={() => handleConfirmDeleteEvent(selectedEvent)}
-              >
+              <Button variant="destructive" onClick={() => handleConfirmDeleteEvent(selectedEvent)}>
                 {t("confirm")}
               </Button>
             </div>

@@ -405,6 +405,7 @@ async function fetchEvents(userId: string): Promise<Event[]> {
   }
 }
 
+// TODO: Add validation for event overlap
 export async function addEvent(prevState: EventState, formData: FormData): Promise<EventState> {
   try {
     const userId = formData.get("userId") as string;

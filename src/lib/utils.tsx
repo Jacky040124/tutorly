@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { Event } from "@/types/event";
+import { EventContentArg } from "@fullcalendar/core";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -11,6 +12,7 @@ interface DateObject {
   month: number;
   day: number;
 }
+
 
 export const getNumberOfClasses = (date: Date | null): number => {
     if (!date) return 0;
@@ -136,3 +138,42 @@ export function formatMonthYear(date: Date): string {
     year: "numeric",
   });
 }
+
+export const renderEventContent = (eventInfo: EventContentArg) => {
+  const status = eventInfo.event.extendedProps.status || "available";
+
+  return (
+    <div className="flex items-center gap-1 p-1">
+      <span>{eventInfo.event.title}</span>
+      <span>[{status.charAt(0).toUpperCase() + status.slice(1)}]</span>
+    </div>
+  );
+}; 
+
+export function isOverlap(existingEvents: Event[], newEvents: Event[]): boolean {
+  const existing = Array.isArray(existingEvents) ? existingEvents : [];
+  const events = Array.isArray(newEvents) ? newEvents : [];
+
+  return events.some((newEvent) =>
+    existing.some((existingEvent) => {
+      // Skip if dates don't match
+      if (
+        existingEvent.date.year !== newEvent.date.year ||
+        existingEvent.date.month !== newEvent.date.month ||
+        existingEvent.date.day !== newEvent.date.day
+      ) {
+        return false;
+      }
+      // Check for time overlap
+      return (
+        (newEvent.date.startTime >= existingEvent.date.startTime && 
+         newEvent.date.startTime < existingEvent.date.endTime) || // New event starts during existing
+        (newEvent.date.endTime > existingEvent.date.startTime && 
+         newEvent.date.endTime <= existingEvent.date.endTime) || // New event ends during existing
+        (newEvent.date.startTime <= existingEvent.date.startTime && 
+         newEvent.date.endTime >= existingEvent.date.endTime) // New event encompasses existing
+      );
+    })
+  );
+}
+

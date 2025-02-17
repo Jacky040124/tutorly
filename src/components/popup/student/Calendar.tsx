@@ -3,7 +3,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { Teacher } from "@/types/teacher";
 import { adaptToCalendarEvent } from "@/lib/utils";
-import { renderEventContent } from "@/lib/utils/calendarUtil";
+import { renderEventContent } from "@/lib/utils";
 
 
 export default function Calendar({ teacher, handleEventClick}: { teacher: Teacher, handleEventClick: (info: any) => void }) {
