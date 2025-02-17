@@ -36,8 +36,6 @@ interface RootLayoutProp {
   };
 }
 
-// TODO: handle user persistence
-
 export default async function RootLayout({ children, params }: RootLayoutProp) {
   // prefered language
   const locale = await getLocale();

@@ -19,7 +19,8 @@ import { Teacher } from "@/types/teacher";
 import { UpdateEventDetailsState } from "@/app/action";
 import { EventStatus } from "@/types/event";
 import { useToast } from "@/hooks/use-toast";
-
+import { getUserById } from "@/app/action";
+import { Student } from "@/types/student";
 interface EventWindowProps {
   event?: Event;
   close: (open: boolean) => void;
@@ -29,6 +30,7 @@ interface EventWindowProps {
 const EVENT_STATUS_OPTIONS = ["available", "confirmed", "completed", "cancelled"] as const;
 
 // TODO : fix data refetch after update
+// TODO : fetch with student data fetching
 export default function EventWindow({ event, close, show }: EventWindowProps) {
   if (!event) return null;
   const { toast } = useToast();
@@ -37,12 +39,19 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
     error: null,
   } as UpdateEventDetailsState);
   const { user } = useUser();
+  const [student,setStudent] = useState<Student | null>(null);
   const teacher = user as Teacher;
-  const [studentNickname, setStudentNickname] = useState<string>("Loading...");
+  const studentid = event.bookingDetails?.studentId;
   const [selectedStatus, setSelectedStatus] = useState<EventStatus>(event.status);
   const t = useTranslations("Dashboard.Teacher.event");
 
   useEffect(() => {
+    async function fetchStudent() {
+      const student = await getUserById(studentid as string);
+      console.log("student",student);
+      setStudent(student as Student);
+    }
+
     if (state.error) {
       toast({
         variant: "destructive",
@@ -55,7 +64,12 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
         description: state.message,
       });
     }
-  }, [state, toast]);
+    
+    if (!student) {
+      fetchStudent();
+    }
+
+  }, [state, toast, student]);
 
   if (!event) return null;
 
@@ -82,8 +96,27 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
               <Card>
                 <CardContent className="pt-6">
                   <div className="grid gap-2">
-                    <Label>{t("student")}</Label>
-                    <div className="text-sm">{studentNickname}</div>
+                    <div className="text-sm">
+                      {student ? (
+                        <div className="flex items-start gap-3">
+                          {student.details.photoURL && (
+                            <img 
+                              src={student.details.photoURL} 
+                              alt={student.nickname}
+                              className="w-10 h-10 rounded-full object-cover"
+                            />
+                          )}
+                          <div className="space-y-1">
+                            <p className="font-medium">{student.nickname}</p>
+                            {student.details.description && (
+                              <p className="text-muted-foreground text-xs">{student.details.description}</p>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        "Loading..."
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -101,7 +134,7 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
                 onValueChange={(value) => setSelectedStatus({ status: value as EventStatus["status"] })}
               >
                 <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder={event.status} />
+                  <SelectValue placeholder={event.status.status} />
                 </SelectTrigger>
 
                 <SelectContent>
@@ -121,7 +154,7 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
           </div>
 
           {/* Homework Section - Always show */}
-          {event.bookingDetails?.homework && (
+          {event.status.status !== "available" && (
             <div className="grid gap-2">
               <Label>{t("homework.label")}</Label>
               <Input
