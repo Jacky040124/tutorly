@@ -3,14 +3,23 @@
 import { useParams } from "next/navigation";
 import { useTeachers } from "@/hooks/useTeacher";
 import { Teacher } from "@/types/teacher";
-import Calendar from "@/components/popup/teacher/Calendar";
+import Calendar from "@/components/popup/student/Calendar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import { bookEvent } from "@/app/action";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Event } from "@/types/event";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Store() {
   const { userId, teacherId } = useParams();
   const { getTeacherById } = useTeachers();
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   const teacher: Teacher | undefined = getTeacherById(teacherId as string);
   
@@ -18,8 +27,35 @@ export default function Store() {
     return <div>Teacher not found</div>;
   }
 
+  const handleEventClick = async (info: any) => {
+    const eventId = info.event.extendedProps.eventId;
+    const event = teacher.events.find((event) => event.id === eventId);
+    if (event) {
+      setSelectedEvent(event);
+      setIsDialogOpen(true);
+    }
+  }
 
-  
+  const handleConfirmBooking = async () => {
+    if (selectedEvent) {
+      try {
+        await bookEvent(selectedEvent, teacherId as string, userId as string);
+        toast({
+          title: "Success",
+          description: "Class booked successfully!",
+        });
+        setIsDialogOpen(false);
+        setSelectedEvent(null);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to book class",
+        });
+      }
+    }
+  }
+
   return (
     <div className="container mx-auto py-4 space-y-4">
       <Card className="overflow-hidden">
@@ -82,13 +118,35 @@ export default function Store() {
                 </section>
               </div>
             </div>
-          </div>    
+          </div>
         </div>
       </Card>
 
       <div className="h-[800px]">
-        <Calendar teacher={teacher} />
+        <Calendar teacher={teacher} handleEventClick={handleEventClick} />
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Booking</DialogTitle>
+            <DialogDescription asChild>
+              {selectedEvent && (
+                <div className="space-y-2 mt-2">
+                  <div><strong>Class:</strong> {selectedEvent.title}</div>
+                  <div><strong>Date:</strong> {`${selectedEvent.date.month}/${selectedEvent.date.day}/${selectedEvent.date.year}`}</div>
+                  <div><strong>Time:</strong> {`${selectedEvent.date.startTime}:00 - ${selectedEvent.date.endTime}:00`}</div>
+                  <div><strong>Price:</strong> ${selectedEvent.price}</div>
+                </div>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleConfirmBooking}>Confirm Booking</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

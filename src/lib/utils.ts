@@ -80,6 +80,9 @@ export interface CalendarEvent {
   title: string;
   start: Date;
   end: Date;
+  extendedProps: {
+    eventId: string;
+  };
 }
 
 export const adaptToCalendarEvent = (event: Event): CalendarEvent => {
@@ -95,6 +98,9 @@ export const adaptToCalendarEvent = (event: Event): CalendarEvent => {
     title: event.title,
     start: startDate,
     end: endDate,
+    extendedProps: {
+      eventId: event.id
+    }
   };
 };
 

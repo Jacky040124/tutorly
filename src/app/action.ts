@@ -1,7 +1,7 @@
 "use server";
 
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as firebaseSignOut } from "firebase/auth";
-import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, runTransaction, setDoc } from "firebase/firestore";
 import { initializeApp, getApps } from "firebase/app";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAuth } from "firebase/auth";
@@ -28,7 +28,6 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -213,6 +212,23 @@ export async function addHomework(prevState: any, formData: FormData): Promise<a
 // Mail Service
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+async function getUserEmailById(userId: string): Promise<string | null> {
+  try {
+    const userRef = doc(db, "users", userId);
+    const userDoc = await getDoc(userRef);
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      console.log("email", userData.email);
+      return userData.email;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Error fetching user email:", error);
+    return null;
+  }
+}
+
 interface sendProps {
   to: string;
   content: string;
@@ -288,7 +304,6 @@ export async function uploadImage(file: File, userId: string): Promise<UploadIma
     await setDoc(userRef, { details: { photoURL: downloadUrl } }, { merge: true });
 
     return { downloadUrl, path };
-    
   } catch (error) {
     console.error("Error in uploadImage:", error);
     if (error instanceof Error) {
@@ -376,17 +391,6 @@ export async function addEvent(prevState: EventState, formData: FormData): Promi
     const meetingLinks = formData.get("meetingLinks") as string;
     const maxStudents = formData.get("maxStudents") as string;
 
-    console.log("userId", userId);
-    console.log("isRepeating", isRepeating);
-    console.log("date", date);
-    console.log("numberOfClasses", numberOfClasses);
-    console.log("events", events);
-    console.log("title", title);
-    console.log("startTime", startTime);
-    console.log("endTime", endTime);
-    console.log("meetingLinks", meetingLinks);
-    console.log("maxStudents", maxStudents);
-
     const baseDate = new Date(date);
     const generatedEvents = Array.from({ length: Number(numberOfClasses) }, (_, index) => {
       const eventDate = new Date(baseDate);
@@ -406,15 +410,12 @@ export async function addEvent(prevState: EventState, formData: FormData): Promi
 
     const newEvents = [...events, ...generatedEvents];
 
-
     console.log("newEvents", newEvents);
-    
+
     const teacherRef = doc(db, "users", userId);
     await setDoc(teacherRef, { events: newEvents }, { merge: true });
     const docSnap = await getDoc(teacherRef);
     const userData = docSnap.data();
-
-    
 
     if (!docSnap.exists() || !userData) {
       return { error: "Failed to update teacher data", events: [] };
@@ -475,23 +476,38 @@ export async function updateTeacherProfile(prevState: UpdateTeacherProfileState,
   }
 }
 
+
 async function updateTeacherEvents(teacherId: string, newEvent: Event) {
   const teacherRef = doc(db, "users", teacherId);
   const teacherDoc = await getDoc(teacherRef);
+
+
   if (teacherDoc.exists()) {
     const teacherData = teacherDoc.data();
-    const updatedEvents = teacherData.events.map((e: Event) => (e.id === newEvent.id ? newEvent : e));
-    await setDoc(teacherRef, { events: updatedEvents }, { merge: true });
+    const eventExists = teacherData.events.find((e: Event) => e.id === newEvent.id);
+    console.log("eventExists", eventExists);
+    if (eventExists) {
+      const updatedEvents = teacherData.events.map((e: Event) => (e.id === newEvent.id ? newEvent : e));
+      await setDoc(teacherRef, { events: updatedEvents }, { merge: true });
+    } else {
+      await setDoc(teacherRef, { events: [...teacherData.events, newEvent] }, { merge: true });
+    }
   }
 }
 
 async function updateStudentEvents(studentId: string, newEvent: Event) {
   const studentRef = doc(db, "users", studentId);
   const studentDoc = await getDoc(studentRef);
+
   if (studentDoc.exists()) {
     const studentData = studentDoc.data();
-    const updatedEvents = studentData.events.map((e: Event) => (e.id === newEvent.id ? newEvent : e));
-    await setDoc(studentRef, { events: updatedEvents }, { merge: true });
+    const eventExists = studentData.events.find((e: Event) => e.id === newEvent.id);
+    if (eventExists) {
+      const updatedEvents = studentData.events.map((e: Event) => (e.id === newEvent.id ? newEvent : e));
+      await setDoc(studentRef, { events: updatedEvents }, { merge: true });
+    } else {
+      await setDoc(studentRef, { events: [...studentData.events, newEvent] }, { merge: true });
+    }
   }
 }
 
@@ -546,7 +562,7 @@ export async function updateEventDetails(
 export async function fetchTeachers(): Promise<Teacher[]> {
   const teachers: Teacher[] = [];
   const querySnapshot = await getDocs(collection(db, "users"));
-  
+
   querySnapshot.forEach((doc) => {
     const docData = doc.data();
     if (docData.type === "teacher") {
@@ -555,4 +571,44 @@ export async function fetchTeachers(): Promise<Teacher[]> {
   });
 
   return teachers;
+}
+
+// Booking Service
+
+// TODO: Modify to handle recurring events
+// TODO: Modify to check for available slots
+export async function bookEvent(event: Event, teacherId: string, studentId: string) {
+  const newEvent: Event = {
+    ...event,
+    status: { status: "confirmed" },
+    bookingDetails: {
+      studentId: studentId,
+      teacherId: teacherId,
+    },
+  };
+
+  console.log("newEvent", newEvent);
+
+  await updateStudentEvents(studentId, newEvent);
+  await updateTeacherEvents(teacherId, newEvent);
+
+  // Get emails for both student and teacher
+  const studentEmail = await getUserEmailById(studentId);
+  const teacherEmail = await getUserEmailById(teacherId);
+
+  if (studentEmail) {
+    await send({
+      to: studentEmail,
+      content: "You have a new booking",
+      type: "bookingConfirmation",
+    });
+  }
+
+  if (teacherEmail) {
+    await send({
+      to: teacherEmail,
+      content: "You have a new booking",
+      type: "bookingConfirmation",
+    });
+  }
 }

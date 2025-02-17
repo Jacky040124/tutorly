@@ -59,7 +59,7 @@ export default function AddEventOverlay() {
           <input type="hidden" name="userId" value={user?.uid} />
           <input type="hidden" name="isRepeating" value={isRepeating.toString()} />
           <input type="hidden" name="date" value={date?.toISOString()} />
-          <input type="hidden" name="numberOfClasses" value={numberOfClass.current} />
+          <input type="hidden" name="numberOfClasses" value={isRepeating ? numberOfClass.current : 1} />
           <input type="hidden" name="events" value={JSON.stringify(events)} />
 
           {state.error && <div className="p-3 mb-4 text-sm text-red-500 bg-red-50 rounded-md">{state.error}</div>}
