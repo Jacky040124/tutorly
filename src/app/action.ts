@@ -221,7 +221,7 @@ async function getUserEmailById(userId: string): Promise<string | null> {
       console.log("email", userData.email);
       return userData.email;
     }
-    
+
     return null;
   } catch (error) {
     console.error("Error fetching user email:", error);
@@ -382,7 +382,7 @@ async function fetchEvents(userId: string): Promise<Event[]> {
   try {
     const userRef = doc(db, "users", userId);
     const docSnap = await getDoc(userRef);
-    
+
     if (!docSnap.exists()) {
       console.error("User document not found");
       return [];
@@ -498,16 +498,13 @@ export async function updateTeacherProfile(prevState: UpdateTeacherProfileState,
   }
 }
 
-
 async function updateTeacherEvents(teacherId: string, newEvent: Event) {
   const teacherRef = doc(db, "users", teacherId);
   const teacherDoc = await getDoc(teacherRef);
 
-
   if (teacherDoc.exists()) {
     const teacherData = teacherDoc.data();
     const eventExists = teacherData.events.find((e: Event) => e.id === newEvent.id);
-    console.log("eventExists", eventExists);
     if (eventExists) {
       const updatedEvents = teacherData.events.map((e: Event) => (e.id === newEvent.id ? newEvent : e));
       await setDoc(teacherRef, { events: updatedEvents }, { merge: true });
@@ -597,36 +594,77 @@ export async function fetchTeachers(): Promise<Teacher[]> {
 
 // Booking Service
 
-// TODO: Modify to handle recurring events
-// TODO: Modify to check for available slots
+async function fetchGroupedEvents(repeatGroupId: string, teacherId: string): Promise<string[]> {
+  const eventIds: string[] = [];
+
+  const teacherRef = doc(db, "users", teacherId);
+  const teacherDoc = await getDoc(teacherRef);
+
+  const teacherData = teacherDoc.data();
+  const events = teacherData?.events || [];
+  
+  events.forEach((event: Event) => {
+    if (event.repeatInfo.repeatGroupId === repeatGroupId) {
+      eventIds.push(event.id);
+    }
+  });
+  
+  return eventIds;
+}
+
+async function fetchEventData(eventId: string, teacherId: string): Promise<Event> {
+  const teacherRef = doc(db, "users", teacherId);
+  const teacherDoc = await getDoc(teacherRef);
+  if (!teacherDoc.exists()) {
+    throw new Error("Teacher document not found");
+  }
+  
+  const teacherData = teacherDoc.data();
+  const event = teacherData.events?.find((e: Event) => e.id === eventId);
+  
+  if (!event) {
+    throw new Error("Event data not found");
+  }
+  return event as Event;
+}
+
 export async function bookEvent(event: Event, teacherId: string, studentId: string) {
-  const newEvent: Event = {
-    ...event,
-    status: { status: "confirmed" },
-    bookingDetails: {
-      studentId: studentId,
-      teacherId: teacherId,
-    },
-  };
-
-  console.log("newEvent", newEvent);
-
-  await updateStudentEvents(studentId, newEvent);
-  await updateTeacherEvents(teacherId, newEvent);
-
-  // Get emails for both student and teacher
   const studentEmail = await getUserEmailById(studentId);
   const teacherEmail = await getUserEmailById(teacherId);
+  const eventsToUpdate: string[] = await fetchGroupedEvents(event.repeatInfo.repeatGroupId, teacherId)
 
-  if (studentEmail) {
+  if (event.enrolledStudentIds.includes(studentId)) {
+    throw new Error("You have already booked this event");
+  }
+
+  if (event.maxStudents <= event.enrolledStudentIds.length) {
+    throw new Error("Event is full");
+  }
+
+  if (!studentEmail || !teacherEmail) {
+    throw new Error("Student or teacher email not found");
+  }
+
+  for (const eventId of eventsToUpdate) {
+    const eventData = await fetchEventData(eventId, teacherId);
+
+    const newEvent: Event = {
+      ...eventData,
+      status: { status: "confirmed" },
+      enrolledStudentIds: [...eventData.enrolledStudentIds, studentId],
+      bookingDetails: {
+        studentId: studentId,
+        teacherId: teacherId,
+      },
+    };
+
+    await updateStudentEvents(studentId, newEvent);
+    await updateTeacherEvents(teacherId, newEvent);
     await send({
       to: studentEmail,
       content: "You have a new booking",
       type: "bookingConfirmation",
     });
-  }
-
-  if (teacherEmail) {
     await send({
       to: teacherEmail,
       content: "You have a new booking",
