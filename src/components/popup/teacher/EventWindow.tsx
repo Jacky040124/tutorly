@@ -136,7 +136,7 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
                 onValueChange={(value) => setSelectedStatus({ status: value as EventStatus["status"] })}
               >
                 <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder={event.status.status} />
+                  <SelectValue placeholder={event.status} />
                 </SelectTrigger>
 
                 <SelectContent>

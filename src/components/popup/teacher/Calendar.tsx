@@ -5,7 +5,7 @@ import { Teacher } from "@/types/teacher";
 import { adaptToCalendarEvent } from "@/lib/utils";
 import { renderEventContent } from "@/lib/utils/calendarUtil";
 
-export default function Calendar({ teacher }: { teacher: Teacher }) {
+export default function Calendar({ teacher, handleEventClick }: { teacher: Teacher, handleEventClick: (info: any) => void }) {
   const events = teacher.events;
   const calendarEvents = events.map(adaptToCalendarEvent);
 
@@ -19,6 +19,7 @@ export default function Calendar({ teacher }: { teacher: Teacher }) {
         initialView="timeGridWeek"
         events={calendarEvents}
         eventContent={renderEventContent}
+        eventClick={handleEventClick}
         headerToolbar={{
           left: "prev,next today",
           center: "title",

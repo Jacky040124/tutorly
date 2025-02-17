@@ -62,7 +62,7 @@ export const generateTimeOptions = (config: CalendarConfig) => {
 
 
 export const renderEventContent = (eventInfo: EventContentArg) => {
-  const status = eventInfo.event.extendedProps.status;
+  const status = eventInfo.event.extendedProps.status || 'available';
 
   return (
     <div className="flex items-center gap-1 p-1">

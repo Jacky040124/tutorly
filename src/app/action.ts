@@ -463,6 +463,28 @@ export async function addEvent(prevState: EventState, formData: FormData): Promi
   }
 }
 
+export async function deleteEvent(event: Event) {
+  const teacherId = event.bookingDetails?.teacherId;
+  const studentId = event.bookingDetails?.studentId;
+
+  if (teacherId) {
+    const teacherRef = doc(db, "users", teacherId);
+    const teacherDoc = await getDoc(teacherRef);
+    const teacherData = teacherDoc.data();
+    const events = teacherData?.events || [];
+    await setDoc(teacherRef, { events: events.filter((e: Event) => e.id !== event.id) }, { merge: true });
+  }
+
+  if (studentId) {
+    const studentRef = doc(db, "users", studentId);
+    const studentDoc = await getDoc(studentRef);
+    const studentData = studentDoc.data();
+    const events = studentData?.events || [];
+    await setDoc(studentRef, { events: events.filter((e: Event) => e.id !== event.id) }, { merge: true });
+  }
+
+}
+
 export interface UpdateTeacherProfileState {
   error: string | null;
   updatedProfile: TeacherDetails | null;

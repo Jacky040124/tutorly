@@ -235,7 +235,10 @@
           "cancel": "Cancel",
           "submit": "Submit"
         }
-      }
+      },
+      "confirmDelete": "Confirm Delete",
+      "deleteEventMessage": "Are you sure you want to delete this event?",
+      "confirm": "Confirm"
     }
   },
   "Profile": {
