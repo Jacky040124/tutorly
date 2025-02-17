@@ -50,9 +50,11 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
 
   useEffect(() => {
     async function fetchStudent() {
-      const student = await getUserById(studentid as string);
-      console.log("student", student);
-      setStudent(student as Student);
+      if (studentid) {
+        const student = await getUserById(studentid);
+        console.log("student", student);
+        setStudent(student as Student);
+      }
     }
 
     if (state.error) {
@@ -68,10 +70,10 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
       });
     }
 
-    if (!student) {
+    if (!student && studentid) {
       fetchStudent();
     }
-  }, [state, toast, student]);
+  }, [state, toast, student, studentid]);
 
   if (!event) return null;
 

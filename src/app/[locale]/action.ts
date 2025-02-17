@@ -464,9 +464,12 @@ export async function addEvent(prevState: EventState, formData: FormData): Promi
   }
 }
 
-export async function deleteEvent(event: Event) {
-  const teacherId = event.bookingDetails?.teacherId;
+export async function deleteEvent(teacherId: string, event: Event) {
   const studentId = event.bookingDetails?.studentId;
+
+  console.log("event", event);
+  console.log("teacherId", teacherId);
+  console.log("studentId", studentId);
 
   if (teacherId) {
     const teacherRef = doc(db, "users", teacherId);
@@ -664,6 +667,11 @@ export async function bookEvent(event: Event, teacherId: string, studentId: stri
   const studentEmail = await getUserEmailById(studentId);
   const teacherEmail = await getUserEmailById(teacherId);
   const eventsToUpdate: string[] = await fetchGroupedEvents(event.repeatInfo.repeatGroupId, teacherId)
+
+  console.log("eventsToUpdate", eventsToUpdate);
+  console.log("studentId", studentId);
+  console.log("studentEmail", studentEmail);
+  console.log("teacherEmail", teacherEmail);
 
   if (event.enrolledStudentIds.includes(studentId)) {
     throw new Error("You have already booked this event");

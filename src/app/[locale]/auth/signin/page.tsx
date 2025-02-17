@@ -24,6 +24,7 @@ export default function SignIn() {
     if (state.user) {
       setUser(state.user as Student);
       if (state.user.type === "student") {
+        console.log("state.user.uid", state.user.uid);
         router.push(`/${locale}/dashboard/student/${state.user.uid}/schedule`);
       } else {
         router.push(`/${locale}/dashboard/teacher/${state.user.uid}`);

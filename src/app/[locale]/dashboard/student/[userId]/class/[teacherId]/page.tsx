@@ -51,6 +51,14 @@ export default function Store() {
   const handleConfirmBooking = async () => {
     if (selectedEvent) {
       try {
+        if (selectedEvent.status.status != "available") {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: t("bookingError"),
+          });
+          return;
+        }
         await bookEvent(selectedEvent, teacherId as string, userId as string);
         toast({
           title: "Success",

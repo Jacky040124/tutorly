@@ -38,7 +38,7 @@ export default function TeacherDashboard() {
   };
 
   const handleConfirmDeleteEvent = async (event: Event) => {
-    await deleteEvent(event);
+    await deleteEvent(teacher.uid, event);
     setShowDeleteEventOverlay(false);
   };
 

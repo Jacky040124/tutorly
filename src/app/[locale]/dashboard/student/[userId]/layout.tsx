@@ -62,7 +62,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
                 return (
                   <Link
                     key={item.name}
-                    href={`/${locale}/dashboard/student/${pathname.split("/")[3]}${item.href}`}
+                    href={`/${locale}/dashboard/student/${userId}${item.href}`}
                     className={cn(
                       "group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors",
                       isActive
