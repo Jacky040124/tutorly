@@ -455,7 +455,6 @@ export async function addEvent(prevState: EventState, formData: FormData): Promi
   }
 }
 
-// TODO: Low Priority : Implement bulk delete event logic
 export async function deleteEvent(teacherId: string, event: Event) {
   const studentId = event.bookingDetails?.studentId;
 
@@ -475,6 +474,8 @@ export async function deleteEvent(teacherId: string, event: Event) {
     await setDoc(studentRef, { events: events.filter((e: Event) => e.id !== event.id) }, { merge: true });
   }
 }
+
+
 
 export interface UpdateTeacherProfileState {
   error: string | null;

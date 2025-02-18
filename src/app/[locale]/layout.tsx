@@ -38,11 +38,7 @@ interface RootLayoutProp {
 
 export default async function RootLayout(props: RootLayoutProp) {
   const params = await props.params;
-
-  const {
-    children
-  } = props;
-
+  const { children } = props;
   const { locale } = params;
 
   if (!routing.locales.includes(locale as any)) {
@@ -50,7 +46,6 @@ export default async function RootLayout(props: RootLayoutProp) {
   }
 
   const messages = await getMessages();
-
 
   return (
     <html lang={locale} className={clsx("h-full scroll-smooth bg-white antialiased", inter.variable, lexend.variable)}>

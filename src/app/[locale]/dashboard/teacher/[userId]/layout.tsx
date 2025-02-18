@@ -10,6 +10,8 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
   const { userId } = useParams();
   const { user, setUser } = useUser();
 
+  // TODO : High Priority : Fix User refresh bug
+  // Consider doing it in root layout
   useEffect(() => {
     async function fetchUser() {
       const user = await getUserById(userId as string);

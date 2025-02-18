@@ -18,6 +18,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const pathname = usePathname();
   const t = useTranslations("Dashboard.Student");
 
+  // TODO : High Priority : Fix User refresh bug
   useEffect(() => {
     async function fetchUser() {
       const user = await getUserById(userId as string);
@@ -65,17 +66,13 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
                     href={`/${locale}/dashboard/student/${userId}${item.href}`}
                     className={cn(
                       "group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors",
-                      isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-gray-600 hover:bg-gray-100"
+                      isActive ? "bg-primary text-primary-foreground" : "text-gray-600 hover:bg-gray-100"
                     )}
                   >
                     <item.icon
                       className={cn(
                         "mr-3 h-5 w-5 flex-shrink-0",
-                        isActive
-                          ? "text-primary-foreground"
-                          : "text-gray-400 group-hover:text-gray-500"
+                        isActive ? "text-primary-foreground" : "text-gray-400 group-hover:text-gray-500"
                       )}
                     />
                     {item.name}
@@ -89,9 +86,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
       {/* Main content */}
       <div className="md:pl-64 flex flex-col flex-1">
-        <main className="flex-1">
-          {children}
-        </main>
+        <main className="flex-1">{children}</main>
       </div>
     </div>
   );
