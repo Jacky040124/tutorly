@@ -152,6 +152,37 @@
         "bookingSuccess": "課程預約成功！",
         "bookingError": "預約課程失敗",
         "teacherNotFound": "找不到老師"
+      },
+
+      "StudentEventWindow": {
+        "title": "課程詳情",
+        "status": {
+          "label": "狀態",
+          "available": "可預約",
+          "confirmed": "已確認",
+          "completed": "已完成",
+          "cancelled": "已取消"
+        },
+        "meetingLink": {
+          "label": "會議連結"
+        },
+        "homework": {
+          "label": "作業",
+          "view": "查看作業",
+          "added": "新增於 {date}",
+          "none": "尚未指派作業"
+        },
+        "feedback": {
+          "label": "課程回饋",
+          "placeholder": "分享您對這堂課的想法...",
+          "rating": "評分"
+        },
+        "buttons": {
+          "joinMeeting": "加入課程",
+          "saveFeedback": "提交回饋",
+          "saving": "提交中...",
+          "cancel": "取消"
+        }
       }
     },
 

@@ -33,8 +33,6 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-
-
 export async function getUserById(userId: string) {
   const docRef = doc(db, "users", userId);
   const docSnap = await getDoc(docRef);
@@ -135,64 +133,33 @@ export type FeedbackState = {
   error: string | null;
 };
 
+// TODO : High Priority Fix add feedback bug
 export async function addFeedback(prevState: FeedbackState, formData: FormData): Promise<FeedbackState> {
   try {
-    const bookingId = formData.get("bookingId") as string;
-    const studentId = formData.get("studentId") as string;
+    const event: Event = JSON.parse(formData.get("event") as string);
     const rating = formData.get("rating") as string;
     const comment = formData.get("comment") as string;
+    const studentId = formData.get("studentId") as string;
+    const teacherId = event.bookingDetails?.teacherId;
 
-    const bookingRef = doc(db, "bookings", bookingId);
-    await setDoc(
-      bookingRef,
-      {
-        feedback: {
-          rating: rating,
-          comment: comment,
-          studentId: studentId,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          meetingId: bookingId,
-        },
+    const newEvent: Event = {
+      ...event,
+      bookingDetails: {
+        studentId,
+        teacherId: event.bookingDetails!.teacherId,
+        homework: event.bookingDetails?.homework,
+        feedback: { rating: Number(rating), comment, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
       },
-      { merge: true }
-    );
+    };
+
+    if (teacherId && studentId) {
+      await updateTeacherEvents(teacherId, newEvent);
+      await updateStudentEvents(studentId, newEvent);
+    }
 
     return { message: "Feedback added successfully", error: null };
   } catch (error) {
     return { message: "Error adding feedback", error: error as string };
-  }
-}
-
-export async function deleteFeedback(bookingId: string) {
-  console.log("Deleting feedback:", { bookingId });
-
-  try {
-    const bookingRef = doc(db, "bookings", bookingId);
-    await setDoc(
-      bookingRef,
-      {
-        feedback: null,
-      },
-      { merge: true }
-    );
-
-    console.log("Successfully deleted feedback");
-    return true;
-  } catch (error) {
-    console.error("Error deleting feedback:", error);
-    throw error;
-  }
-}
-
-export async function updateBookingStatus(bookingId: string, newStatus: "completed" | "confirmed" | "cancelled") {
-  try {
-    const bookingRef = doc(db, "bookings", bookingId);
-    await setDoc(bookingRef, { status: newStatus }, { merge: true });
-    return true;
-  } catch (error) {
-    console.error("Error updating booking status:", error);
-    throw error;
   }
 }
 
@@ -545,11 +512,19 @@ async function updateTeacherEvents(teacherId: string, newEvent: Event) {
   const teacherRef = doc(db, "users", teacherId);
   const teacherDoc = await getDoc(teacherRef);
 
+  console.log("teacherId", teacherId);
+  console.log("newEvent", newEvent);
+
+
   if (teacherDoc.exists()) {
+    console.log("teacherDoc exists");
     const teacherData = teacherDoc.data();
     const eventExists = teacherData.events.find((e: Event) => e.id === newEvent.id);
+    console.log("eventExists", eventExists);
     if (eventExists) {
       const updatedEvents = teacherData.events.map((e: Event) => (e.id === newEvent.id ? newEvent : e));
+      console.log("updatedEvents", updatedEvents);
+      console.log("updatedEvents", updatedEvents[0]);
       await setDoc(teacherRef, { events: updatedEvents }, { merge: true });
     } else {
       await setDoc(teacherRef, { events: [...teacherData.events, newEvent] }, { merge: true });
@@ -701,8 +676,8 @@ export async function bookEvent(event: Event, teacherId: string, studentId: stri
       status: { status: "confirmed" },
       enrolledStudentIds: [...eventData.enrolledStudentIds, studentId],
       bookingDetails: {
-        studentId: studentId,
-        teacherId: teacherId,
+        studentId,
+        teacherId,
       },
     };
 

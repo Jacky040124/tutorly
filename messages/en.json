@@ -90,7 +90,41 @@
           "week": "Week",
           "day": "Day"
         },
-        "pleaseSignIn": "Please sign in to view your schedule"
+        "pleaseSignIn": "Please sign in to view your schedule",
+
+
+        "StudentEventWindow": {
+          "title": "Class Details",
+          "status": {
+            "label": "Status",
+            "available": "Available",
+            "confirmed": "Confirmed",
+            "completed": "Completed",
+            "cancelled": "Cancelled"
+          },
+          "meetingLink": {
+            "label": "Meeting Link"
+          },
+          "homework": {
+            "label": "Homework",
+            "view": "View Assignment",
+            "added": "Added {date}",
+            "none": "No homework assigned"
+          },
+          "feedback": {
+            "label": "Class Feedback",
+            "placeholder": "Share your thoughts about this class...",
+            "rating": "Rating"
+          },
+          "buttons": {
+            "joinMeeting": "Join Class",
+            "saveFeedback": "Submit Feedback",
+            "saving": "Submitting...",
+            "cancel": "Cancel"
+          }
+        }
+
+        
       },
 
       "Class": {
