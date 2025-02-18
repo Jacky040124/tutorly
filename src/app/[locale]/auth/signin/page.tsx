@@ -24,9 +24,9 @@ export default function SignIn() {
     if (state.user) {
       setUser(state.user as Student);
       if (state.user.type === "student") {
-        router.push(`/${locale}/dashboard/student/${state.user.uid}/schedule`);
+        router.push(`/${locale}/dashboard/student/${state.user.uid}/schedule`, { scroll: false });
       } else {
-        router.push(`/${locale}/dashboard/teacher/${state.user.uid}`);
+        router.push(`/${locale}/dashboard/teacher/${state.user.uid}`, { scroll: false });
       }
     }
   }, [state, setUser, router, locale]);

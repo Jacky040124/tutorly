@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useTranslations } from "next-intl";
 import { useOverlay } from "@/hooks/useOverlay";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
@@ -54,6 +54,7 @@ export default function AddEventOverlay() {
       <SheetContent className="sm:max-w-lg overflow-y-auto">
         <SheetHeader>
           <SheetTitle>{t("title")}</SheetTitle>
+          <SheetDescription>{t("fields.date")}: {date.toLocaleDateString()}</SheetDescription>
         </SheetHeader>
 
         <form action={handleFormAction} className="space-y-6 py-6">

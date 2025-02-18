@@ -121,6 +121,7 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
                                 src={student.details.photoURL}
                                 alt={student.nickname}
                                 fill
+                                sizes="40px"
                                 className="rounded-full object-cover"
                               />
                             </div>

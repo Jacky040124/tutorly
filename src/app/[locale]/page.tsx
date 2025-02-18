@@ -52,7 +52,7 @@ export default function App() {
             {/* Right Side: Language Switcher and Auth Buttons */}
             <div className="flex items-center gap-6">
               <div className="flex items-center space-x-4">
-                <Link href={`/${locale}/auth/signin`}>
+                <Link href={`/${locale}/auth/signin`} scroll={false}>
                   <Button
                     variant="outline"
                     size="sm"
@@ -61,7 +61,7 @@ export default function App() {
                     {t("header.login")}
                   </Button>
                 </Link>
-                <Link href={`/${locale}/auth/signupteacher`}>
+                <Link href={`/${locale}/auth/signupteacher`} scroll={false}>
                   <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
                     {t("header.becomeTutor")}
                   </Button>
@@ -117,6 +117,7 @@ export default function App() {
                       alt={teacher.details.nickname}
                       width={500}
                       height={300}
+                      priority
                       className="w-full h-48 object-cover"
                     />
                   ) : (

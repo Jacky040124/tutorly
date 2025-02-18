@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useOverlay } from "@/hooks/useOverlay";
 import { uploadImage } from "@/app/[locale]/action";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -74,6 +74,7 @@ export default function TeacherProfileOverlay() {
       <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-semibold">{t("editProfile")}</DialogTitle>
+          <DialogDescription>{t("teacher")}</DialogDescription>
         </DialogHeader>
 
         {/* Profile Photo */}

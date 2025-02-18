@@ -91,6 +91,7 @@ export default function Store() {
                 src={teacher.details.photoURL || "/default-avatar.png"}
                 alt={teacher.details.nickname}
                 fill
+                sizes="(max-width: 768px) 160px, 160px"
                 className="object-cover"
               />
             </div>
