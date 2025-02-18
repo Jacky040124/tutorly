@@ -8,45 +8,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslations } from "next-intl";
-import { useActionState } from "react";
+import { useEffect,useActionState } from "react";
 import { authState } from "@/app/[locale]/action";
 import { Student } from "@/types/student";
 import { useParams } from "next/navigation";
-import { useToast } from "@/hooks/use-toast";
 
 export default function SignIn() {
   const t = useTranslations("Auth.SignIn");
   const router = useRouter();
   const { setUser } = useUser();
-  const { toast } = useToast();
   const [state, formAction, isPending] = useActionState(signIn, { error: null, user: null } as authState);
   const { locale } = useParams();
 
-  async function handleFormAction(formData: FormData) {
-    try {
-      await formAction(formData);
-      if (state.error) {
-        toast({
-          variant: "destructive",
-          title: t("error"),
-          description: state.error,
-        });
-      } else if (state.user) {
-        setUser(state.user as Student);
-        if (state.user.type === "student") {
-          router.push(`/${locale}/dashboard/student/${state.user.uid}/schedule`);
-        } else {
-          router.push(`/${locale}/dashboard/teacher/${state.user.uid}`);
-        }
+  useEffect(() => {
+    if (state.user) {
+      setUser(state.user as Student);
+      if (state.user.type === "student") {
+        router.push(`/${locale}/dashboard/student/${state.user.uid}/schedule`);
+      } else {
+        router.push(`/${locale}/dashboard/teacher/${state.user.uid}`);
       }
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: t("error"),
-        description: t("unexpectedError"),
-      });
     }
-  }
+  }, [state, setUser, router, locale]);
+
 
   return (
     <div className="flex-1 flex flex-col justify-center items-center px-4">
@@ -60,7 +44,8 @@ export default function SignIn() {
             </Link>
           </p>
         </div>
-        <form action={handleFormAction} className="space-y-4">
+        {state.error && <p className="text-red-500">{state.error}</p>}
+        <form action={formAction} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">{t("email")}</Label>
             <Input id="email" type="email" autoComplete="email" name="email" required />

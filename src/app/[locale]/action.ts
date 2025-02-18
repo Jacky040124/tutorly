@@ -63,6 +63,7 @@ export const signIn = async (prevState: authState, formData: FormData): Promise<
   }
 
   if (userData && userData.type === "teacher") {
+    console.log("userData", userData);
     return {
       user: createTeacherFromData(userData as Teacher),
       error: null,
@@ -70,6 +71,7 @@ export const signIn = async (prevState: authState, formData: FormData): Promise<
   }
 
   if (userData && userData.type === "student") {
+    console.log("userData", userData);
     return {
       user: createStudentFromData(userData),
       error: null,

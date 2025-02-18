@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getUserById } from "@/app/[locale]/action";
 import { Student } from "@/types/student";
 import Image from "next/image";
+import { useParams } from "next/navigation";
 
 interface EventWindowProps {
   event?: Event;
@@ -41,6 +42,7 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
   const [student, setStudent] = useState<Student | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<EventStatus>({ status: 'available' });
   const t = useTranslations("EventWindow");
+  const { locale } = useParams();
 
   // Update selected status when event changes
   useEffect(() => {
@@ -143,7 +145,20 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
                 onValueChange={(value) => setSelectedStatus({ status: value as EventStatus["status"] })}
               >
                 <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder={t(`status.${event.status}`)} />
+                  <SelectValue placeholder={locale === "en" ? 
+                    {
+                      'completed': 'Completed',
+                      'confirmed': 'Confirmed',
+                      'cancelled': 'Cancelled',
+                      'available': 'Available'
+                    }[event.status.status] : 
+                    {
+                      'completed': '已完成',
+                      'confirmed': '已确认',
+                      'cancelled': '已取消',
+                      'available': '可预约'
+                    }[event.status.status]
+                  } />
                 </SelectTrigger>
 
                 <SelectContent>
