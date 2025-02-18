@@ -411,7 +411,7 @@ export async function addEvent(prevState: EventState, formData: FormData): Promi
     });
     const newEvents = [...events, ...generatedEvents];
 
-    const isOverlapping = isOverlap(events, newEvents);
+    const isOverlapping = isOverlap(events, generatedEvents);
     if (isOverlapping) {
       return {
         events: prevState.events,
