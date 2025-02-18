@@ -9,14 +9,15 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { useActionState } from "react";
-import { addEvent } from "@/app/[locale]/action";
+import { addEvent, getUserById } from "@/app/[locale]/action";
 import { getNumberOfClasses, generateTimeOptions } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { Student } from "@/types/student";
 
 export default function AddEventOverlay() {
-  const { events, user } = useUser();
+  const { events, user, setUser } = useUser();
   const { setShowAddEventOverlay } = useOverlay();
   const { toast } = useToast();
   const t = useTranslations("AddEventOverlay");
@@ -31,18 +32,23 @@ export default function AddEventOverlay() {
   const numberOfClass = useRef(getNumberOfClasses(date));
   const timeOptions = generateTimeOptions();
 
-  useEffect(() => {
-    if (state.events.length > events.length) {
+  async function handleFormAction(formData: FormData) {
+    try {
+      formAction(formData);
+      const newUser = await getUserById(user?.uid as string);
+      setUser(newUser as Student);
       toast({
         title: "Success",
-        description: isRepeating 
-          ? `Successfully created ${numberOfClass.current} classes` 
+        description: isRepeating
+          ? `Successfully created ${numberOfClass.current} classes`
           : "Successfully created class",
       });
       setShowAddEventOverlay(false);
+    } catch (error) {
+      console.error(error);
     }
-  }, [state.events.length, events.length, isRepeating, numberOfClass, toast, setShowAddEventOverlay]);
-
+  };
+  
   return (
     <Sheet open={true} onOpenChange={() => setShowAddEventOverlay(false)}>
       <SheetContent className="sm:max-w-lg overflow-y-auto">
@@ -50,7 +56,7 @@ export default function AddEventOverlay() {
           <SheetTitle>{t("title")}</SheetTitle>
         </SheetHeader>
 
-        <form action={formAction} className="space-y-6 py-6">
+        <form action={handleFormAction} className="space-y-6 py-6">
           <input type="hidden" name="userId" value={user?.uid} />
           <input type="hidden" name="isRepeating" value={isRepeating.toString()} />
           <input type="hidden" name="date" value={date?.toISOString()} />
