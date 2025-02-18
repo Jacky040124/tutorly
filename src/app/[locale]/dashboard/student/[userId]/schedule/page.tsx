@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useTranslations } from "next-intl";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -16,7 +16,8 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { adaptToCalendarEvent, formatTime } from "@/lib/utils";
 import { Event } from "@/types/event";
 import { useActionState } from "react";
-import { addFeedback } from "@/app/[locale]/action";
+import { addFeedback, getUserById } from "@/app/[locale]/action";
+import { toast } from "@/hooks/use-toast";
 
 interface EventWindowProps {
   event: Event;
@@ -26,6 +27,7 @@ interface EventWindowProps {
 }
 
 function StudentEventWindow({ event, show, onClose, student }: EventWindowProps) {
+  const { user, setUser } = useUser();
   const [rating, setRating] = useState<number>(event.bookingDetails?.feedback?.rating || 0);
   const [feedbackText, setFeedbackText] = useState<string>(event.bookingDetails?.feedback?.comment || "");
   const [state, formAction, isPending] = useActionState(addFeedback, { message: "", error: null });
@@ -33,6 +35,12 @@ function StudentEventWindow({ event, show, onClose, student }: EventWindowProps)
 
   const eventDate = new Date(event.date.year, event.date.month - 1, event.date.day);
   const timeString = `${formatTime(event.date.startTime)} - ${formatTime(event.date.endTime)}`;
+
+  async function handleFormAction(formData: FormData) {
+    formAction(formData);
+    const newUser = await getUserById(student.uid);
+    setUser(newUser as Student);
+  }
 
   return (
     <Dialog open={show} onOpenChange={onClose}>
@@ -101,62 +109,54 @@ function StudentEventWindow({ event, show, onClose, student }: EventWindowProps)
 
           {/* Feedback Section */}
 
-              <Separator className="my-4" />
-              <form action={formAction} className="space-y-4">
-                <input type="hidden" name="event" value={JSON.stringify(event)} />
-                <input type="hidden" name="rating" value={rating} />
-                <input type="hidden" name="comment" value={feedbackText} />
-                <input type="hidden" name="studentId" value={student.uid} />
+          <Separator className="my-4" />
+          <form action={handleFormAction} className="space-y-4">
+            <input type="hidden" name="event" value={JSON.stringify(event)} />
+            <input type="hidden" name="rating" value={rating} />
+            <input type="hidden" name="comment" value={feedbackText} />
+            <input type="hidden" name="studentId" value={student.uid} />
 
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-semibold">{t("feedback.label")}</h3>
-                    <div className="flex items-center gap-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          type="button"
-                          onClick={() => setRating(star)}
-                          className={`p-1 transition-colors ${
-                            star <= rating ? "text-yellow-500" : "text-gray-300 hover:text-yellow-200"
-                          }`}
-                        >
-                          <Star className="h-5 w-5" fill={star <= rating ? "currentColor" : "none"} />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <Textarea
-                    value={feedbackText}
-                    onChange={(e) => setFeedbackText(e.target.value)}
-                    placeholder={t("feedback.placeholder")}
-                    className="min-h-[100px] resize-none"
-                  />
-
-                  {state.error && (
-                    <p className="text-sm text-red-500 bg-red-50 p-2 rounded">
-                      {typeof state.error === 'string' ? state.error : 'An error occurred'}
-                    </p>
-                  )}
-                  <div className="flex justify-end gap-2">
-                    <Button
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold">{t("feedback.label")}</h3>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
                       type="button"
-                      variant="outline"
-                      onClick={onClose}
+                      onClick={() => setRating(star)}
+                      className={`p-1 transition-colors ${
+                        star <= rating ? "text-yellow-500" : "text-gray-300 hover:text-yellow-200"
+                      }`}
                     >
-                      {t("buttons.cancel")}
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={!rating || isPending}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      {isPending ? t("buttons.saving") : t("buttons.saveFeedback")}
-                    </Button>
-                  </div>
+                      <Star className="h-5 w-5" fill={star <= rating ? "currentColor" : "none"} />
+                    </button>
+                  ))}
                 </div>
-              </form>
+              </div>
+
+              <Textarea
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+                placeholder={t("feedback.placeholder")}
+                className="min-h-[100px] resize-none"
+              />
+
+              {state.error && (
+                <p className="text-sm text-red-500 bg-red-50 p-2 rounded">
+                  {typeof state.error === "string" ? state.error : "An error occurred"}
+                </p>
+              )}
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={onClose}>
+                  {t("buttons.cancel")}
+                </Button>
+                <Button type="submit" disabled={!rating || isPending} className="bg-blue-600 hover:bg-blue-700">
+                  {isPending ? t("buttons.saving") : t("buttons.saveFeedback")}
+                </Button>
+              </div>
+            </div>
+          </form>
         </div>
       </DialogContent>
     </Dialog>

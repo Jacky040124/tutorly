@@ -18,7 +18,6 @@ import { useToast } from "@/hooks/use-toast";
 import { handleTagInput } from "@/lib/utils";
 
 
-// TODO: Fix Profile update after deployment
 export default function StudentProfile() {
   const { user, setUser } = useUser();
   const { toast } = useToast();
@@ -45,7 +44,7 @@ export default function StudentProfile() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: state.error,
+        description: "Error updating profile",
       });
     } else if (state.updatedProfile) {
       const updatedStudent = createStudentFromData({
@@ -55,15 +54,17 @@ export default function StudentProfile() {
         goals: state.updatedProfile.details.goals,
       });
 
+      // Batch the state updates together
       setUser(updatedStudent);
-      setInterests(updatedStudent.details.interests);
-      setGoals(updatedStudent.details.goals);
+      setInterests(state.updatedProfile.details.interests || []);
+      setGoals(state.updatedProfile.details.goals || []);
+      
       toast({
         title: "Success",
         description: t("updateSuccess"),
       });
     }
-  }, [state, toast, t, user, setUser]);
+  }, [state, toast, t, setUser]);
 
   if (!user) return null;
   const student = user as Student;

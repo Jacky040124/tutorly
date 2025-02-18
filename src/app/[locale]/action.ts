@@ -144,6 +144,12 @@ export async function addFeedback(prevState: FeedbackState, formData: FormData):
     const studentId = formData.get("studentId") as string;
     const teacherId = event.bookingDetails?.teacherId;
 
+    console.log("event", event);
+    console.log("rating", rating);
+    console.log("comment", comment);
+    console.log("studentId", studentId);
+    console.log("teacherId", teacherId);
+
     const newEvent: Event = {
       ...event,
       bookingDetails: {
@@ -442,6 +448,8 @@ export async function addEvent(prevState: EventState, formData: FormData): Promi
   }
 }
 
+
+// TODO: Implement bulk delete event logic
 export async function deleteEvent(teacherId: string, event: Event) {
   const studentId = event.bookingDetails?.studentId;
 

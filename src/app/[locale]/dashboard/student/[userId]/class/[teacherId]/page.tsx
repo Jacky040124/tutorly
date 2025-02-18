@@ -22,9 +22,12 @@ import { Event } from "@/types/event";
 import { useToast } from "@/hooks/use-toast";
 import { formatTime } from "@/lib/utils";
 import { useTranslations } from "next-intl";
-
+import { getUserById } from "@/app/[locale]/action";
+import { Student } from "@/types/student";
+import { useUser } from "@/hooks/useUser";
 
 export default function Store() {
+  const { user, setUser } = useUser();
   const { userId, teacherId } = useParams();
   const { getTeacherById } = useTeachers();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -63,6 +66,8 @@ export default function Store() {
           title: "Success",
           description: t("bookingSuccess"),
         });
+        const newUser = await getUserById(userId as string);
+        setUser(newUser as Student);
         setIsDialogOpen(false);
         setSelectedEvent(null);
       } catch (error) {
