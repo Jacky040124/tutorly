@@ -30,7 +30,7 @@ export default function SignIn() {
         router.push(`/${locale}/dashboard/teacher/${state.user.uid}`);
       }
     }
-  }, [state]);
+  }, [state, setUser, router, locale]);
 
   return (
     <div className="flex-1 flex flex-col justify-center items-center px-4">

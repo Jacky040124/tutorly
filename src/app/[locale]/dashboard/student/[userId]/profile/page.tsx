@@ -17,23 +17,28 @@ import { updateStudentProfile, UpdateStudentProfileState } from "@/app/[locale]/
 import { useToast } from "@/hooks/use-toast";
 import { handleTagInput } from "@/lib/utils";
 
-interface StudentProfileProps {
-  params: {userId: string};
-}
 
-export default function StudentProfile({ params }: StudentProfileProps) {
+// TODO: Fix Profile update after deployment
+export default function StudentProfile() {
   const { user, setUser } = useUser();
-  if (!user) return null;
   const { toast } = useToast();
   const t = useTranslations("Dashboard.Student.Profile");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const student = user as Student;
-  const [interests, setInterests] = useState<string[]>(student?.details.interests || []);
-  const [goals, setGoals] = useState<string[]>(student?.details.goals || []);
+  const [interests, setInterests] = useState<string[]>([]);
+  const [goals, setGoals] = useState<string[]>([]);
   const [state, formAction, isPending] = useActionState(updateStudentProfile, {
     error: null,
     updatedProfile: null,
   } as UpdateStudentProfileState);
+
+  // Initialize interests and goals from student data
+  useEffect(() => {
+    if (user) {
+      const student = user as Student;
+      setInterests(student.details.interests || []);
+      setGoals(student.details.goals || []);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (state.error) {
@@ -44,7 +49,7 @@ export default function StudentProfile({ params }: StudentProfileProps) {
       });
     } else if (state.updatedProfile) {
       const updatedStudent = createStudentFromData({
-        ...student,
+        ...user as Student,
         ...state.updatedProfile,
         interests: state.updatedProfile.details.interests,
         goals: state.updatedProfile.details.goals,
@@ -58,7 +63,10 @@ export default function StudentProfile({ params }: StudentProfileProps) {
         description: t("updateSuccess"),
       });
     }
-  }, [state, toast, t]);
+  }, [state, toast, t, user, setUser]);
+
+  if (!user) return null;
+  const student = user as Student;
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

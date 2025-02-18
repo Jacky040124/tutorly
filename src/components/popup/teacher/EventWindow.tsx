@@ -21,7 +21,7 @@ import { EventStatus } from "@/types/event";
 import { useToast } from "@/hooks/use-toast";
 import { getUserById } from "@/app/[locale]/action";
 import { Student } from "@/types/student";
-import { useParams } from "next/navigation";
+import Image from "next/image";
 
 interface EventWindowProps {
   event?: Event;
@@ -32,25 +32,27 @@ interface EventWindowProps {
 const EVENT_STATUS_OPTIONS = ["available", "confirmed", "completed", "cancelled"] as const;
 
 export default function EventWindow({ event, close, show }: EventWindowProps) {
-  if (!event) return null;
   const { user, setUser } = useUser();
-  const teacher = user as Teacher;
-  const studentid = event.bookingDetails?.studentId;
   const { toast } = useToast();
   const [state, formAction, isPending] = useActionState(updateEventDetails, {
     message: "",
     error: null,
   } as UpdateEventDetailsState);
   const [student, setStudent] = useState<Student | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<EventStatus>(event.status);
+  const [selectedStatus, setSelectedStatus] = useState<EventStatus>({ status: 'available' });
   const t = useTranslations("EventWindow");
 
-  console.log("event.status.status",event.status.status);
+  // Update selected status when event changes
+  useEffect(() => {
+    if (event) {
+      setSelectedStatus(event.status);
+    }
+  }, [event]);
 
   useEffect(() => {
     async function fetchStudent() {
-      if (studentid) {
-        const student = await getUserById(studentid);
+      if (event?.bookingDetails?.studentId) {
+        const student = await getUserById(event.bookingDetails.studentId);
         setStudent(student as Student);
       }
     }
@@ -68,13 +70,15 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
       });
     }
 
-    if (!student && studentid) {
+    if (!student && event?.bookingDetails?.studentId) {
       fetchStudent();
     }
-  }, [state, toast, student, studentid]);
+  }, [state, toast, student, event]);
 
   if (!event) return null;
-
+  if (!user) return null;
+  
+  const teacher = user as Teacher;
   const eventDate = new Date(event.date.year, event.date.month - 1, event.date.day);
   const timeString = `${formatTime(event.date.startTime)} - ${formatTime(event.date.endTime)}`;
 
@@ -102,11 +106,14 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
                       {student ? (
                         <div className="flex items-start gap-3">
                           {student.details.photoURL && (
-                            <img
-                              src={student.details.photoURL}
-                              alt={student.nickname}
-                              className="w-10 h-10 rounded-full object-cover"
-                            />
+                            <div className="relative w-10 h-10">
+                              <Image
+                                src={student.details.photoURL}
+                                alt={student.nickname}
+                                fill
+                                className="rounded-full object-cover"
+                              />
+                            </div>
                           )}
                           <div className="space-y-1">
                             <p className="font-medium">{student.nickname}</p>

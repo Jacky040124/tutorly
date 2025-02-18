@@ -17,11 +17,6 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function AddEventOverlay() {
   const { events, user } = useUser();
-  
-  if (!user) {
-    return <div>User not found. Please try logging in again.</div>;
-  }
-
   const { setShowAddEventOverlay } = useOverlay();
   const { toast } = useToast();
   const t = useTranslations("AddEventOverlay");

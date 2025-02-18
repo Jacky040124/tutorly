@@ -10,12 +10,6 @@ import { useTranslations } from 'next-intl';
 import { useActionState, useEffect } from "react";
 import { authState } from "@/app/[locale]/action";
 import { useParams } from "next/navigation";
-type SignUpData = {
-  email: string;
-  password: string;
-  nickname: string;
-  signupCode: string;
-};
 
 export default function SignUp() {
   const t = useTranslations('Auth.SignUp');
@@ -27,7 +21,7 @@ export default function SignUp() {
     if (state.user) {
       router.push(`/${locale}/auth/signin`);
     }
-  }, [state]);
+  }, [state, router, locale]);
 
   return (
     <div className="flex-1 flex flex-col justify-center items-center px-4">

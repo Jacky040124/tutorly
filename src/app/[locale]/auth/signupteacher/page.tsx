@@ -21,7 +21,7 @@ export default function SignUpTeacher() {
     if (state.user) {
       router.push(`/${locale}/auth/signin`);
     }
-  }, [state]);
+  }, [state, router, locale]);
 
   return (
     <div className="flex-1 flex flex-col justify-center items-center px-4">
