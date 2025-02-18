@@ -92,7 +92,6 @@
         },
         "pleaseSignIn": "Please sign in to view your schedule",
 
-
         "StudentEventWindow": {
           "title": "Class Details",
           "status": {
@@ -123,8 +122,6 @@
             "cancel": "Cancel"
           }
         }
-
-        
       },
 
       "Class": {

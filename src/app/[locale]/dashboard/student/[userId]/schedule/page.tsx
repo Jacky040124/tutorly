@@ -31,7 +31,7 @@ function StudentEventWindow({ event, show, onClose, student }: EventWindowProps)
   const [rating, setRating] = useState<number>(event.bookingDetails?.feedback?.rating || 0);
   const [feedbackText, setFeedbackText] = useState<string>(event.bookingDetails?.feedback?.comment || "");
   const [state, formAction, isPending] = useActionState(addFeedback, { message: "", error: null });
-  const t = useTranslations("Dashboard.Student.StudentEventWindow");
+  const t = useTranslations("Dashboard.Student.Schedule.StudentEventWindow");
 
   const eventDate = new Date(event.date.year, event.date.month - 1, event.date.day);
   const timeString = `${formatTime(event.date.startTime)} - ${formatTime(event.date.endTime)}`;
