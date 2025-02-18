@@ -79,6 +79,14 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
 
   if (!event) return null;
   if (!user) return null;
+
+  async function handleFormAction(formData: FormData) {
+    formAction(formData);
+    const newUser = await getUserById(user?.uid as string);
+    setUser(newUser as Student);
+    close(false);
+  }
+
   
   const teacher = user as Teacher;
   const eventDate = new Date(event.date.year, event.date.month - 1, event.date.day);
@@ -94,7 +102,7 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <form action={formAction} className="space-y-6">
+        <form action={handleFormAction} className="space-y-6">
           <input type="hidden" name="event" value={JSON.stringify(event)} />
           <input type="hidden" name="teacherId" value={teacher.uid} />
 
@@ -145,20 +153,23 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
                 onValueChange={(value) => setSelectedStatus({ status: value as EventStatus["status"] })}
               >
                 <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder={locale === "en" ? 
-                    {
-                      'completed': 'Completed',
-                      'confirmed': 'Confirmed',
-                      'cancelled': 'Cancelled',
-                      'available': 'Available'
-                    }[event.status.status] : 
-                    {
-                      'completed': '已完成',
-                      'confirmed': '已确认',
-                      'cancelled': '已取消',
-                      'available': '可预约'
-                    }[event.status.status]
-                  } />
+                  <SelectValue
+                    placeholder={
+                      locale === "en"
+                        ? {
+                            completed: "Completed",
+                            confirmed: "Confirmed",
+                            cancelled: "Cancelled",
+                            available: "Available",
+                          }[event.status.status]
+                        : {
+                            completed: "已完成",
+                            confirmed: "已确认",
+                            cancelled: "已取消",
+                            available: "可预约",
+                          }[event.status.status]
+                    }
+                  />
                 </SelectTrigger>
 
                 <SelectContent>
