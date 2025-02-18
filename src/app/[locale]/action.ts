@@ -135,7 +135,6 @@ export type FeedbackState = {
   error: string | null;
 };
 
-// TODO : High Priority Fix add feedback bug
 export async function addFeedback(prevState: FeedbackState, formData: FormData): Promise<FeedbackState> {
   try {
     const event: Event = JSON.parse(formData.get("event") as string);
@@ -144,30 +143,38 @@ export async function addFeedback(prevState: FeedbackState, formData: FormData):
     const studentId = formData.get("studentId") as string;
     const teacherId = event.bookingDetails?.teacherId;
 
-    console.log("event", event);
-    console.log("rating", rating);
-    console.log("comment", comment);
-    console.log("studentId", studentId);
-    console.log("teacherId", teacherId);
+    // Validate required fields
+    if (!event || !rating || !studentId || !teacherId) {
+      throw new Error("Missing required fields");
+    }
 
+    // Create new event with all required fields
     const newEvent: Event = {
       ...event,
       bookingDetails: {
-        studentId,
-        teacherId: event.bookingDetails!.teacherId,
+        studentId: studentId,
+        teacherId: teacherId,
         homework: event.bookingDetails?.homework,
-        feedback: { rating: Number(rating), comment, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        feedback: {
+          rating: Number(rating),
+          comment: comment || "",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
       },
     };
 
-    if (teacherId && studentId) {
-      await updateTeacherEvents(teacherId, newEvent);
-      await updateStudentEvents(studentId, newEvent);
-    }
+    // Update both teacher and student events
+    await updateTeacherEvents(teacherId, newEvent);
+    await updateStudentEvents(studentId, newEvent);
 
     return { message: "Feedback added successfully", error: null };
   } catch (error) {
-    return { message: "Error adding feedback", error: error as string };
+    console.error("Error adding feedback:", error);
+    return { 
+      message: "Error adding feedback", 
+      error: error instanceof Error ? error.message : String(error)
+    };
   }
 }
 
@@ -448,14 +455,9 @@ export async function addEvent(prevState: EventState, formData: FormData): Promi
   }
 }
 
-
-// TODO: Implement bulk delete event logic
+// TODO: Low Priority : Implement bulk delete event logic
 export async function deleteEvent(teacherId: string, event: Event) {
   const studentId = event.bookingDetails?.studentId;
-
-  console.log("event", event);
-  console.log("teacherId", teacherId);
-  console.log("studentId", studentId);
 
   if (teacherId) {
     const teacherRef = doc(db, "users", teacherId);
@@ -521,40 +523,64 @@ export async function updateTeacherProfile(prevState: UpdateTeacherProfileState,
 async function updateTeacherEvents(teacherId: string, newEvent: Event) {
   const teacherRef = doc(db, "users", teacherId);
   const teacherDoc = await getDoc(teacherRef);
-
-  console.log("teacherId", teacherId);
-  console.log("newEvent", newEvent);
-
-
-  if (teacherDoc.exists()) {
-    console.log("teacherDoc exists");
-    const teacherData = teacherDoc.data();
-    const eventExists = teacherData.events.find((e: Event) => e.id === newEvent.id);
-    console.log("eventExists", eventExists);
-    if (eventExists) {
-      const updatedEvents = teacherData.events.map((e: Event) => (e.id === newEvent.id ? newEvent : e));
-      console.log("updatedEvents", updatedEvents);
-      console.log("updatedEvents", updatedEvents[0]);
-      await setDoc(teacherRef, { events: updatedEvents }, { merge: true });
-    } else {
-      await setDoc(teacherRef, { events: [...teacherData.events, newEvent] }, { merge: true });
+  const teacherData = teacherDoc.data();
+  const existingEvents = teacherData?.events || [];
+  
+  // Sanitize the event object to remove any undefined values
+  const sanitizedEvent = {
+    ...newEvent,
+    bookingDetails: {
+      studentId: newEvent.bookingDetails?.studentId,
+      teacherId: newEvent.bookingDetails?.teacherId,
+      homework: newEvent.bookingDetails?.homework || null,
+      feedback: newEvent.bookingDetails?.feedback ? {
+        rating: newEvent.bookingDetails.feedback.rating,
+        comment: newEvent.bookingDetails.feedback.comment || "",
+        createdAt: newEvent.bookingDetails.feedback.createdAt,
+        updatedAt: newEvent.bookingDetails.feedback.updatedAt
+      } : null
     }
+  };
+
+  const eventExists = existingEvents.find((e: Event) => e.id === sanitizedEvent.id);
+  
+  if (eventExists) {
+    const updatedEvents = existingEvents.map((e: Event) => e.id === sanitizedEvent.id ? sanitizedEvent : e);
+    await setDoc(teacherRef, { events: updatedEvents }, { merge: true });
+  } else {
+    await setDoc(teacherRef, { events: [...existingEvents, sanitizedEvent] }, { merge: true });
   }
 }
 
 async function updateStudentEvents(studentId: string, newEvent: Event) {
   const studentRef = doc(db, "users", studentId);
   const studentDoc = await getDoc(studentRef);
+  const studentData = studentDoc.data();
+  const existingEvents = studentData?.events || [];
 
-  if (studentDoc.exists()) {
-    const studentData = studentDoc.data();
-    const eventExists = studentData.events.find((e: Event) => e.id === newEvent.id);
-    if (eventExists) {
-      const updatedEvents = studentData.events.map((e: Event) => (e.id === newEvent.id ? newEvent : e));
-      await setDoc(studentRef, { events: updatedEvents }, { merge: true });
-    } else {
-      await setDoc(studentRef, { events: [...studentData.events, newEvent] }, { merge: true });
+  // Sanitize the event object to remove any undefined values
+  const sanitizedEvent = {
+    ...newEvent,
+    bookingDetails: {
+      studentId: newEvent.bookingDetails?.studentId,
+      teacherId: newEvent.bookingDetails?.teacherId,
+      homework: newEvent.bookingDetails?.homework || null,
+      feedback: newEvent.bookingDetails?.feedback ? {
+        rating: newEvent.bookingDetails.feedback.rating,
+        comment: newEvent.bookingDetails.feedback.comment || "",
+        createdAt: newEvent.bookingDetails.feedback.createdAt,
+        updatedAt: newEvent.bookingDetails.feedback.updatedAt
+      } : null
     }
+  };
+
+  const eventExists = existingEvents.find((e: Event) => e.id === sanitizedEvent.id);
+
+  if (eventExists) {
+    const updatedEvents = existingEvents.map((e: Event) => e.id === sanitizedEvent.id ? sanitizedEvent : e);
+    await setDoc(studentRef, { events: updatedEvents }, { merge: true });
+  } else {
+    await setDoc(studentRef, { events: [...existingEvents, sanitizedEvent] }, { merge: true });
   }
 }
 
