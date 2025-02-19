@@ -12,11 +12,15 @@ import { useEffect,useActionState } from "react";
 import { authState } from "@/app/[locale]/action";
 import { Student } from "@/types/student";
 import { useParams } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
+
+// TODO: Low priority: Imporve Loading UI
 export default function SignIn() {
   const t = useTranslations("Auth.SignIn");
   const router = useRouter();
   const { setUser } = useUser();
+  const { toast } = useToast();
   const [state, formAction, isPending] = useActionState(signIn, { error: null, user: null } as authState);
   const { locale } = useParams();
 
@@ -31,6 +35,18 @@ export default function SignIn() {
     }
   }, [state, setUser, router, locale]);
 
+  async function handleSignIn(formData: FormData) {
+    try {
+      formAction(formData);
+    } catch (error) {
+      toast({
+        title: t("error"),
+        description: error instanceof Error ? error.message : "An error occurred during sign in",
+        variant: "destructive",
+      });
+    }
+  }
+    
 
   return (
     <div className="flex-1 flex flex-col justify-center items-center px-4">
@@ -45,7 +61,7 @@ export default function SignIn() {
           </p>
         </div>
         {state.error && <p className="text-red-500">{state.error}</p>}
-        <form action={formAction} className="space-y-4">
+        <form action={handleSignIn} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">{t("email")}</Label>
             <Input id="email" type="email" autoComplete="email" name="email" required />

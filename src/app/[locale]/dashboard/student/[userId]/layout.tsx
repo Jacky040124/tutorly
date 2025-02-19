@@ -11,7 +11,7 @@ import { useEffect } from "react";
 import { getUserById } from "@/app/[locale]/action";
 import { Student } from "@/types/student";
 
-
+// TODO: Low priority: Optimized user profile image loading
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
   const { userId, locale } = useParams();
   const { user, setUser } = useUser();

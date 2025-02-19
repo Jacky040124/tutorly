@@ -15,6 +15,10 @@ import { ConfirmationEmailTemplate, FeedbackEmailTemplate } from "@/lib/EmailTem
 import { createEvent, Event, EventStatus } from "@/types/event";
 import { parseEventDateTime, parseCommaSeparatedValue, isOverlap } from "@/lib/utils";
 
+
+// TODO: Low priority: consider optimization with useReducer + useActionState
+// TODO: Low priority: consider useOptimistic for optimistic updates
+// TODO: Low priority: consider unit testing
 // Firebase Service
 
 config();
@@ -50,35 +54,53 @@ export type authState = {
 };
 
 export const signIn = async (prevState: authState, formData: FormData): Promise<authState> => {
-  const email = formData.get("email");
-  const password = formData.get("password");
+  try {
+    const email = formData.get("email");
+    const password = formData.get("password");
 
-  const userCredential = await signInWithEmailAndPassword(auth, email as string, password as string);
-  const docRef = doc(db, "users", userCredential.user.uid);
-  const docSnap = await getDoc(docRef);
-  const userData = docSnap.data();
+    if (!email || !password) {
+      return { error: "Email and password are required", user: null };
+    }
 
-  if (!docSnap.exists() || !userData) {
-    return { error: "User data not found", user: null };
-  }
+    const userCredential = await signInWithEmailAndPassword(auth, email as string, password as string);
+    const docRef = doc(db, "users", userCredential.user.uid);
+    const docSnap = await getDoc(docRef);
+    const userData = docSnap.data();
 
-  if (userData && userData.type === "teacher") {
-    console.log("userData", userData);
+    if (!docSnap.exists() || !userData) {
+      return { error: "User data not found", user: null };
+    }
+
+    if (userData.type === "teacher") {
+      return {
+        user: createTeacherFromData(userData as Teacher),
+        error: null,
+      };
+    }
+
+    if (userData.type === "student") {
+      return {
+        user: createStudentFromData(userData),
+        error: null,
+      };
+    }
+
+    return { error: "Invalid user type", user: null };
+  } catch (error) {
+    console.error("Sign in error:", error);
+    if (error instanceof Error) {
+      if (error.message.includes('auth/invalid-credential')) {
+        return { error: "Invalid email or password", user: null };
+      }
+      if (error.message.includes('auth/invalid-email')) {
+        return { error: "Invalid email format", user: null };
+      }
+    }
     return {
-      user: createTeacherFromData(userData as Teacher),
-      error: null,
+      error: "An unexpected error occurred during sign in",
+      user: null,
     };
   }
-
-  if (userData && userData.type === "student") {
-    console.log("userData", userData);
-    return {
-      user: createStudentFromData(userData),
-      error: null,
-    };
-  }
-
-  return { error: "Invalid user type", user: null };
 };
 
 export const signUpStudent = async (prevState: authState, formData: FormData): Promise<authState> => {

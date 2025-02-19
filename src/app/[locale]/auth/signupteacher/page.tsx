@@ -11,6 +11,7 @@ import { useActionState, useEffect } from "react";
 import { authState } from "@/app/[locale]/action";
 import { useParams } from "next/navigation";
 
+// TODO: High Priority : Fix Sign Up Google Save Password Error
 export default function SignUpTeacher() {
   const t = useTranslations("Auth.SignUpTeacher");
   const router = useRouter();

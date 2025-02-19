@@ -139,6 +139,8 @@ export function formatMonthYear(date: Date): string {
   });
 }
 
+
+// TODO: Low priority: Conditioanl styling for color rendering based on status
 export const renderEventContent = (eventInfo: EventContentArg) => {
   const status = eventInfo.event.extendedProps.status || "available";
 

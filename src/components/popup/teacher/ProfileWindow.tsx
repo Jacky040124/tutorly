@@ -17,6 +17,8 @@ import { Teacher } from "@/types/teacher";
 import { useToast } from "@/hooks/use-toast";
 import { UpdateTeacherProfileState } from "@/app/[locale]/action";
 
+
+// TODO: Low priority: Adjust UI length
 export default function TeacherProfileOverlay() {
   const { user } = useUser();
   const teacher = user as Teacher;

@@ -7,12 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { MessageCircle } from 'lucide-react';
-
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 export default function BugReporter() {
     const t = useTranslations('BugReport');
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState('');
+    const [email, setEmail] = useState('');
     const [isSending, setIsSending] = useState(false);
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
@@ -26,6 +28,7 @@ export default function BugReporter() {
                 to: process.env.NEXT_PUBLIC_ADMIN_EMAIL!,
                 content: `
                     <h2>New Feedback Received</h2>
+                    <p><strong>From:</strong> ${email}</p>
                     <p>${message}</p>
                 `,
                 type: "feedbackConfirmation"
@@ -33,6 +36,7 @@ export default function BugReporter() {
 
             setStatus('success');
             setMessage('');
+            setEmail('');
             setTimeout(() => {
                 setIsOpen(false);
                 setStatus('idle');
@@ -60,14 +64,29 @@ export default function BugReporter() {
                         <h3 className="font-semibold">{t('title')}</h3>
                     </CardHeader>
                     <form onSubmit={handleSubmit}>
-                        <CardContent>
-                            <Textarea
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                                placeholder={t('placeholder')}
-                                className="min-h-[120px]"
-                                required
-                            />
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="email">{t('email')}</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder={t('emailPlaceholder')}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="message">{t('subtitle')}</Label>
+                                <Textarea
+                                    id="message"
+                                    value={message}
+                                    onChange={(e) => setMessage(e.target.value)}
+                                    placeholder={t('placeholder')}
+                                    className="min-h-[120px]"
+                                    required
+                                />
+                            </div>
                             {status === 'success' && (
                                 <p className="text-green-500 text-sm mt-2">{t('success')}</p>
                             )}

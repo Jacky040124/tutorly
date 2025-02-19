@@ -203,10 +203,12 @@
     "subtitle": "回報錯誤",
     "button": "回報",
     "sendButton": "送出",
-    "sending": "正在送出...",
-    "success": "錯誤回報已送出",
-    "error": "錯誤回報失敗",
-    "placeholder": "描述錯誤..."
+    "sending": "送出中...",
+    "success": "錯誤回報已成功送出",
+    "error": "錯誤回報送出失敗",
+    "placeholder": "描述錯誤...",
+    "email": "您的電子郵件",
+    "emailPlaceholder": "輸入您的電子郵件地址"
   },
 
   "layout": {

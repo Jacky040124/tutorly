@@ -209,7 +209,9 @@
     "sending": "Sending...",
     "success": "Bug report sent successfully",
     "error": "Failed to send bug report",
-    "placeholder": "Describe the bug..."
+    "placeholder": "Describe the bug...",
+    "email": "Your Email",
+    "emailPlaceholder": "Enter your email address"
   },
 
   "layout": {
