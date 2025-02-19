@@ -103,15 +103,12 @@ export const signIn = async (prevState: authState, formData: FormData): Promise<
   }
 };
 
+// TODO: High Priority : Wrap try catch
+
 export const signUpStudent = async (prevState: authState, formData: FormData): Promise<authState> => {
   const email = formData.get("email");
   const password = formData.get("password");
   const nickname = formData.get("nickname") as string;
-  const signupCode = formData.get("signupCode") as string;
-
-  if (signupCode !== process.env.NEXT_PUBLIC_STUDENT_SIGNUP_CODE) {
-    return { error: "Invalid signup code", user: null };
-  }
 
   const userCredential = await createUserWithEmailAndPassword(auth, email as string, password as string);
 
@@ -129,6 +126,8 @@ export const signUpStudent = async (prevState: authState, formData: FormData): P
   };
 };
 
+
+// TODO: High Priority : Wrap try catch
 export const signUpTeacher = async (prevState: authState, formData: FormData): Promise<authState> => {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;

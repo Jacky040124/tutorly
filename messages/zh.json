@@ -55,7 +55,10 @@
       "signupCode": "註冊碼",
       "button": "註冊",
       "teacherLink": "想成為老師？在這裡註冊",
-      "SignInButton": "登入"
+      "SignInButton": "登入",
+      "error": "註冊資訊無效",
+      "invalidCode": "無效的註冊碼",
+      "invalidSignupCode": "無效的認證資訊"
     },
 
     "SignUpTeacher": {

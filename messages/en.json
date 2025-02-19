@@ -55,7 +55,10 @@
       "signupCode": "Sign Up Code",
       "button": "Sign Up",
       "teacherLink": "Want to become a teacher? Sign up here",
-      "SignInButton": "Sign In"
+      "SignInButton": "Sign In",
+      "error": "Invalid sign up information",
+      "invalidCode": "Invalid signup code",
+      "invalidSignupCode": "Invalid credentials"
     },
 
     "SignUpTeacher": {
