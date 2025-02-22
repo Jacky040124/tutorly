@@ -74,7 +74,7 @@ export default function StudentProfile() {
     if (!file) return;
 
     try {
-      const result = await uploadImage(file, student.uid);
+      const result = await uploadImage(file, student.uid, "avatars");
       const updatedStudent = createStudentFromData({
         ...student,
         details: {

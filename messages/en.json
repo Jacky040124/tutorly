@@ -214,7 +214,11 @@
     "error": "Failed to send bug report",
     "placeholder": "Describe the bug...",
     "email": "Your Email",
-    "emailPlaceholder": "Enter your email address"
+    "emailPlaceholder": "Enter your email address",
+    "steps": "Location & Steps to Reproduce",
+    "stepsPlaceholder": "Where did this happen? What steps led to this issue?",
+    "screenshot": "Screenshot (optional)",
+    "uploadImage": "Upload Image"
   },
 
   "layout": {

@@ -53,11 +53,11 @@ export default function TeacherProfileOverlay() {
 
     try {
       setIsUploading(true);
-      const result = await uploadImage(file, teacher.uid);
+      const result = await uploadImage(file, teacher.uid, "avatars");
       console.log(result);
 
       toast({
-        title: t("imageUploadSuccess"),
+        title: t("imageUploadSuccess"), 
         variant: "default",
       });
     } catch (error) {

@@ -211,7 +211,11 @@
     "error": "錯誤回報送出失敗",
     "placeholder": "描述錯誤...",
     "email": "您的電子郵件",
-    "emailPlaceholder": "輸入您的電子郵件地址"
+    "emailPlaceholder": "輸入您的電子郵件地址",
+    "steps": "問題位置和重現步驟",
+    "stepsPlaceholder": "這個問題在哪裡發生？請描述導致這個問題的步驟",
+    "screenshot": "螢幕截圖（選填）",
+    "uploadImage": "上傳圖片"
   },
 
   "layout": {

@@ -294,7 +294,7 @@ export async function downloadFileFromUrl(path: string): Promise<string> {
   }
 }
 
-export async function uploadImage(file: File, userId: string): Promise<UploadImageResult> {
+export async function uploadImage(file: File, userId: string, path: string): Promise<UploadImageResult> {
   try {
     // Validate file type
     if (!file.type.startsWith("image/")) {
@@ -309,15 +309,32 @@ export async function uploadImage(file: File, userId: string): Promise<UploadIma
 
     const timestamp = Date.now();
     const fileName = `${timestamp}_${file.name}`;
-    const path = `avatars/${fileName}`;
-    const storageRef = ref(storage, path);
+    const storagePath = `${path}/${fileName}`;
+    const storageRef = ref(storage, storagePath);
     await uploadBytes(storageRef, file);
     const downloadUrl = await getDownloadURL(storageRef);
 
-    const userRef = doc(db, "users", userId);
-    await setDoc(userRef, { details: { photoURL: downloadUrl } }, { merge: true });
+    // Only update user document if we're uploading to avatars
+    if (path === 'avatars') {
+      const userRef = doc(db, "users", userId);
+      const userDoc = await getDoc(userRef);
+      const userData = userDoc.data();
+      
+      if (userData?.type === 'teacher') {
+        await setDoc(userRef, {
+          details: {
+            ...userData.details,
+            photoURL: downloadUrl
+          }
+        }, { merge: true });
+      } else {
+        await setDoc(userRef, {
+          details: { photoURL: downloadUrl }
+        }, { merge: true });
+      }
+    }
 
-    return { downloadUrl, path };
+    return { downloadUrl, path: storagePath };
   } catch (error) {
     console.error("Error in uploadImage:", error);
     if (error instanceof Error) {
