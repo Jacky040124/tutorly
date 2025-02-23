@@ -43,6 +43,7 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
   const [selectedStatus, setSelectedStatus] = useState<EventStatus>({ status: 'available' });
   const t = useTranslations("EventWindow");
   const { locale } = useParams();
+  console.log(event)
 
   // Update selected status when event changes
   useEffect(() => {
@@ -162,13 +163,19 @@ export default function EventWindow({ event, close, show }: EventWindowProps) {
                             confirmed: "Confirmed",
                             cancelled: "Cancelled",
                             available: "Available",
-                          }[event.status.status]
+                          }[
+                            // @ts-ignore
+                            event.status
+                          ]
                         : {
                             completed: "已完成",
                             confirmed: "已确认",
                             cancelled: "已取消",
                             available: "可预约",
-                          }[event.status.status]
+                          }[
+                            // @ts-ignore
+                            event.status
+                          ]
                     }
                   />
                 </SelectTrigger>

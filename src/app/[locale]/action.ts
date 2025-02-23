@@ -517,7 +517,7 @@ export async function deleteEvent(teacherId: string, event: Event) {
 
 export interface UpdateTeacherProfileState {
   error: string | null;
-  updatedProfile: TeacherDetails | null;
+  updatedProfile: Partial<TeacherDetails> | null;
 }
 
 export async function updateTeacherProfile(prevState: UpdateTeacherProfileState, formData: FormData) {
@@ -528,23 +528,18 @@ export async function updateTeacherProfile(prevState: UpdateTeacherProfileState,
   const education = formData.get("education") as string;
   const experience = formData.get("experience") as string;
   const teachingStyle = formData.get("teachingStyle") as string;
-  const pricing = Number(formData.get("pricing")) || 0;
 
   try {
-    const updatedDetails: TeacherDetails = {
+    const updatedDetails: Partial<TeacherDetails> = {
       nickname,
       description,
       expertise,
       education,
       experience,
       teachingStyle,
-      pricing,
     };
 
-    console.log("updatedProfile", updatedDetails);
-
     const teacherRef = doc(db, "users", userId);
-
     await setDoc(teacherRef, { details: updatedDetails }, { merge: true });
 
     return {

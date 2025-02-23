@@ -129,13 +129,7 @@ export default function App() {
                 </CardHeader>
 
                 <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-primary font-bold text-lg">
-                      {t("tutors.pricePerHour", { price: teacher.details.pricing })}
-                    </span>
-                  </div>
-
-                  <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{teacher.details.introduction}</p>
+                  <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{teacher.details.description}</p>
                 </CardContent>
 
                 <CardFooter className="px-6 pb-6 pt-0">

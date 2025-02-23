@@ -133,19 +133,6 @@ export default function TeacherProfileOverlay() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="pricing">{t("pricing")}</Label>
-                <Input
-                  id="pricing"
-                  name="pricing"
-                  type="number"
-                  defaultValue={teacher.details.pricing}
-                  min={0}
-                  step={1}
-                  placeholder={t("pricingPlaceholder")}
-                />
-              </div>
-
               {/* Professional Info */}
               <div className="space-y-2">
                 <Label htmlFor="expertise">{t("expertise")}</Label>
