@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useTranslations } from "next-intl";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -17,7 +17,6 @@ import { adaptToCalendarEvent, formatTime } from "@/lib/utils";
 import { Event } from "@/types/event";
 import { useActionState } from "react";
 import { addFeedback, getUserById } from "@/app/[locale]/action";
-import { toast } from "@/hooks/use-toast";
 
 interface EventWindowProps {
   event: Event;
@@ -59,7 +58,7 @@ function StudentEventWindow({ event, show, onClose, student }: EventWindowProps)
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">{t("status.label")}</span>
                 <span className="text-sm font-medium px-2 py-1 rounded-full bg-blue-50 text-blue-700">
-                  {t(`status.${event.status.status}`)}
+                  {t(`status.${event.status}`)}
                 </span>
               </div>
 

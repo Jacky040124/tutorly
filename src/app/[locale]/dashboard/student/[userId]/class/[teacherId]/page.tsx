@@ -27,7 +27,7 @@ import { Student } from "@/types/student";
 import { useUser } from "@/hooks/useUser";
 
 export default function Store() {
-  const { user, setUser } = useUser();
+  const { setUser } = useUser();
   const { userId, teacherId } = useParams();
   const { getTeacherById } = useTeachers();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -122,7 +122,7 @@ export default function Store() {
                 <section>
                   <h3 className="font-semibold text-lg">{t("teacherProfile.education")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {teacher.details.education || t("noEducation")}
+                    {teacher.details.education || t("teacherProfile.noEducation")}
                   </p>
                 </section>
               </div>
@@ -131,14 +131,14 @@ export default function Store() {
                 <section>
                   <h3 className="font-semibold text-lg">{t("teacherProfile.experience")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {teacher.details.experience || t("noExperience")}
+                    {teacher.details.experience || t("teacherProfile.noExperience")}
                   </p>
                 </section>
 
                 <section>
                   <h3 className="font-semibold text-lg">{t("teacherProfile.teachingStyle")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {teacher.details.teachingStyle || t("noTeachingStyle")}
+                    {teacher.details.teachingStyle || t("teacherProfile.noTeachingStyle")}
                   </p>
                 </section>
               </div>
@@ -179,6 +179,11 @@ export default function Store() {
                   <div>
                     <strong>{t("confirmBooking.price")}:</strong> ${selectedEvent.price}
                   </div>
+                  <div className="mt-4 p-3 bg-muted rounded-md">
+                    <p className="text-sm text-muted-foreground">
+                      💡 Payment feature is currently under development. Please send the tuition fee to <span className="font-medium">lolzman2005@gmail.com</span>
+                    </p>
+                  </div>
                 </div>
               )}
             </DialogDescription>
@@ -187,9 +192,7 @@ export default function Store() {
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               {t("confirmBooking.buttons.cancel")}
             </Button>
-            <Button onClick={handleConfirmBooking}>
-              {t("confirmBooking.buttons.confirm")}
-            </Button>
+            <Button onClick={handleConfirmBooking}>{t("confirmBooking.buttons.confirm")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
