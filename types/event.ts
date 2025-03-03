@@ -37,6 +37,8 @@ export interface EventStatus {
   status: "completed" | "confirmed" | "cancelled" | "available";
 }
 
+// TODO: High priority: Alter Feedback logic to allow multiple feedbacks per events
+//       And for feedback store as list of feedbacks
 export interface Event {
   id: string;
   title: string;

@@ -15,7 +15,6 @@ import { ConfirmationEmailTemplate, FeedbackEmailTemplate } from "@/lib/EmailTem
 import { createEvent, Event, EventStatus } from "@/types/event";
 import { parseEventDateTime, parseCommaSeparatedValue, isOverlap } from "@/lib/utils";
 
-
 // TODO: Low priority: consider optimization with useReducer + useActionState
 // TODO: Low priority: consider useOptimistic for optimistic updates
 // TODO: Low priority: consider unit testing
@@ -89,10 +88,10 @@ export const signIn = async (prevState: authState, formData: FormData): Promise<
   } catch (error) {
     console.error("Sign in error:", error);
     if (error instanceof Error) {
-      if (error.message.includes('auth/invalid-credential')) {
+      if (error.message.includes("auth/invalid-credential")) {
         return { error: "Invalid email or password", user: null };
       }
-      if (error.message.includes('auth/invalid-email')) {
+      if (error.message.includes("auth/invalid-email")) {
         return { error: "Invalid email format", user: null };
       }
     }
@@ -125,7 +124,6 @@ export const signUpStudent = async (prevState: authState, formData: FormData): P
     error: null,
   };
 };
-
 
 // TODO: High Priority : Wrap try catch
 export const signUpTeacher = async (prevState: authState, formData: FormData): Promise<authState> => {
@@ -192,9 +190,9 @@ export async function addFeedback(prevState: FeedbackState, formData: FormData):
     return { message: "Feedback added successfully", error: null };
   } catch (error) {
     console.error("Error adding feedback:", error);
-    return { 
-      message: "Error adding feedback", 
-      error: error instanceof Error ? error.message : String(error)
+    return {
+      message: "Error adding feedback",
+      error: error instanceof Error ? error.message : String(error),
     };
   }
 }
@@ -315,22 +313,30 @@ export async function uploadImage(file: File, userId: string, path: string): Pro
     const downloadUrl = await getDownloadURL(storageRef);
 
     // Only update user document if we're uploading to avatars
-    if (path === 'avatars') {
+    if (path === "avatars") {
       const userRef = doc(db, "users", userId);
       const userDoc = await getDoc(userRef);
       const userData = userDoc.data();
-      
-      if (userData?.type === 'teacher') {
-        await setDoc(userRef, {
-          details: {
-            ...userData.details,
-            photoURL: downloadUrl
-          }
-        }, { merge: true });
+
+      if (userData?.type === "teacher") {
+        await setDoc(
+          userRef,
+          {
+            details: {
+              ...userData.details,
+              photoURL: downloadUrl,
+            },
+          },
+          { merge: true }
+        );
       } else {
-        await setDoc(userRef, {
-          details: { photoURL: downloadUrl }
-        }, { merge: true });
+        await setDoc(
+          userRef,
+          {
+            details: { photoURL: downloadUrl },
+          },
+          { merge: true }
+        );
       }
     }
 
@@ -494,7 +500,7 @@ export async function addEvent(prevState: EventState, formData: FormData): Promi
 }
 
 export async function deleteEvent(teacherId: string, event: Event) {
-  const studentId = event.bookingDetails?.studentId;
+  const studentIds = event.enrolledStudentIds;
 
   if (teacherId) {
     const teacherRef = doc(db, "users", teacherId);
@@ -504,7 +510,8 @@ export async function deleteEvent(teacherId: string, event: Event) {
     await setDoc(teacherRef, { events: events.filter((e: Event) => e.id !== event.id) }, { merge: true });
   }
 
-  if (studentId) {
+
+  for (const studentId of studentIds) {
     const studentRef = doc(db, "users", studentId);
     const studentDoc = await getDoc(studentRef);
     const studentData = studentDoc.data();
@@ -512,8 +519,6 @@ export async function deleteEvent(teacherId: string, event: Event) {
     await setDoc(studentRef, { events: events.filter((e: Event) => e.id !== event.id) }, { merge: true });
   }
 }
-
-
 
 export interface UpdateTeacherProfileState {
   error: string | null;
@@ -559,7 +564,7 @@ async function updateTeacherEvents(teacherId: string, newEvent: Event) {
   const teacherDoc = await getDoc(teacherRef);
   const teacherData = teacherDoc.data();
   const existingEvents = teacherData?.events || [];
-  
+
   // Sanitize the event object to remove any undefined values
   const sanitizedEvent = {
     ...newEvent,
@@ -567,19 +572,21 @@ async function updateTeacherEvents(teacherId: string, newEvent: Event) {
       studentId: newEvent.bookingDetails?.studentId,
       teacherId: newEvent.bookingDetails?.teacherId,
       homework: newEvent.bookingDetails?.homework || null,
-      feedback: newEvent.bookingDetails?.feedback ? {
-        rating: newEvent.bookingDetails.feedback.rating,
-        comment: newEvent.bookingDetails.feedback.comment || "",
-        createdAt: newEvent.bookingDetails.feedback.createdAt,
-        updatedAt: newEvent.bookingDetails.feedback.updatedAt
-      } : null
-    }
+      feedback: newEvent.bookingDetails?.feedback
+        ? {
+            rating: newEvent.bookingDetails.feedback.rating,
+            comment: newEvent.bookingDetails.feedback.comment || "",
+            createdAt: newEvent.bookingDetails.feedback.createdAt,
+            updatedAt: newEvent.bookingDetails.feedback.updatedAt,
+          }
+        : null,
+    },
   };
 
   const eventExists = existingEvents.find((e: Event) => e.id === sanitizedEvent.id);
-  
+
   if (eventExists) {
-    const updatedEvents = existingEvents.map((e: Event) => e.id === sanitizedEvent.id ? sanitizedEvent : e);
+    const updatedEvents = existingEvents.map((e: Event) => (e.id === sanitizedEvent.id ? sanitizedEvent : e));
     await setDoc(teacherRef, { events: updatedEvents }, { merge: true });
   } else {
     await setDoc(teacherRef, { events: [...existingEvents, sanitizedEvent] }, { merge: true });
@@ -599,19 +606,21 @@ async function updateStudentEvents(studentId: string, newEvent: Event) {
       studentId: newEvent.bookingDetails?.studentId,
       teacherId: newEvent.bookingDetails?.teacherId,
       homework: newEvent.bookingDetails?.homework || null,
-      feedback: newEvent.bookingDetails?.feedback ? {
-        rating: newEvent.bookingDetails.feedback.rating,
-        comment: newEvent.bookingDetails.feedback.comment || "",
-        createdAt: newEvent.bookingDetails.feedback.createdAt,
-        updatedAt: newEvent.bookingDetails.feedback.updatedAt
-      } : null
-    }
+      feedback: newEvent.bookingDetails?.feedback
+        ? {
+            rating: newEvent.bookingDetails.feedback.rating,
+            comment: newEvent.bookingDetails.feedback.comment || "",
+            createdAt: newEvent.bookingDetails.feedback.createdAt,
+            updatedAt: newEvent.bookingDetails.feedback.updatedAt,
+          }
+        : null,
+    },
   };
 
   const eventExists = existingEvents.find((e: Event) => e.id === sanitizedEvent.id);
 
   if (eventExists) {
-    const updatedEvents = existingEvents.map((e: Event) => e.id === sanitizedEvent.id ? sanitizedEvent : e);
+    const updatedEvents = existingEvents.map((e: Event) => (e.id === sanitizedEvent.id ? sanitizedEvent : e));
     await setDoc(studentRef, { events: updatedEvents }, { merge: true });
   } else {
     await setDoc(studentRef, { events: [...existingEvents, sanitizedEvent] }, { merge: true });
@@ -716,9 +725,10 @@ async function fetchEventData(eventId: string, teacherId: string): Promise<Event
   return event as Event;
 }
 
-export async function bookEvent(event: Event, teacherId: string, studentId: string) {
+export async function bookEvent(event: Event, teacherId: string, studentId: string): Promise<{ error: string | null }> {
   const studentEmail = await getUserEmailById(studentId);
   const teacherEmail = await getUserEmailById(teacherId);
+  const eventData = await fetchEventData(event.id, teacherId);
   const eventsToUpdate: string[] = await fetchGroupedEvents(event.repeatInfo.repeatGroupId, teacherId);
 
   console.log("eventsToUpdate", eventsToUpdate);
@@ -726,42 +736,64 @@ export async function bookEvent(event: Event, teacherId: string, studentId: stri
   console.log("studentEmail", studentEmail);
   console.log("teacherEmail", teacherEmail);
 
-  if (event.enrolledStudentIds.includes(studentId)) {
-    throw new Error("You have already booked this event");
+  if (eventData.enrolledStudentIds.includes(studentId)) {
+    console.log("You have already booked this event");
+    return {
+      error: "You have already booked this event",
+    };
+  } else if (eventData.maxStudents <= event.enrolledStudentIds.length) {
+    console.log("Event is full");
+    return {
+      error: "Event is full",
+    };
+  } else if (!studentEmail || !teacherEmail) {
+    console.log("Student or teacher email not found");
+    return {
+      error: "Student or teacher email not found",
+    };
   }
 
-  if (event.maxStudents <= event.enrolledStudentIds.length) {
-    throw new Error("Event is full");
-  }
+  try {
+    for (const eventId of eventsToUpdate) {
+      const eventData = await fetchEventData(eventId, teacherId);
 
-  if (!studentEmail || !teacherEmail) {
-    throw new Error("Student or teacher email not found");
-  }
+      const newEvent: Event = {
+        ...eventData,
+        status: { status: "confirmed" },
+        enrolledStudentIds: [...eventData.enrolledStudentIds, studentId],
+        bookingDetails: {
+          studentId,
+          teacherId,
+        },
+      };
+      for (const studentId of eventData.enrolledStudentIds) {
+        await updateStudentEvents(studentId, newEvent);
+      }
 
-  for (const eventId of eventsToUpdate) {
-    const eventData = await fetchEventData(eventId, teacherId);
+      await updateStudentEvents(studentId, newEvent);
+      await updateTeacherEvents(teacherId, newEvent);
 
-    const newEvent: Event = {
-      ...eventData,
-      status: { status: "confirmed" },
-      enrolledStudentIds: [...eventData.enrolledStudentIds, studentId],
-      bookingDetails: {
-        studentId,
-        teacherId,
-      },
+
+
+      await send({
+        to: studentEmail,
+        content: "You have a new booking",
+        type: "bookingConfirmation",
+      });
+      await send({
+        to: teacherEmail,
+        content: "You have a new booking",
+        type: "bookingConfirmation",
+      });
+    }
+    return {
+      error: null,
     };
 
-    await updateStudentEvents(studentId, newEvent);
-    await updateTeacherEvents(teacherId, newEvent);
-    await send({
-      to: studentEmail,
-      content: "You have a new booking",
-      type: "bookingConfirmation",
-    });
-    await send({
-      to: teacherEmail,
-      content: "You have a new booking",
-      type: "bookingConfirmation",
-    });
+  } catch (error) {
+    console.error("Error booking event:", error);
+    return {
+      error: error instanceof Error ? error.message : "An unknown error occurred",
+    };
   }
 }

@@ -53,23 +53,29 @@ export default function Store() {
   const handleConfirmBooking = async () => {
     if (selectedEvent) {
       try {
-        if (selectedEvent.status.status != "available") {
+        const result = await bookEvent(selectedEvent, teacherId as string, userId as string);
+        console.log("result", result);
+
+        if (result?.error) {
           toast({
             variant: "destructive",
             title: "Error",
-            description: t("bookingError"),
+            description: result.error,
           });
           return;
+        } else {
+          toast({
+            title: "Success",
+            description: t("bookingSuccess"),
+          });
         }
-        await bookEvent(selectedEvent, teacherId as string, userId as string);
-        toast({
-          title: "Success",
-          description: t("bookingSuccess"),
-        });
+
         const newUser = await getUserById(userId as string);
         setUser(newUser as Student);
         setIsDialogOpen(false);
         setSelectedEvent(null);
+        console.log("newUser", newUser);
+
       } catch (error) {
         toast({
           variant: "destructive",
@@ -175,9 +181,6 @@ export default function Store() {
                   <div>
                     <strong>{t("confirmBooking.time")}:</strong>{" "}
                     {`${formatTime(selectedEvent.date.startTime)} - ${formatTime(selectedEvent.date.endTime)}`}
-                  </div>
-                  <div>
-                    <strong>{t("confirmBooking.price")}:</strong> ${selectedEvent.price}
                   </div>
                   <div className="mt-4 p-3 bg-muted rounded-md">
                     <p className="text-sm text-muted-foreground">
