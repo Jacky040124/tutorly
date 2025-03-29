@@ -560,6 +560,8 @@ export async function updateTeacherProfile(prevState: UpdateTeacherProfileState,
 }
 
 async function updateTeacherEvents(teacherId: string, newEvent: Event) {
+  //replaces entire event
+  //benefit: allows you to add optional fields without operating on the existing event
   const teacherRef = doc(db, "users", teacherId);
   const teacherDoc = await getDoc(teacherRef);
   const teacherData = teacherDoc.data();
