@@ -164,11 +164,13 @@ function StudentEventWindow({ event, show, onClose, student }: EventWindowProps)
 
 export default function StudentSchedule() {
   const { user } = useUser();
-  const student = user as Student;
   const [showEventDetails, setShowEventDetails] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const t = useTranslations("Dashboard.Student.Schedule");
-  const events = student.events;
+  
+  // Add null checks with fallback empty array
+  const student = user as Student;
+  const events = student?.events || [];
   const calendarEvents = events.map(adaptToCalendarEvent);
 
   const handleEventClick = (info: any) => {
@@ -179,6 +181,18 @@ export default function StudentSchedule() {
       setShowEventDetails(true);
     }
   };
+
+  // loading state
+  if (!student) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-lg">{t("loading")}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6 p-4 h-screen">
