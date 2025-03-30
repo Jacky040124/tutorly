@@ -118,7 +118,7 @@ function StudentEventWindow({ event, show, onClose, student }: EventWindowProps)
             <div className="space-y-4">
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold">{t("feedback.label")}</h3>
-                <div className="flex items-center gap-1">
+                {/* <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
@@ -131,15 +131,15 @@ function StudentEventWindow({ event, show, onClose, student }: EventWindowProps)
                       <Star className="h-5 w-5" fill={star <= rating ? "currentColor" : "none"} />
                     </button>
                   ))}
-                </div>
+                </div> */}
               </div>
 
-              <Textarea
+              {/* <Textarea
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}
                 placeholder={t("feedback.placeholder")}
                 className="min-h-[100px] resize-none"
-              />
+              /> */}
 
               {state.error && (
                 <p className="text-sm text-red-500 bg-red-50 p-2 rounded">
