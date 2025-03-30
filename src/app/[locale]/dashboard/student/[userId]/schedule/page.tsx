@@ -118,6 +118,15 @@ function StudentEventWindow({ event, show, onClose, student }: EventWindowProps)
             <div className="space-y-4">
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold">{t("feedback.label")}</h3>
+                {/* Google Forms Feedback Link */}
+                <a
+                  href="YOUR_GOOGLE_FORMS_LINK_HERE"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                >
+                  Feedback Form
+                </a>
                 {/* <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
