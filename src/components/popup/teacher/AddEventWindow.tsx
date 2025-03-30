@@ -157,7 +157,7 @@ export default function AddEventOverlay() {
           </div>
 
           {/* Repeating Event Toggle */}
-          <div className="flex items-center justify-between space-x-2">
+          {/* <div className="flex items-center justify-between space-x-2">
             <div className="space-y-0.5">
               <Label>{t("fields.repeating")}</Label>
               {isRepeating && (
@@ -165,7 +165,7 @@ export default function AddEventOverlay() {
               )}
             </div>
             <Switch name="isRepeating" checked={isRepeating} onCheckedChange={setIsRepeating} />
-          </div>
+          </div> */}
 
           <SheetFooter>
             <Button type="button" onClick={() => setShowAddEventOverlay(false)} variant="outline">
