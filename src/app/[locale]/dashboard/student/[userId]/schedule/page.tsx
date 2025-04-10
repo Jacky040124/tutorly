@@ -120,7 +120,7 @@ function StudentEventWindow({ event, show, onClose, student }: EventWindowProps)
                 <h3 className="text-sm font-semibold">{t("feedback.label")}</h3>
                 {/* Google Forms Feedback Link */}
                 <a
-                  href="https://forms.gle/V8ojbczM52iqzBLD6"
+                  href="https://forms.gle/nXTtzMTCMrxT8qoDA"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium"
